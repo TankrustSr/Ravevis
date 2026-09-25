@@ -323,7 +323,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
           <span class="slider-header" style="margin:0;">Rotation Mode</span>
           <select id="sl-angle-anim">
-            <option value="body_kaleido" selected>🚀 Warp Tunnel (Body Bank & Speed)</option>
+            <option value="body_kaleido" selected>🚀 Warp Tunnel (Body Speed & Scale)</option>
             <option value="manual">Manual (Slider)</option>
             <option value="body_arms">Track Arm Angle (Pose)</option>
             <option value="pour_hands">💧 Pour Between Hands (Gravity Cascade)</option>
@@ -335,7 +335,7 @@
         
         <div class="slider-row">
           <div class="slider-header">
-            <span>Bank Roll Angle</span>
+            <span>Flow Direction</span>
             <span id="angle-num" class="val">0°</span>
           </div>
           <input type="range" id="sl-angle" min="-180" max="180" step="1" value="0">
@@ -344,9 +344,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Warp Throttle</span>
-            <span id="rot-speed-num" class="val">0.65x</span>
+            <span id="rot-speed-num" class="val">0.50x</span>
           </div>
-          <input type="range" id="sl-rot-speed" min="0.00" max="4.0" step="0.05" value="0.65">
+          <input type="range" id="sl-rot-speed" min="0.00" max="1.50" step="0.01" value="0.50">
         </div>
 
         <div class="slider-row">
@@ -385,7 +385,7 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Petals (Locked in Warp Mode)</span>
-            <span id="k-segs-num" class="val">4 Petals</span>
+            <span id="k-segs-num" class="val">4 (Locked)</span>
           </div>
           <input type="range" id="sl-k-segs" min="1" max="24" step="1" value="4">
         </div>
@@ -400,8 +400,8 @@
 
         <div class="slider-row">
           <div class="slider-header">
-            <span>Chamber Bank Angle</span>
-            <span id="k-angle-num" class="val">45°</span>
+            <span>Chamber Orientation</span>
+            <span id="k-angle-num" class="val">45° (Corners)</span>
           </div>
           <input type="range" id="sl-k-angle" min="0" max="360" step="1" value="45">
         </div>
@@ -557,7 +557,6 @@
       }
     `;
 
-    // PASS 1: High-Precision 16-bit Float Paint Simulation Shader
     const simFS = `
       precision highp float;
       varying vec2 v_uv;
@@ -635,7 +634,6 @@
       }
     `;
 
-    // PASS 2: Display & Lighting Shader with Invariant Conformal Tunnel Mapping
     const displayFS = `
       precision highp float;
       varying vec2 v_uv;
@@ -648,7 +646,6 @@
       uniform float u_use_image;
       uniform float u_shader_type;
 
-      // Kaleidoscope & Warp Corridor Controls
       uniform float u_kaleido_segs;
       uniform float u_kaleido_angle;
       uniform float u_kaleido_zoom;
@@ -658,17 +655,14 @@
       uniform float u_travel_dist;
       uniform float u_is_warp_mode;
 
-      // Kinematics & Flow
       uniform float u_flow_angle;
       uniform float u_speed;
       uniform float u_warp_scale;
       uniform float u_flow_stretch;
 
-      // Head Radiance
       uniform vec2 u_head;
       uniform float u_head_active;
 
-      // Topographical & Optics
       uniform float u_contour_freq;
       uniform float u_step_quant;
       uniform float u_ridge_weight;
@@ -678,7 +672,6 @@
       uniform float u_grain_level;
       uniform float u_contrast;
 
-      // Colors
       uniform vec3 u_col_shadow;
       uniform vec3 u_col_cool_a;
       uniform vec3 u_col_cool_b;
@@ -900,7 +893,6 @@
           if (modA < 0.0) modA += segAngle;
 
           if (u_is_warp_mode > 0.5) {
-            // Conformal Cylindrical Tunnel Mapping (Locks radial aspect ratio invariant across travel distance)
             float tunnelScale = 1.9 * u_kaleido_zoom;
             float V = log(max(r, 0.003)) * tunnelScale - u_travel_dist;
 
@@ -933,7 +925,6 @@
               finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
             }
 
-            // Vanishing point singularity aperture glow at tunnel focal core
             float coreGlow = exp(-r * 9.0) * 0.42;
             finalColor += u_col_crest * coreGlow;
 
@@ -1031,7 +1022,6 @@
       -1.0,  1.0,  1.0, -1.0,  1.0,  1.0,
     ]), gl.STATIC_DRAW);
 
-    // Uniform Locations (Simulation)
     const simResLoc       = gl.getUniformLocation(simProgram, 'u_resolution');
     const simPrevTexLoc   = gl.getUniformLocation(simProgram, 'u_prevBuffer');
     const simPersistLoc   = gl.getUniformLocation(simProgram, 'u_persistence');
@@ -1054,7 +1044,6 @@
     const simRightVelLoc  = gl.getUniformLocation(simProgram, 'u_right_vel');
     const simRightActLoc  = gl.getUniformLocation(simProgram, 'u_right_active');
 
-    // Uniform Locations (Display)
     const dispResLoc       = gl.getUniformLocation(displayProgram, 'u_resolution');
     const dispImgResLoc    = gl.getUniformLocation(displayProgram, 'u_image_resolution');
     const dispTimeLoc      = gl.getUniformLocation(displayProgram, 'u_time');
@@ -1096,7 +1085,6 @@
     const dispColWarmBLoc  = gl.getUniformLocation(displayProgram, 'u_col_warm_b');
     const dispColCrestLoc  = gl.getUniformLocation(displayProgram, 'u_col_crest');
 
-    // --- 16-BIT HALF-FLOAT HARDWARE SETUP ---
     let floatInternalFormat, floatFormat, floatType;
 
     if (isWebGL2) {
@@ -1215,7 +1203,6 @@
       resetBtn.style.display = 'none';
     });
 
-    // Sliders
     const sliders = {
       persistence: document.getElementById('sl-persistence'),
       headForce:   document.getElementById('sl-head-force'),
@@ -1276,8 +1263,7 @@
     });
 
     let currentAngleDeg = 0.0;
-    let smoothBankDeg = 0.0;
-    let smoothWarpSpeed = 0.65;
+    let smoothWarpSpeed = 0.50;
     let smoothZoom = 1.0;
     let travelDist = 0.0;
     let pingPongPhase = 0.0;
@@ -1370,7 +1356,6 @@
       deepAbyss: { shadow: '#02060d', coolA: '#08203e', coolB: '#197278', warmA: '#28e8a6', warmB: '#044343', crest: '#d6fff6' }
     };
 
-    // Preset Manager
     const presetSelect = document.getElementById('presetSelect');
     const userPresetsGroup = document.getElementById('userPresetsGroup');
     const savePresetBtn = document.getElementById('savePresetBtn');
@@ -1501,7 +1486,6 @@
       }
     });
 
-    // Snapshot & Recorder
     const saveModal = document.getElementById('saveModal');
     const modalMsg = document.getElementById('modalMsg');
     const mediaContainer = document.getElementById('mediaContainer');
@@ -1577,7 +1561,6 @@
       recTimer = setInterval(() => { recSeconds++; }, 1000);
     });
 
-    // MediaPipe Pose & Velocity Tracking
     const poseToggleBtn = document.getElementById('poseToggleBtn');
     const poseStatusHUD = document.getElementById('pose-status-val');
     const hudInput = document.getElementById('input-type');
@@ -1732,7 +1715,6 @@
       togglePoseTracking();
     });
 
-    // Pointer Handling
     let pointerTargetX = window.innerWidth * 0.5;
     let pointerTargetY = window.innerHeight * 0.5;
     let pointerCurX = pointerTargetX;
@@ -1796,7 +1778,6 @@
     window.addEventListener('orientationchange', () => setTimeout(resize, 100));
     resize();
 
-    // Normalization Helpers
     function toNormCoord(px, py) {
       const minDim = Math.min(window.innerWidth, window.innerHeight);
       return [
@@ -1813,7 +1794,6 @@
       ];
     }
 
-    // TWO-PASS RENDER LOOP
     function render(time) {
       const now = performance.now();
       let dt = (now - lastAnimTime) * 0.001;
@@ -1829,47 +1809,31 @@
       if (animMode === 'body_kaleido') {
         isWarpMode = 1.0;
 
-        // 1. Lock Petals to 4 with mirror symmetry (4-wall perspective corridor)
         sliders.kSegs.value = 4;
         numDisplays.kSegs.textContent = '4 (Locked)';
         slKMode.value = '1';
 
-        if (leftCur.active > 0.5 && rightCur.active > 0.5) {
-          // 2. Smooth Aircraft Bank from arm tilt (decoupled, clamped & inertial)
-          const dx = rightCur.x - leftCur.x;
-          const dy = rightCur.y - leftCur.y;
-          const safeDx = Math.max(Math.abs(dx), 35.0);
-          const rawBank = (Math.atan2(dy, safeDx) * 180.0) / Math.PI;
-          
-          // Clamp banking angle to [-65°, +65°] so it feels like piloting a craft rather than flipping
-          const targetBank = Math.max(-65.0, Math.min(65.0, rawBank));
-          smoothBankDeg += (targetBank - smoothBankDeg) * 0.05;
+        // Locked squarely at 45 degrees: corners align with 0 roll
+        sliders.kAngle.value = 45;
+        numDisplays.kAngle.textContent = '45° (Corners)';
 
-          // 3. Hand Height (Y) Controls Warp Throttle (high = hyperspace, low = gentle drift)
+        if (leftCur.active > 0.5 && rightCur.active > 0.5) {
+          // Hand Height (Y) Controls Forward Warp Speed (0.05x to 0.50x)
           const avgY = ((leftCur.y + rightCur.y) * 0.5) / window.innerHeight;
           const normY = Math.min(Math.max((avgY - 0.18) / 0.62, 0.0), 1.0);
-          // Throttle ranges from 0.08 (idle) to 3.8 (hyperspace rush)
-          const targetSpeed = 0.08 + normY * 3.72;
-          smoothWarpSpeed += (targetSpeed - smoothWarpSpeed) * 0.08;
+          const targetSpeed = 0.05 + normY * 0.45;
+          smoothWarpSpeed += (targetSpeed - smoothWarpSpeed) * 0.035;
 
-          // 4. Hand X Distance Expands Tunnel Aperture (re-scaled for close camera reach)
+          // Hand X Distance Expands Tunnel Aperture / Scale
+          const dx = rightCur.x - leftCur.x;
           const spanX = Math.abs(dx) / window.innerWidth;
-          // Full sweep achieved between 8% and 36% of screen width
           const normSpan = Math.min(Math.max((spanX - 0.08) / 0.28, 0.0), 1.0);
-          // Dynamic aperture from 1.65 (tight focal tunnel) down to 0.40 (wide, majestic open corridor)
           const targetZoom = mix(1.65, 0.40, normSpan);
-          smoothZoom += (targetZoom - smoothZoom) * 0.10;
+          smoothZoom += (targetZoom - smoothZoom) * 0.035;
         } else {
-          // Smoothly auto-center to 0 roll and gentle cruise speed when no hands / tracking lost
-          smoothBankDeg += (0.0 - smoothBankDeg) * 0.04;
-          smoothWarpSpeed += (0.25 - smoothWarpSpeed) * 0.04;
-          smoothZoom += (1.0 - smoothZoom) * 0.04;
+          smoothWarpSpeed += (0.25 - smoothWarpSpeed) * 0.02;
+          smoothZoom += (1.0 - smoothZoom) * 0.02;
         }
-
-        // Apply Corner Seam Orientation (45° base) + Smoothed Bank Angle
-        const finalChamberAngle = 45.0 + smoothBankDeg;
-        sliders.kAngle.value = Math.round(finalChamberAngle);
-        numDisplays.kAngle.textContent = `${Math.round(smoothBankDeg)}° Bank`;
 
         sliders.rotSpeed.value = smoothWarpSpeed.toFixed(2);
         numDisplays.rotSpeed.textContent = smoothWarpSpeed.toFixed(2) + 'x';
@@ -1877,8 +1841,8 @@
         sliders.kZoom.value = smoothZoom.toFixed(2);
         numDisplays.kZoom.textContent = smoothZoom.toFixed(2);
 
-        // Fast Warp Travel Integration: multiplier increased to 7.2 for true hyperspace speed illusion
-        travelDist += smoothWarpSpeed * dt * 7.2;
+        // Calibrated Warp Travel Integration
+        travelDist += smoothWarpSpeed * dt * 1.5;
 
       } else if (animMode === 'manual') {
         currentAngleDeg = parseFloat(sliders.angle.value);
@@ -1938,7 +1902,6 @@
         numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
       }
 
-      // Smooth pointer interpolation & instantaneous velocity
       pointerCurX += (pointerTargetX - pointerCurX) * 0.2;
       pointerCurY += (pointerTargetY - pointerCurY) * 0.2;
       pointerCurPressure += (pointerTargetPressure - pointerCurPressure) * 0.12;
@@ -1947,7 +1910,6 @@
       prevPointerCurX = pointerCurX;
       prevPointerCurY = pointerCurY;
 
-      // Smooth body effector interpolation & instantaneous velocities
       headCur.x += (headTarget.x - headCur.x) * 0.18;
       headCur.y += (headTarget.y - headCur.y) * 0.18;
       headCur.active += (headTarget.active - headCur.active) * 0.12;
@@ -1972,9 +1934,6 @@
       prevRightCurX = rightCur.x;
       prevRightCurY = rightCur.y;
 
-      // ============================================================
-      // PASS 1: Simulation Step (Write to writeFBO)
-      // ============================================================
       gl.bindFramebuffer(gl.FRAMEBUFFER, writeFBO.fbo);
       gl.viewport(0, 0, simWidth, simHeight);
       gl.useProgram(simProgram);
@@ -2017,9 +1976,6 @@
 
       swapFBOs();
 
-      // ============================================================
-      // PASS 2: Display & Lighting Render (Write to Canvas Screen)
-      // ============================================================
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.useProgram(displayProgram);
