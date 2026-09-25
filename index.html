@@ -252,7 +252,7 @@
     <div id="hud" class="panel">
       Input: <span id="input-type">Apple Pencil / Touch</span><br>
       Body: <span id="pose-status-val">Waiting...</span><br>
-      Physics: <span id="influence-mode-hud">Water Ripples</span> | Plane: <span id="plane-tilt-hud">Flat 2D</span>
+      Physics: <span id="influence-mode-hud">Water Ripples</span> | Plane: <span id="plane-tilt-hud">Tilt 38°</span>
     </div>
 
     <div class="panel">
@@ -345,13 +345,12 @@
 
         <div class="sub-heading">Kinematics & 3D Perspective Flight</div>
 
-        <!-- 3D Ground Plane Tilt Slider -->
         <div class="slider-row">
           <div class="slider-header">
             <span>3D Ground Plane Tilt</span>
             <span id="plane-tilt-num" class="val">38°</span>
           </div>
-          <input type="range" id="sl-plane-tilt" min="0" max="65" step="1" value="38">
+          <input type="range" id="sl-plane-tilt" min="0" max="62" step="1" value="38">
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
@@ -641,7 +640,7 @@
       }
     `;
 
-    // Perspective-Aware Multi-Physics Simulation Shader
+    // Perspective Ground Plane Physics Simulation
     const simFS = `
       precision highp float;
       varying vec2 v_uv;
@@ -653,7 +652,7 @@
       uniform float u_hand_force;
       uniform float u_influence_mode;
       uniform float u_ripple_freq;
-      uniform float u_plane_tilt; // Ground plane pitch in radians
+      uniform float u_plane_tilt;
       uniform float u_time;
 
       uniform vec2 u_mouse;
@@ -675,31 +674,29 @@
       vec2 calcImpulse(vec2 st, vec2 targetPos, vec2 vel, float active, float forceMult) {
         if (active < 0.01) return vec2(0.0);
 
-        // Perspective depth factor based on target Y position
-        float depth = 1.0;
-        if (u_plane_tilt > 0.01) {
-          float sinP = sin(u_plane_tilt);
-          float cosP = cos(u_plane_tilt);
-          float yHorizon = (sinP / cosP) * 1.2;
-          // Normalized depth scaling: bottom of screen (-1.0) = 1.3, near horizon = 0.15
-          float normY = clamp((yHorizon - targetPos.y) / (yHorizon + 1.0), 0.14, 1.3);
-          depth = normY;
-        }
+        float FL = 1.7;
+        float k = tan(u_plane_tilt) / FL;
+        
+        // Exact projective divisor W: large near bottom, small near top
+        float W_target = clamp(1.0 - k * targetPos.y, 0.12, 1.85);
+        float cosTilt = cos(u_plane_tilt);
 
+        // Compress Y-axis distance so circular ripples on the ground project as perspective ellipses
         vec2 toTarget = st - targetPos;
-        float d = length(toTarget);
-        vec2 dir = toTarget / (d + 0.001);
+        vec2 toTargetPlane = vec2(toTarget.x, toTarget.y / max(cosTilt, 0.25));
+        
+        // Distance scaled by W: high in frame = tight ripples, low in frame = broad tidal waves
+        float dScaled = length(toTargetPlane) / W_target;
+        vec2 dir = toTarget / (length(toTarget) + 0.001);
         float speed = length(vel);
         vec2 impulse = vec2(0.0);
 
-        // Scaled spatial distance: higher targets in the distance have a tighter footprint
-        float dScaled = d / depth;
-        float effectiveForce = active * forceMult * depth;
+        float effectiveForce = active * forceMult * W_target;
 
         if (u_influence_mode < 0.5) { // Viscous Drag
           float f = exp(-dScaled * 3.2) * effectiveForce;
           impulse += vel * f * 1.4;
-          vec2 v = vec2(-toTarget.y, toTarget.x) / (d + 0.15 * depth);
+          vec2 v = vec2(-toTarget.y, toTarget.x) / (dScaled + 0.15 * W_target);
           impulse += v * f * 0.85;
         }
         else if (u_influence_mode < 1.5) { // Water Wake & Ripples
@@ -713,7 +710,7 @@
         }
         else if (u_influence_mode < 2.5) { // Vortex
           float f = exp(-dScaled * 2.8) * effectiveForce;
-          vec2 vortex = vec2(-toTarget.y, toTarget.x) / (d + 0.09 * depth);
+          vec2 vortex = vec2(-toTarget.y, toTarget.x) / (dScaled + 0.09 * W_target);
           impulse += vortex * (f * (1.2 + speed * 3.0));
           impulse += vel * (f * 0.6);
         }
@@ -756,7 +753,7 @@
       }
     `;
 
-    // 3D Perspective-Tilted Display Shader
+    // 3D Perspective Ray-Plane Display Shader
     const displayFS = `
       precision highp float;
       varying vec2 v_uv;
@@ -782,7 +779,7 @@
       uniform float u_speed;
       uniform float u_warp_scale;
       uniform float u_flow_stretch;
-      uniform float u_plane_tilt; // Ground pitch tilt angle
+      uniform float u_plane_tilt;
 
       uniform vec2 u_head;
       uniform float u_head_active;
@@ -882,49 +879,42 @@
         return newUV;
       }
 
-      // Exact 3D Ray-Plane Projection (Camera angled at horizontal floor)
-      vec2 getTiltedGroundCoords(vec2 st, out float fog) {
-        if (u_plane_tilt < 0.01) {
+      // Mathematical Pinhole Camera Ray Projection to 3D Ground Plane
+      vec2 getGroundCoords(vec2 screenST, float tiltAngle, out float depthFactor, out float fog) {
+        if (tiltAngle < 0.005) {
+          depthFactor = 1.0;
           fog = 0.0;
-          return st;
+          return screenST;
         }
 
-        float pitch = u_plane_tilt;
-        float sinP = sin(pitch);
-        float cosP = cos(pitch);
+        float FL = 1.7;
+        float k = tan(tiltAngle) / FL;
+        float W = 1.0 - k * screenST.y;
 
-        float h = 1.35;
-        float fov = 1.25;
-
-        // Camera ray through screen coord
-        float Ry = (st.y / fov) * cosP - sinP;
-        float Rz = (st.y / fov) * sinP + cosP;
-        float Rx = st.x / fov;
-
-        // Horizon clipping with smooth atmospheric blend
-        if (Ry >= -0.01) {
+        if (W <= 0.04) {
           fog = 1.0;
-          return vec2(st.x * 20.0, 100.0);
+          depthFactor = 0.04;
+          return vec2(screenST.x * 20.0, 100.0);
         }
 
-        float t = -h / Ry; // Ray distance to ground plane Y = 0
-        float Px = t * Rx;
-        float Pz = t * Rz;
+        depthFactor = clamp(W, 0.08, 1.85);
+        float cosT = cos(tiltAngle);
 
-        // Soft fog as ground approaches horizon
-        fog = smoothstep(-0.28, -0.01, Ry);
+        // True 3D ground coordinates
+        vec2 ground = vec2(screenST.x / W, screenST.y / (W * cosT));
 
-        return vec2(Px * 0.72, (Pz - 1.2) * 0.52);
+        // Atmospheric horizon haze
+        fog = smoothstep(0.32, 0.04, W);
+
+        return ground;
       }
 
-      vec3 evaluateScene(vec2 st, vec2 screenUV) {
+      vec3 evaluateScene(vec2 st, vec2 screenUV, float depthFactor) {
         float t = u_time * u_speed;
 
+        // Apply physical fluid displacement scaled by 3D ground perspective
         vec2 paintDisplacement = texture2D(u_simTexture, screenUV).xy;
-        if (u_plane_tilt > 0.01) {
-          paintDisplacement.y *= cos(u_plane_tilt);
-        }
-        st += paintDisplacement;
+        st += paintDisplacement / depthFactor;
 
         float rad = u_flow_angle;
         mat2 alignFlow = mat2(cos(rad), sin(rad), -sin(rad), cos(rad));
@@ -992,19 +982,28 @@
         float fold = sin(f * (effectiveFreq * 0.45) + r.x * 2.5);
         float bands = smoothstep(0.15, 0.85, fold);
 
-        vec3 normal = normalize(vec3(-r.x * 1.8, -r.y * 1.8, 0.75));
-        vec3 lightDir = normalize(vec3(0.55, 0.75, 0.9));
-        vec3 viewDir = vec3(0.0, 0.0, 1.0);
-
+        // 3D Rotated Surface Normal in Camera Space
+        vec3 nBase = normalize(vec3(0.0, sin(u_plane_tilt), cos(u_plane_tilt)));
+        vec3 normal = normalize(nBase + vec3(-r.x * 1.8, -r.y * 1.8 * cos(u_plane_tilt), r.y * 1.8 * sin(u_plane_tilt)));
+        
+        vec3 lightDir = normalize(vec3(0.35, 0.85, 0.45));
+        vec3 viewDir = normalize(vec3(-st.x * 0.2, -st.y * 0.2, 1.0));
         vec3 halfVec = normalize(lightDir + viewDir);
-        float spec = pow(max(dot(normal, halfVec), 0.0), 16.0) * u_specular_shimmer;
+
+        float spec = pow(max(dot(normal, halfVec), 0.0), 18.0) * u_specular_shimmer;
+        
+        // Grazing Fresnel effect: reflections intensify dramatically near the tilted horizon
         float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0) * u_rim_glow;
 
         vec3 finalColor;
 
         if (u_use_image > 0.5) {
           vec2 baseUV;
-          if (u_kaleido_segs > 1.5) {
+          if (u_plane_tilt > 0.01) {
+            // Map image to 3D perspective ground plane
+            vec2 groundUV = st * 0.45 + 0.5;
+            baseUV = getCoverUV(clamp(groundUV, 0.0, 1.0), u_resolution, u_image_resolution);
+          } else if (u_kaleido_segs > 1.5) {
             vec2 foldedScreen = (st * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
             baseUV = getCoverUV(clamp(foldedScreen, 0.0, 1.0), u_resolution, u_image_resolution);
           } else {
@@ -1034,7 +1033,7 @@
 
           col += (u_col_crest * bands * 0.18) + (ridges * u_col_crest * u_ridge_weight);
           col += u_col_crest * spec * 0.65;
-          col += mix(u_col_cool_b, u_col_crest, 0.5) * fresnel;
+          col += mix(u_col_cool_b, u_col_crest, 0.65) * fresnel;
           col *= (0.75 + 0.45 * f * u_contrast);
           finalColor = col;
         }
@@ -1046,9 +1045,10 @@
         vec2 raw_st = (gl_FragCoord.xy * 2.0 - u_resolution) / min(u_resolution.x, u_resolution.y);
         vec3 finalColor = vec3(0.0);
 
-        // Ground Perspective Projection & Horizon Fog
+        // Perspective Ground Projection & Atmospheric Horizon Depth
+        float depthFactor = 1.0;
         float fog = 0.0;
-        vec2 st = getTiltedGroundCoords(raw_st, fog);
+        vec2 st = getGroundCoords(raw_st, u_plane_tilt, depthFactor, fog);
 
         if (u_kaleido_segs > 1.5) {
           float r = length(st);
@@ -1083,12 +1083,12 @@
               vec2 st2 = vec2(U2, V);
               vec2 screenUV2 = (vec2(cos(altA), sin(altA)) * max(r, 0.001) * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
 
-              vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
-              vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0));
+              vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0), depthFactor);
+              vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0), depthFactor);
               float blendFactor = smoothstep(0.0, blendWidth, d);
               finalColor = mix(mix(col1, col2, 0.5), col1, blendFactor);
             } else {
-              finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
+              finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0), depthFactor);
             }
 
             float coreGlow = exp(-r * 9.0) * 0.42;
@@ -1111,12 +1111,12 @@
                 vec2 st2 = vec2(cos(altA), sin(altA)) * rP;
                 vec2 screenUV2 = (st2 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
 
-                vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
-                vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0));
+                vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0), depthFactor);
+                vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0), depthFactor);
                 float blendFactor = smoothstep(0.0, blendWidth, d);
                 finalColor = mix(mix(col1, col2, 0.5), col1, blendFactor);
               } else {
-                finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
+                finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0), depthFactor);
               }
             } else {
               float foldA = modA;
@@ -1131,22 +1131,22 @@
                 vec2 st2 = vec2(cos(altA), sin(altA)) * rP;
                 vec2 screenUV2 = (st2 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
 
-                vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
-                vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0));
+                vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0), depthFactor);
+                vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0), depthFactor);
                 float blendFactor = smoothstep(0.0, blendWidth, d);
                 finalColor = mix(mix(col1, col2, 0.5), col1, blendFactor);
               } else {
-                finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
+                finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0), depthFactor);
               }
             }
           }
         } else {
-          finalColor = evaluateScene(st, v_uv);
+          finalColor = evaluateScene(st, v_uv, depthFactor);
         }
 
-        // Apply Atmospheric Horizon Fog when in 3D Perspective Mode
+        // Apply Horizon Atmospheric Glaze in 3D Perspective Mode
         if (fog > 0.0) {
-          vec3 horizonCol = mix(u_col_shadow, u_col_cool_a * 0.7, 0.55);
+          vec3 horizonCol = mix(u_col_shadow, u_col_cool_a * 0.75, 0.6) + u_col_crest * 0.2 * pow(max(raw_st.y, 0.0), 2.0);
           finalColor = mix(finalColor, horizonCol, fog);
         }
 
@@ -2186,7 +2186,7 @@
 
       const planeTiltRad = (parseFloat(sliders.planeTilt.value) * Math.PI) / 180.0;
 
-      // Pass state to Simulation Pass
+      // 1. Physical Simulation Pass (Ground Perspective Aware)
       gl.bindFramebuffer(gl.FRAMEBUFFER, writeFBO.fbo);
       gl.viewport(0, 0, simWidth, simHeight);
       gl.useProgram(simProgram);
@@ -2233,7 +2233,7 @@
 
       swapFBOs();
 
-      // Display Shader Pass with 3D Plane Tilt
+      // 2. Display Shader Pass (3D Perspective Plane & Rotated Lighting)
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.useProgram(displayProgram);
