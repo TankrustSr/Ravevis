@@ -408,7 +408,7 @@
 
         <div class="slider-row">
           <div class="slider-header">
-            <span>Tunnel Scale / Aperture</span>
+            <span>Tunnel Aperture / Scale</span>
             <span id="k-zoom-num" class="val">1.00</span>
           </div>
           <input type="range" id="sl-k-zoom" min="0.3" max="3.0" step="0.05" value="1.00">
@@ -644,7 +644,7 @@
       }
     `;
 
-    // PASS 2: Display & Lighting Shader with Logarithmic Perspective Warp Speed
+    // PASS 2: Display & Lighting Shader with Invariant Conformal Tunnel Mapping
     const displayFS = `
       precision highp float;
       varying vec2 v_uv;
@@ -784,7 +784,10 @@
         // Steerable Directional Flow Alignment
         float rad = u_flow_angle;
         mat2 alignFlow = mat2(cos(rad), sin(rad), -sin(rad), cos(rad));
-        vec2 p = alignFlow * st * vec2(0.55, u_flow_stretch);
+
+        // In Warp Mode, use balanced aspect scaling (1.0, 0.75) so Z-axis ribbons stay relaxed and wide
+        vec2 aspectScale = u_is_warp_mode > 0.5 ? vec2(1.0, 0.75) : vec2(0.55, u_flow_stretch);
+        vec2 p = alignFlow * st * aspectScale;
 
         vec2 q = vec2(0.0);
         vec2 r = vec2(0.0);
@@ -830,7 +833,7 @@
           basePattern = mix(f, stepped, u_step_quant);
         }
 
-        // Relaxed contour frequencies in Warp Mode to preserve broad, silky ribbon legibility
+        // Slightly relaxed contour frequency in Warp Mode preserves broad, silky ribbon legibility
         float effectiveFreq = u_is_warp_mode > 0.5 ? (u_contour_freq * 0.65) : u_contour_freq;
         float chromaOffset = u_chroma_aberration * 0.22;
         
@@ -909,63 +912,92 @@
           float modA = mod(a, segAngle);
           if (modA < 0.0) modA += segAngle;
 
-          // LOGARITHMIC PERSPECTIVE WARP MAPPING:
-          // log(r) prevents high-frequency compression near the center and expands ribbons naturally.
-          float logR = log(r * 1.6 + 0.035);
-          float warpCoord = (logR * 1.35 * u_kaleido_zoom) - u_travel_dist;
-          float rP = u_is_warp_mode > 0.5 ? warpCoord : (pow(max(r, 0.0001), u_kaleido_pinch) * u_kaleido_zoom);
-
-          if (u_kaleido_mirror > 0.5) {
-            float H = segAngle * 0.5;
-            float foldA = abs(modA - H);
-            float d = min(foldA, H - foldA);
-            float blendWidth = u_kaleido_blur * (H * 0.5);
-
-            vec2 dir1 = vec2(cos(foldA), sin(foldA));
-            vec2 st1 = dir1 * rP;
-            vec2 screenUV1 = (dir1 * max(r, 0.001) * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
-
-            if (u_kaleido_blur > 0.005 && blendWidth > 0.0001) {
-              float altA = (foldA < H * 0.5) ? -foldA : (2.0 * H - foldA);
-              vec2 dir2 = vec2(cos(altA), sin(altA));
-              vec2 st2 = dir2 * rP;
-              vec2 screenUV2 = (dir2 * max(r, 0.001) * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
-
-              vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
-              vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0));
-              float blendFactor = smoothstep(0.0, blendWidth, d);
-              finalColor = mix(mix(col1, col2, 0.5), col1, blendFactor);
-            } else {
-              finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
-            }
-          } else {
-            float foldA = modA;
-            float d = min(foldA, segAngle - foldA);
-            float blendWidth = u_kaleido_blur * (segAngle * 0.5);
-
-            vec2 dir1 = vec2(cos(foldA), sin(foldA));
-            vec2 st1 = dir1 * rP;
-            vec2 screenUV1 = (dir1 * max(r, 0.001) * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
-
-            if (u_kaleido_blur > 0.005 && blendWidth > 0.0001) {
-              float altA = (foldA < segAngle * 0.5) ? (foldA + segAngle) : (foldA - segAngle);
-              vec2 dir2 = vec2(cos(altA), sin(altA));
-              vec2 st2 = dir2 * rP;
-              vec2 screenUV2 = (dir2 * max(r, 0.001) * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
-
-              vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
-              vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0));
-              float blendFactor = smoothstep(0.0, blendWidth, d);
-              finalColor = mix(mix(col1, col2, 0.5), col1, blendFactor);
-            } else {
-              finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
-            }
-          }
-
-          // Vanishing point singularity aperture glow
           if (u_is_warp_mode > 0.5) {
-            float coreGlow = exp(-r * 8.5) * 0.45;
+            // --- CONFORMAL CYLINDRICAL TUNNEL MAPPING ---
+            // Metric ratio (dU / dPhysical) == (dV / dPhysical) = tunnelScale / r everywhere.
+            // Aspect ratio is locked 1:1, permanently eliminating Z-axis compression over time.
+            float tunnelScale = 1.9 * u_kaleido_zoom;
+            float V = log(max(r, 0.003)) * tunnelScale - u_travel_dist;
+
+            float H = segAngle * 0.5;
+            float foldA = (u_kaleido_mirror > 0.5) ? abs(modA - H) : modA;
+            float d = (u_kaleido_mirror > 0.5) ? min(foldA, H - foldA) : min(foldA, segAngle - foldA);
+            float maxBlendDist = (u_kaleido_mirror > 0.5) ? (H * 0.5) : (segAngle * 0.5);
+            float blendWidth = u_kaleido_blur * maxBlendDist;
+
+            float U1 = foldA * tunnelScale;
+            vec2 st1 = vec2(U1, V);
+            vec2 screenUV1 = (vec2(cos(foldA), sin(foldA)) * max(r, 0.001) * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
+
+            if (u_kaleido_blur > 0.005 && blendWidth > 0.0001) {
+              float altA;
+              if (u_kaleido_mirror > 0.5) {
+                altA = (foldA < H * 0.5) ? -foldA : (2.0 * H - foldA);
+              } else {
+                altA = (foldA < segAngle * 0.5) ? (foldA + segAngle) : (foldA - segAngle);
+              }
+              float U2 = altA * tunnelScale;
+              vec2 st2 = vec2(U2, V);
+              vec2 screenUV2 = (vec2(cos(altA), sin(altA)) * max(r, 0.001) * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
+
+              vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
+              vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0));
+              float blendFactor = smoothstep(0.0, blendWidth, d);
+              finalColor = mix(mix(col1, col2, 0.5), col1, blendFactor);
+            } else {
+              finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
+            }
+
+            // Vanishing point singularity aperture glow at tunnel focal core
+            float coreGlow = exp(-r * 9.0) * 0.42;
             finalColor += u_col_crest * coreGlow;
+
+          } else {
+            // --- CLASSIC POLAR KALEIDOSCOPE FOLD (Standard Modes) ---
+            float rP = pow(max(r, 0.0001), u_kaleido_pinch) * u_kaleido_zoom;
+
+            if (u_kaleido_mirror > 0.5) {
+              float H = segAngle * 0.5;
+              float foldA = abs(modA - H);
+              float d = min(foldA, H - foldA);
+              float blendWidth = u_kaleido_blur * (H * 0.5);
+
+              vec2 st1 = vec2(cos(foldA), sin(foldA)) * rP;
+              vec2 screenUV1 = (st1 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
+
+              if (u_kaleido_blur > 0.005 && blendWidth > 0.0001) {
+                float altA = (foldA < H * 0.5) ? -foldA : (2.0 * H - foldA);
+                vec2 st2 = vec2(cos(altA), sin(altA)) * rP;
+                vec2 screenUV2 = (st2 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
+
+                vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
+                vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0));
+                float blendFactor = smoothstep(0.0, blendWidth, d);
+                finalColor = mix(mix(col1, col2, 0.5), col1, blendFactor);
+              } else {
+                finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
+              }
+            } else {
+              float foldA = modA;
+              float d = min(foldA, segAngle - foldA);
+              float blendWidth = u_kaleido_blur * (segAngle * 0.5);
+
+              vec2 st1 = vec2(cos(foldA), sin(foldA)) * rP;
+              vec2 screenUV1 = (st1 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
+
+              if (u_kaleido_blur > 0.005 && blendWidth > 0.0001) {
+                float altA = (foldA < segAngle * 0.5) ? (foldA + segAngle) : (foldA - segAngle);
+                vec2 st2 = vec2(cos(altA), sin(altA)) * rP;
+                vec2 screenUV2 = (st2 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
+
+                vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
+                vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0));
+                float blendFactor = smoothstep(0.0, blendWidth, d);
+                finalColor = mix(mix(col1, col2, 0.5), col1, blendFactor);
+              } else {
+                finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
+              }
+            }
           }
         } else {
           finalColor = evaluateScene(raw_st, v_uv);
@@ -1841,13 +1873,12 @@
           // 4. Hand X Distance Uncompresses & Expands Tunnel Aperture / Ribbon Scale
           const spanX = Math.abs(rightCur.x - leftCur.x) / window.innerWidth;
           const normSpan = Math.min(Math.max((spanX - 0.15) / 0.55, 0.0), 1.0);
-          // Wide hands = smaller coordinate multiplier (broader, majestic, uncompressed folds)
-          const targetZoom = mix(1.4, 0.65, normSpan);
+          const targetZoom = mix(1.35, 0.65, normSpan);
           smoothZoom += (targetZoom - smoothZoom) * 0.12;
         } else {
           smoothBankDeg += (0.0 - smoothBankDeg) * 0.05;
-          smoothWarpSpeed += (0.45 - smoothWarpSpeed) * 0.05;
-          smoothZoom += (0.95 - smoothZoom) * 0.05;
+          smoothWarpSpeed += (0.50 - smoothWarpSpeed) * 0.05;
+          smoothZoom += (1.0 - smoothZoom) * 0.05;
         }
 
         // Apply Corner Seam Orientation (45° neutral) + Smooth Aircraft Banking
@@ -1861,8 +1892,8 @@
         sliders.kZoom.value = smoothZoom.toFixed(2);
         numDisplays.kZoom.textContent = smoothZoom.toFixed(2);
 
-        // Continuous Warp Flight Integration (no phase skips or jumpy restarts)
-        travelDist += smoothWarpSpeed * dt * 1.4;
+        // Continuous Warp Flight Integration
+        travelDist += smoothWarpSpeed * dt * 1.6;
 
       } else if (animMode === 'manual') {
         currentAngleDeg = parseFloat(sliders.angle.value);
