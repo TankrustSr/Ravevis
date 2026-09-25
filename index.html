@@ -1879,10 +1879,15 @@
       if (animMode === 'manual') {
         currentAngleDeg = parseFloat(sliders.angle.value);
       } else if (animMode === 'pour_hands') {
-        // Evaluate higher hand vs lower hand
         if (leftCur.active > 0.5 && rightCur.active > 0.5) {
           isPourActive = 1.0;
-          if (leftCur.y >= rightCur.y) {
+
+          // Normalized relative positions
+          const dy = (leftCur.y - rightCur.y) / window.innerHeight; // Positive = Left high, Negative = Right high
+          const dx = (rightCur.x - leftCur.x) / window.innerWidth;
+
+          // Assign spout vs basin
+          if (dy >= 0.0) {
             highHand = leftCur;
             lowHand = rightCur;
           } else {
@@ -1890,17 +1895,19 @@
             lowHand = leftCur;
           }
 
-          // Vector from higher hand down to lower hand
-          const dx = lowHand.x - highHand.x;
-          const dy = lowHand.y - highHand.y; // Negative because lower hand has smaller Y
+          // --- CONTINUOUS GRAVITY ARC VECTOR ---
+          // Lateral drive scales with height delta; drops to 0 when hands are level
+          const vX = dx * dy * 2.4;
+          // Downward drive: constant gravity pull + extra drop velocity
+          const vY = -(0.38 + Math.abs(dy) * 0.7);
 
-          // Align the global flow direction down the stream
-          const targetAngle = (Math.atan2(dy, dx) * 180.0) / Math.PI;
+          // Arcs continuously through -90° (downward) instead of jumping 180°
+          const targetAngle = (Math.atan2(vY, vX) * 180.0) / Math.PI;
 
           let diff = (targetAngle - currentAngleDeg) % 360.0;
           if (diff > 180.0)  diff -= 360.0;
           if (diff < -180.0) diff += 360.0;
-          currentAngleDeg += diff * 0.18;
+          currentAngleDeg += diff * 0.15;
 
           if (currentAngleDeg > 180.0)  currentAngleDeg -= 360.0;
           if (currentAngleDeg < -180.0) currentAngleDeg += 360.0;
@@ -1908,9 +1915,10 @@
           sliders.angle.value = currentAngleDeg;
           numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
 
-          // Pour intensity scales with physical elevation difference
-          const elevationDelta = Math.max((highHand.y - lowHand.y) / window.innerHeight, 0.0);
-          pourStrength = Math.min(elevationDelta * 3.5, 2.5) * parseFloat(sliders.handForce.value);
+          // Soft 2% elevation deadzone so the simulation conduit hand-swap is completely silent
+          const elev = Math.abs(dy);
+          const smoothElev = Math.max(0.0, elev - 0.02);
+          pourStrength = Math.min(smoothElev * 4.0, 2.5) * parseFloat(sliders.handForce.value);
         }
       } else if (animMode === 'body_arms') {
         if (leftCur.active > 0.5 && rightCur.active > 0.5) {
