@@ -253,7 +253,7 @@
     <div id="hud" class="panel">
       Input: <span id="input-type">Apple Pencil / Touch</span><br>
       Body: <span id="pose-status-val">Waiting...</span><br>
-      Engine: <span id="engine-val">Laminar Silk</span> | Flow: <span id="flow-mode-val">Kaleido Tunnel</span>
+      Engine: <span id="engine-val">Laminar Silk</span> | Mode: <span id="flow-mode-val">Warp Tunnel</span>
     </div>
 
     <div class="panel">
@@ -319,11 +319,11 @@
           </select>
         </div>
 
-        <div class="sub-heading">Kinematics & Vector Flow</div>
+        <div class="sub-heading">Kinematics & Perspective Flight</div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
           <span class="slider-header" style="margin:0;">Rotation Mode</span>
           <select id="sl-angle-anim">
-            <option value="body_kaleido" selected>🌀 Body Kaleido Tunnel</option>
+            <option value="body_kaleido" selected>🚀 Warp Tunnel (Body Bank & Speed)</option>
             <option value="manual">Manual (Slider)</option>
             <option value="body_arms">Track Arm Angle (Pose)</option>
             <option value="pour_hands">💧 Pour Between Hands (Gravity Cascade)</option>
@@ -335,23 +335,23 @@
         
         <div class="slider-row">
           <div class="slider-header">
-            <span>Flow Direction</span>
-            <span id="angle-num" class="val">37°</span>
+            <span>Flow / Bank Angle</span>
+            <span id="angle-num" class="val">0°</span>
           </div>
-          <input type="range" id="sl-angle" min="-180" max="180" step="1" value="37">
+          <input type="range" id="sl-angle" min="-180" max="180" step="1" value="0">
         </div>
 
         <div class="slider-row">
           <div class="slider-header">
-            <span>Rotation Speed</span>
-            <span id="rot-speed-num" class="val">1.00x</span>
+            <span>Warp Throttle (Speed)</span>
+            <span id="rot-speed-num" class="val">0.65x</span>
           </div>
-          <input type="range" id="sl-rot-speed" min="0.01" max="4.0" step="0.01" value="1.00">
+          <input type="range" id="sl-rot-speed" min="0.00" max="2.0" step="0.02" value="0.65">
         </div>
 
         <div class="slider-row">
           <div class="slider-header">
-            <span>Drift Speed</span>
+            <span>Ambient Drift</span>
             <span id="speed-num" class="val">0.035</span>
           </div>
           <input type="range" id="sl-speed" min="0.0" max="0.12" step="0.002" value="0.035">
@@ -373,42 +373,42 @@
           <input type="range" id="sl-stretch" min="0.3" max="4.0" step="0.05" value="1.40">
         </div>
 
-        <div class="sub-heading">Kaleidoscope Symmetry</div>
+        <div class="sub-heading">Perspective Corridor / Kaleidoscope</div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
           <span class="slider-header" style="margin:0;">Symmetry Mode</span>
           <select id="sl-k-mode">
-            <option value="1">Mirror (Mandala)</option>
+            <option value="1" selected>Mirror (Corner Vanishing Point)</option>
             <option value="0">Repeat (Pinwheel)</option>
           </select>
         </div>
 
         <div class="slider-row">
           <div class="slider-header">
-            <span>Symmetry Petals</span>
-            <span id="k-segs-num" class="val">6 Petals</span>
+            <span>Petals (Locked in Warp Mode)</span>
+            <span id="k-segs-num" class="val">4 Petals</span>
           </div>
-          <input type="range" id="sl-k-segs" min="1" max="24" step="1" value="6">
+          <input type="range" id="sl-k-segs" min="1" max="24" step="1" value="4">
         </div>
 
         <div class="slider-row">
           <div class="slider-header">
-            <span>Sector Seam Blur</span>
-            <span id="k-blur-num" class="val">0.00</span>
+            <span>Corner Seam Blur</span>
+            <span id="k-blur-num" class="val">0.08</span>
           </div>
-          <input type="range" id="sl-k-blur" min="0.0" max="1.0" step="0.01" value="0.00">
+          <input type="range" id="sl-k-blur" min="0.0" max="1.0" step="0.01" value="0.08">
         </div>
 
         <div class="slider-row">
           <div class="slider-header">
-            <span>Chamber Rotation</span>
-            <span id="k-angle-num" class="val">0°</span>
+            <span>Chamber Bank Angle</span>
+            <span id="k-angle-num" class="val">45°</span>
           </div>
-          <input type="range" id="sl-k-angle" min="0" max="360" step="1" value="0">
+          <input type="range" id="sl-k-angle" min="0" max="360" step="1" value="45">
         </div>
 
         <div class="slider-row">
           <div class="slider-header">
-            <span>Radial Zoom</span>
+            <span>Tunnel Scale / Aperture</span>
             <span id="k-zoom-num" class="val">1.00</span>
           </div>
           <input type="range" id="sl-k-zoom" min="0.3" max="3.0" step="0.05" value="1.00">
@@ -416,7 +416,7 @@
 
         <div class="slider-row">
           <div class="slider-header">
-            <span>Vortex Pinch</span>
+            <span>Perspective Pinch</span>
             <span id="k-pinch-num" class="val">1.00</span>
           </div>
           <input type="range" id="sl-k-pinch" min="0.4" max="2.5" step="0.05" value="1.00">
@@ -426,9 +426,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Contour Frequency</span>
-            <span id="density-num" class="val">24.0</span>
+            <span id="density-num" class="val">18.0</span>
           </div>
-          <input type="range" id="sl-density" min="4.0" max="72.0" step="1.0" value="24.0">
+          <input type="range" id="sl-density" min="4.0" max="72.0" step="1.0" value="18.0">
         </div>
 
         <div class="slider-row">
@@ -644,7 +644,7 @@
       }
     `;
 
-    // PASS 2: Display & Lighting Shader with Emanating Tunnel Logic
+    // PASS 2: Display & Lighting Shader with Logarithmic Perspective Warp Speed
     const displayFS = `
       precision highp float;
       varying vec2 v_uv;
@@ -657,14 +657,15 @@
       uniform float u_use_image;
       uniform float u_shader_type;
 
-      // Kaleidoscope & Emanate Controls
+      // Kaleidoscope & Warp Corridor Controls
       uniform float u_kaleido_segs;
       uniform float u_kaleido_angle;
       uniform float u_kaleido_zoom;
       uniform float u_kaleido_pinch;
       uniform float u_kaleido_mirror;
       uniform float u_kaleido_blur;
-      uniform float u_emanate_speed;
+      uniform float u_travel_dist;
+      uniform float u_is_warp_mode;
 
       // Kinematics & Flow
       uniform float u_flow_angle;
@@ -829,12 +830,13 @@
           basePattern = mix(f, stepped, u_step_quant);
         }
 
-        float freq = u_contour_freq;
+        // Relaxed contour frequencies in Warp Mode to preserve broad, silky ribbon legibility
+        float effectiveFreq = u_is_warp_mode > 0.5 ? (u_contour_freq * 0.65) : u_contour_freq;
         float chromaOffset = u_chroma_aberration * 0.22;
         
-        float ridgeR = abs(sin(basePattern * freq + (r.x + r.y) * 1.5 + chromaOffset));
-        float ridgeG = abs(sin(basePattern * freq + (r.x + r.y) * 1.5));
-        float ridgeB = abs(sin(basePattern * freq + (r.x + r.y) * 1.5 - chromaOffset));
+        float ridgeR = abs(sin(basePattern * effectiveFreq + (r.x + r.y) * 1.5 + chromaOffset));
+        float ridgeG = abs(sin(basePattern * effectiveFreq + (r.x + r.y) * 1.5));
+        float ridgeB = abs(sin(basePattern * effectiveFreq + (r.x + r.y) * 1.5 - chromaOffset));
 
         vec3 ridges = vec3(
           smoothstep(0.65, 0.95, ridgeR),
@@ -842,7 +844,7 @@
           smoothstep(0.65, 0.95, ridgeB)
         );
 
-        float fold = sin(f * (u_contour_freq * 0.45) + r.x * 2.5);
+        float fold = sin(f * (effectiveFreq * 0.45) + r.x * 2.5);
         float bands = smoothstep(0.15, 0.85, fold);
 
         vec3 normal = normalize(vec3(-r.x * 1.8, -r.y * 1.8, 0.75));
@@ -907,9 +909,11 @@
           float modA = mod(a, segAngle);
           if (modA < 0.0) modA += segAngle;
 
-          float rP = pow(max(r, 0.0001), u_kaleido_pinch) * u_kaleido_zoom;
-          // Outward radial emanate wave (tunnel traveling flight)
-          float rEmanate = rP - u_time * u_emanate_speed;
+          // LOGARITHMIC PERSPECTIVE WARP MAPPING:
+          // log(r) prevents high-frequency compression near the center and expands ribbons naturally.
+          float logR = log(r * 1.6 + 0.035);
+          float warpCoord = (logR * 1.35 * u_kaleido_zoom) - u_travel_dist;
+          float rP = u_is_warp_mode > 0.5 ? warpCoord : (pow(max(r, 0.0001), u_kaleido_pinch) * u_kaleido_zoom);
 
           if (u_kaleido_mirror > 0.5) {
             float H = segAngle * 0.5;
@@ -917,15 +921,15 @@
             float d = min(foldA, H - foldA);
             float blendWidth = u_kaleido_blur * (H * 0.5);
 
-            vec2 dir = vec2(cos(foldA), sin(foldA));
-            vec2 st1 = dir * rEmanate;
-            vec2 screenUV1 = (dir * rP * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
+            vec2 dir1 = vec2(cos(foldA), sin(foldA));
+            vec2 st1 = dir1 * rP;
+            vec2 screenUV1 = (dir1 * max(r, 0.001) * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
 
             if (u_kaleido_blur > 0.005 && blendWidth > 0.0001) {
               float altA = (foldA < H * 0.5) ? -foldA : (2.0 * H - foldA);
               vec2 dir2 = vec2(cos(altA), sin(altA));
-              vec2 st2 = dir2 * rEmanate;
-              vec2 screenUV2 = (dir2 * rP * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
+              vec2 st2 = dir2 * rP;
+              vec2 screenUV2 = (dir2 * max(r, 0.001) * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
 
               vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
               vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0));
@@ -939,15 +943,15 @@
             float d = min(foldA, segAngle - foldA);
             float blendWidth = u_kaleido_blur * (segAngle * 0.5);
 
-            vec2 dir = vec2(cos(foldA), sin(foldA));
-            vec2 st1 = dir * rEmanate;
-            vec2 screenUV1 = (dir * rP * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
+            vec2 dir1 = vec2(cos(foldA), sin(foldA));
+            vec2 st1 = dir1 * rP;
+            vec2 screenUV1 = (dir1 * max(r, 0.001) * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
 
             if (u_kaleido_blur > 0.005 && blendWidth > 0.0001) {
               float altA = (foldA < segAngle * 0.5) ? (foldA + segAngle) : (foldA - segAngle);
               vec2 dir2 = vec2(cos(altA), sin(altA));
-              vec2 st2 = dir2 * rEmanate;
-              vec2 screenUV2 = (dir2 * rP * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
+              vec2 st2 = dir2 * rP;
+              vec2 screenUV2 = (dir2 * max(r, 0.001) * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
 
               vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
               vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0));
@@ -956,6 +960,12 @@
             } else {
               finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
             }
+          }
+
+          // Vanishing point singularity aperture glow
+          if (u_is_warp_mode > 0.5) {
+            float coreGlow = exp(-r * 8.5) * 0.45;
+            finalColor += u_col_crest * coreGlow;
           }
         } else {
           finalColor = evaluateScene(raw_st, v_uv);
@@ -1043,7 +1053,8 @@
     const dispKPinchLoc    = gl.getUniformLocation(displayProgram, 'u_kaleido_pinch');
     const dispKMirrorLoc   = gl.getUniformLocation(displayProgram, 'u_kaleido_mirror');
     const dispKBlurLoc     = gl.getUniformLocation(displayProgram, 'u_kaleido_blur');
-    const dispEmanateLoc   = gl.getUniformLocation(displayProgram, 'u_emanate_speed');
+    const dispTravelDistLoc= gl.getUniformLocation(displayProgram, 'u_travel_dist');
+    const dispIsWarpLoc    = gl.getUniformLocation(displayProgram, 'u_is_warp_mode');
 
     const dispAngleLoc     = gl.getUniformLocation(displayProgram, 'u_flow_angle');
     const dispSpeedLoc     = gl.getUniformLocation(displayProgram, 'u_speed');
@@ -1248,15 +1259,13 @@
       engineValHUD.textContent = engineNames[currentEngine];
     });
 
-    let currentAngleDeg = 37.0;
+    let currentAngleDeg = 0.0;
+    let smoothBankDeg = 0.0;
+    let smoothWarpSpeed = 0.65;
+    let smoothZoom = 1.0;
+    let travelDist = 0.0;
     let pingPongPhase = 0.0;
     let lastAnimTime = performance.now();
-
-    // Body Kaleido Tunnel Smoothed State
-    let smoothPetals = 6.0;
-    let smoothRotSpeed = 0.5;
-    let kaleidoChamberAngle = 0.0;
-    let emanateSpeed = 0.0;
 
     const animModeSelect = document.getElementById('sl-angle-anim');
     const flowModeHUD = document.getElementById('flow-mode-val');
@@ -1264,10 +1273,10 @@
     animModeSelect.addEventListener('pointerdown', (e) => e.stopPropagation());
     animModeSelect.addEventListener('change', () => {
       const mode = animModeSelect.value;
-      if (mode === 'manual') flowModeHUD.textContent = 'Manual';
+      if (mode === 'body_kaleido') flowModeHUD.textContent = 'Warp Tunnel';
+      else if (mode === 'manual') flowModeHUD.textContent = 'Manual';
       else if (mode === 'body_arms') flowModeHUD.textContent = 'Arm Angle (Pose)';
       else if (mode === 'pour_hands') flowModeHUD.textContent = 'Cascade Pour';
-      else if (mode === 'body_kaleido') flowModeHUD.textContent = 'Kaleido Tunnel';
       else if (mode === 'continuous_cw') flowModeHUD.textContent = 'CW Loop';
       else if (mode === 'continuous_ccw') flowModeHUD.textContent = 'CCW Loop';
       else if (mode === 'pingpong') {
@@ -1492,12 +1501,11 @@
       e.stopPropagation();
       canvas.toBlob(async (blob) => {
         if (!blob) return;
-        const kTag = sliders.kSegs.value > 1 ? `-kaleido-${sliders.kSegs.value}x` : '';
-        const fileName = `paint-${engineNames[currentEngine].toLowerCase().replace(/\s+/g, '-')}${kTag}-${Date.now()}.png`;
+        const fileName = `warp-tunnel-${Date.now()}.png`;
         const file = new File([blob], fileName, { type: 'image/png' });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try { await navigator.share({ files: [file], title: 'Permanent Paint Artwork' }); return; } catch (err) { if (err.name === 'AbortError') return; }
+          try { await navigator.share({ files: [file], title: 'Warp Speed Artwork' }); return; } catch (err) { if (err.name === 'AbortError') return; }
         }
         mediaContainer.innerHTML = `<img src="${URL.createObjectURL(blob)}" alt="Snapshot">`;
         modalMsg.innerHTML = 'Touch and hold image to tap <b>"Save to Photos"</b>';
@@ -1534,11 +1542,11 @@
 
         const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
         const blob = new Blob(recordedChunks, { type: mimeType });
-        const fileName = `paint-60fps-${Date.now()}.${ext}`;
+        const fileName = `warp-tunnel-60fps-${Date.now()}.${ext}`;
         const file = new File([blob], fileName, { type: mimeType });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try { await navigator.share({ files: [file], title: 'Persistent Paint Video' }); return; } catch (err) { if (err.name === 'AbortError') return; }
+          try { await navigator.share({ files: [file], title: 'Warp Tunnel Video' }); return; } catch (err) { if (err.name === 'AbortError') return; }
         }
         const videoUrl = URL.createObjectURL(blob);
         mediaContainer.innerHTML = `<video src="${videoUrl}" controls autoplay loop playsinline></video>`;
@@ -1615,7 +1623,7 @@
         return;
       }
 
-      poseStatusHUD.textContent = 'Advecting Paint with Body';
+      poseStatusHUD.textContent = 'Piloting Warp Corridor';
       const lm = results.poseLandmarks;
 
       // 1. Head tracking (Nose)
@@ -1803,47 +1811,62 @@
       const rotSpeedMult = parseFloat(sliders.rotSpeed.value);
       const baseAngularSpeed = 32.0;
 
-      if (animMode === 'manual') {
-        currentAngleDeg = parseFloat(sliders.angle.value);
-        emanateSpeed = 0.0;
-      } else if (animMode === 'body_kaleido') {
-        // --- BODY KALEIDO TUNNEL MODE ---
+      let isWarpMode = 0.0;
+
+      if (animMode === 'body_kaleido') {
+        isWarpMode = 1.0;
+
+        // 1. Lock Petals to 4 with mirror symmetry (4-wall perspective corridor)
+        sliders.kSegs.value = 4;
+        numDisplays.kSegs.textContent = '4 (Locked)';
+        slKMode.value = '1';
+
         if (leftCur.active > 0.5 && rightCur.active > 0.5) {
-          // 1. Arm distance in X -> Smoothly maps petals from 2 to 12
-          const spanX = Math.abs(rightCur.x - leftCur.x) / window.innerWidth;
-          const normSpan = Math.min(Math.max((spanX - 0.12) / 0.58, 0.0), 1.0);
-          const targetPetals = Math.round(2.0 + normSpan * 10.0);
-          smoothPetals += (targetPetals - smoothPetals) * 0.14;
-          const activePetals = Math.max(2, Math.min(12, Math.round(smoothPetals)));
-          sliders.kSegs.value = activePetals;
-          numDisplays.kSegs.textContent = `${activePetals} Petals`;
+          // 2. Smoothly Bank with the Angle Between Hands (0° = level horizontal)
+          const dx = rightCur.x - leftCur.x;
+          const dy = rightCur.y - leftCur.y;
+          const targetBank = (Math.atan2(dy, dx) * 180.0) / Math.PI;
 
-          // 2. Arm height in Y -> Smoothly maps rotation speed from 0.0 up to 1.5
+          let diff = (targetBank - smoothBankDeg) % 360.0;
+          if (diff > 180.0) diff -= 360.0;
+          if (diff < -180.0) diff += 360.0;
+          smoothBankDeg += diff * 0.14;
+
+          // 3. Hand Height (Y) Controls Forward Warp Speed (0.0 to 1.5)
           const avgY = ((leftCur.y + rightCur.y) * 0.5) / window.innerHeight;
-          const normY = Math.min(Math.max((avgY - 0.20) / 0.65, 0.0), 1.0);
+          const normY = Math.min(Math.max((avgY - 0.15) / 0.70, 0.0), 1.0);
           const targetSpeed = normY * 1.5;
-          smoothRotSpeed += (targetSpeed - smoothRotSpeed) * 0.12;
-          sliders.rotSpeed.value = smoothRotSpeed.toFixed(2);
-          numDisplays.rotSpeed.textContent = smoothRotSpeed.toFixed(2) + 'x';
+          smoothWarpSpeed += (targetSpeed - smoothWarpSpeed) * 0.12;
 
-          // 3. Drive continuous chamber rotation
-          kaleidoChamberAngle += 45.0 * smoothRotSpeed * dt;
-          if (kaleidoChamberAngle >= 360.0) kaleidoChamberAngle -= 360.0;
-          sliders.kAngle.value = Math.round(kaleidoChamberAngle);
-          numDisplays.kAngle.textContent = Math.round(kaleidoChamberAngle) + '°';
-
-          // 4. Outward radial flight velocity (emanating from center)
-          emanateSpeed = 0.22 + smoothRotSpeed * 0.35;
+          // 4. Hand X Distance Uncompresses & Expands Tunnel Aperture / Ribbon Scale
+          const spanX = Math.abs(rightCur.x - leftCur.x) / window.innerWidth;
+          const normSpan = Math.min(Math.max((spanX - 0.15) / 0.55, 0.0), 1.0);
+          // Wide hands = smaller coordinate multiplier (broader, majestic, uncompressed folds)
+          const targetZoom = mix(1.4, 0.65, normSpan);
+          smoothZoom += (targetZoom - smoothZoom) * 0.12;
         } else {
-          // Graceful fallback when tracking is acquiring body
-          emanateSpeed = 0.30;
-          kaleidoChamberAngle += 20.0 * dt;
-          if (kaleidoChamberAngle >= 360.0) kaleidoChamberAngle -= 360.0;
-          sliders.kAngle.value = Math.round(kaleidoChamberAngle);
-          numDisplays.kAngle.textContent = Math.round(kaleidoChamberAngle) + '°';
+          smoothBankDeg += (0.0 - smoothBankDeg) * 0.05;
+          smoothWarpSpeed += (0.45 - smoothWarpSpeed) * 0.05;
+          smoothZoom += (0.95 - smoothZoom) * 0.05;
         }
+
+        // Apply Corner Seam Orientation (45° neutral) + Smooth Aircraft Banking
+        const finalChamberAngle = 45.0 + smoothBankDeg;
+        sliders.kAngle.value = Math.round(finalChamberAngle);
+        numDisplays.kAngle.textContent = `${Math.round(smoothBankDeg)}° Bank`;
+
+        sliders.rotSpeed.value = smoothWarpSpeed.toFixed(2);
+        numDisplays.rotSpeed.textContent = smoothWarpSpeed.toFixed(2) + 'x';
+
+        sliders.kZoom.value = smoothZoom.toFixed(2);
+        numDisplays.kZoom.textContent = smoothZoom.toFixed(2);
+
+        // Continuous Warp Flight Integration (no phase skips or jumpy restarts)
+        travelDist += smoothWarpSpeed * dt * 1.4;
+
+      } else if (animMode === 'manual') {
+        currentAngleDeg = parseFloat(sliders.angle.value);
       } else if (animMode === 'pour_hands') {
-        emanateSpeed = 0.0;
         if (leftCur.active > 0.5 && rightCur.active > 0.5) {
           const dy = (leftCur.y - rightCur.y) / window.innerHeight;
           const dx = (rightCur.x - leftCur.x) / window.innerWidth;
@@ -1865,7 +1888,6 @@
           numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
         }
       } else if (animMode === 'body_arms') {
-        emanateSpeed = 0.0;
         if (leftCur.active > 0.5 && rightCur.active > 0.5) {
           const dx = rightCur.x - leftCur.x;
           const dy = rightCur.y - leftCur.y;
@@ -1883,19 +1905,16 @@
           numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
         }
       } else if (animMode === 'continuous_cw') {
-        emanateSpeed = 0.0;
         currentAngleDeg += baseAngularSpeed * rotSpeedMult * dt;
         if (currentAngleDeg > 180.0) currentAngleDeg -= 360.0;
         sliders.angle.value = currentAngleDeg;
         numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
       } else if (animMode === 'continuous_ccw') {
-        emanateSpeed = 0.0;
         currentAngleDeg -= baseAngularSpeed * rotSpeedMult * dt;
         if (currentAngleDeg < -180.0) currentAngleDeg += 360.0;
         sliders.angle.value = currentAngleDeg;
         numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
       } else if (animMode === 'pingpong') {
-        emanateSpeed = 0.0;
         const omega = (baseAngularSpeed * rotSpeedMult * Math.PI) / 180.0;
         pingPongPhase += omega * dt;
         currentAngleDeg = 180.0 * Math.sin(pingPongPhase);
@@ -2013,7 +2032,8 @@
       gl.uniform1f(dispKPinchLoc, parseFloat(sliders.kPinch.value));
       gl.uniform1f(dispKMirrorLoc, parseFloat(slKMode.value));
       gl.uniform1f(dispKBlurLoc, parseFloat(sliders.kBlur.value));
-      gl.uniform1f(dispEmanateLoc, emanateSpeed);
+      gl.uniform1f(dispTravelDistLoc, travelDist);
+      gl.uniform1f(dispIsWarpLoc, isWarpMode);
 
       const angleRad = (currentAngleDeg * Math.PI) / 180.0;
       gl.uniform1f(dispAngleLoc, angleRad);
@@ -2050,6 +2070,10 @@
       gl.drawArrays(gl.TRIANGLES, 0, 6);
 
       requestAnimationFrame(render);
+    }
+
+    function mix(a, b, t) {
+      return a * (1.0 - t) + b * t;
     }
 
     requestAnimationFrame(render);
