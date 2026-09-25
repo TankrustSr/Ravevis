@@ -635,7 +635,7 @@
           totalImpulse += vR * fR * 0.85;
         }
         
-        // --- 5. GRAVITY CASCADE POUR STREAM (Higher Hand -> Lower Hand) ---
+   // --- 5. GRAVITY CASCADE STREAM WAKE ---
         if (u_pour_mode > 0.5 && u_pour_strength > 0.01) {
           vec2 seg = u_low_hand - u_high_hand;
           float segLen = length(seg);
@@ -646,17 +646,14 @@
             vec2 proj = u_high_hand + dir * (tProj * segLen);
             float distToStream = length(st - proj);
 
-            // Cohesive fluid column between hands
-            float streamForce = exp(-distToStream * 7.5) * u_pour_strength;
-            totalImpulse += dir * streamForce * 3.2;
+            float streamForce = exp(-distToStream * 8.0) * u_pour_strength;
+            totalImpulse += dir * streamForce * 0.75;
 
-            // Basin splash vortex where the stream lands at the lower hand
-            if (tProj > 0.65) {
-              float splashWeight = smoothstep(0.65, 1.0, tProj);
+            if (tProj > 0.6) {
               vec2 toLow = st - u_low_hand;
               float dLow = length(toLow);
               vec2 splashVortex = vec2(-toLow.y, toLow.x) / (dLow + 0.12);
-              totalImpulse += splashVortex * (splashWeight * streamForce * 1.4);
+              totalImpulse += splashVortex * (streamForce * 0.9);
             }
           }
         }
@@ -701,6 +698,12 @@
       uniform float u_speed;
       uniform float u_warp_scale;
       uniform float u_flow_stretch;
+      
+      // Pour Cascade Uniforms
+      uniform vec2 u_high_hand;
+      uniform vec2 u_low_hand;
+      uniform float u_pour_mode;
+      uniform float u_pour_strength;
 
       // Head Radiance
       uniform vec2 u_head;
@@ -824,6 +827,60 @@
         // Sample smooth floating-point displacement directly
         vec2 paintDisplacement = texture2D(u_simTexture, screenUV).xy;
         st += paintDisplacement;
+        // --- PHYSICAL WATERFALL CONVECTIVE JET (Erupt from High Hand -> Drain into Low Hand) ---
+        float streamGlint = 0.0;
+        if (u_pour_mode > 0.5 && u_pour_strength > 0.02) {
+          vec2 H = u_high_hand;
+          vec2 L = u_low_hand;
+          vec2 D = L - H;
+          float Dlen = length(D);
+
+          if (Dlen > 0.06) {
+            vec2 dir = D / Dlen;
+            vec2 toHigh = st - H;
+            vec2 toLow = st - L;
+
+            // Parameter s along straight chord [0 = High Hand, 1 = Low Hand]
+            float s = clamp(dot(toHigh, dir) / Dlen, 0.0, 1.0);
+
+            // Natural gravity sag: stream arches downwards
+            float sag = 0.22 * (1.0 - abs(dir.y));
+            vec2 curvePt = H + dir * (s * Dlen) + vec2(0.0, -sag * 4.0 * s * (1.0 - s));
+
+            float distToArc = length(st - curvePt);
+
+            // Accelerating stream narrows in mid-air, then blossoms at the basin
+            float streamWidth = mix(0.14, 0.06, sin(s * 3.14159) * 0.75) * (0.8 + 0.3 * u_pour_strength);
+            float jetMask = smoothstep(streamWidth, 0.0, distToArc) * u_pour_strength;
+
+            // 1. Spout Source (Upper Hand): Radial eruption pushing outward into stream
+            float dH = length(toHigh);
+            float spoutMask = exp(-dH * 5.5) * u_pour_strength;
+            vec2 spoutPush = normalize(toHigh + vec2(0.0001)) * (spoutMask * 0.32);
+
+            // 2. Basin Sink (Lower Hand): Inward suction + drain whirlpool
+            float dL = length(toLow);
+            float basinMask = exp(-dL * 4.2) * u_pour_strength;
+            vec2 drainPull = -normalize(toLow + vec2(0.0001)) * (basinMask * 0.38);
+            vec2 drainSwirl = vec2(-toLow.y, toLow.x) / (dL + 0.08) * (basinMask * 0.65);
+
+            // 3. Convective Velocity Advection (Active streaming motion)
+            vec2 tangent = normalize(dir + vec2(0.0, -sag * 4.0 * (1.0 - 2.0 * s) / Dlen));
+            float flowTravel = u_time * (1.6 + u_pour_strength * 1.8);
+            vec2 streamAdvection = -tangent * (flowTravel * 0.85);
+
+            // Combine forces
+            st += streamAdvection * jetMask;
+            st += spoutPush;
+            st += (drainPull + drainSwirl);
+
+            // Stretch coordinates into parallel liquid filaments along the flow
+            st += tangent * dot(st - curvePt, tangent) * (jetMask * 2.8);
+
+            // Traveling water glints along the falling stream
+            streamGlint = jetMask * (0.4 + 0.6 * sin(s * 28.0 - flowTravel * 4.0));
+          }
+        }
 
         // Steerable Directional Flow Alignment
         float rad = u_flow_angle;
@@ -936,8 +993,9 @@
           col *= (0.75 + 0.45 * f * u_contrast);
           finalColor = col;
         }
-
+		finalColor += u_col_crest * streamGlint * 0.35;
         return finalColor;
+
       }
 
       void main() {
@@ -1057,6 +1115,11 @@
     const simHeadLoc      = gl.getUniformLocation(simProgram, 'u_head');
     const simHeadVelLoc   = gl.getUniformLocation(simProgram, 'u_head_vel');
     const simHeadActLoc   = gl.getUniformLocation(simProgram, 'u_head_active');
+
+    const dispHighHandLoc     = gl.getUniformLocation(displayProgram, 'u_high_hand');
+    const dispLowHandLoc      = gl.getUniformLocation(displayProgram, 'u_low_hand');
+    const dispPourModeLoc     = gl.getUniformLocation(displayProgram, 'u_pour_mode');
+    const dispPourStrengthLoc = gl.getUniformLocation(displayProgram, 'u_pour_strength');
 
     const simLeftLoc      = gl.getUniformLocation(simProgram, 'u_left_wrist');
     const simLeftVelLoc   = gl.getUniformLocation(simProgram, 'u_left_vel');
@@ -2061,6 +2124,11 @@
       gl.activeTexture(gl.TEXTURE1);
       gl.bindTexture(gl.TEXTURE_2D, customImgTexture);
       gl.uniform1i(dispImgTexLoc, 1);
+// Pass Pour Cascade Uniforms to Display Program
+      gl.uniform2f(dispHighHandLoc, highNorm[0], highNorm[1]);
+      gl.uniform2f(dispLowHandLoc,  lowNorm[0],  lowNorm[1]);
+      gl.uniform1f(dispPourModeLoc, isPourActive);
+      gl.uniform1f(dispPourStrengthLoc, pourStrength);
 
       gl.uniform2f(dispResLoc, canvas.width, canvas.height);
       gl.uniform2f(dispImgResLoc, imageWidth, imageHeight);
