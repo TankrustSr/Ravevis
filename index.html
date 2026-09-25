@@ -343,7 +343,7 @@
 
         <div class="slider-row">
           <div class="slider-header">
-            <span>Warp Throttle</span>
+            <span>Warp Throttle (Body Y)</span>
             <span id="rot-speed-num" class="val">0.50x</span>
           </div>
           <input type="range" id="sl-rot-speed" min="0.00" max="2.00" step="0.02" value="0.50">
@@ -384,8 +384,8 @@
 
         <div class="slider-row">
           <div class="slider-header">
-            <span>Petals (Locked in Warp Mode)</span>
-            <span id="k-segs-num" class="val">4 (Locked)</span>
+            <span>Petals</span>
+            <span id="k-segs-num" class="val">4 Petals</span>
           </div>
           <input type="range" id="sl-k-segs" min="1" max="24" step="1" value="4">
         </div>
@@ -401,7 +401,7 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Chamber Orientation</span>
-            <span id="k-angle-num" class="val">45° (Corners)</span>
+            <span id="k-angle-num" class="val">45°</span>
           </div>
           <input type="range" id="sl-k-angle" min="0" max="360" step="1" value="45">
         </div>
@@ -441,7 +441,7 @@
 
         <div class="slider-row">
           <div class="slider-header">
-            <span>Ridge Brightness</span>
+            <span>Ridge Brightness (Body X)</span>
             <span id="ridge-num" class="val">0.32</span>
           </div>
           <input type="range" id="sl-ridge" min="0.0" max="1.0" step="0.02" value="0.32">
@@ -1347,7 +1347,9 @@
       const el = sliders[key];
       const updateVal = () => {
         if (key === 'angle') {
-          if (animModeSelect.value === 'manual') currentAngleDeg = parseFloat(el.value);
+          if (animModeSelect.value === 'manual' || animModeSelect.value === 'body_kaleido') {
+            currentAngleDeg = parseFloat(el.value);
+          }
           numDisplays[key].textContent = Math.round(parseFloat(el.value)) + '°';
         } else if (key === 'rotSpeed') {
           numDisplays[key].textContent = parseFloat(el.value).toFixed(2) + 'x';
@@ -1872,15 +1874,8 @@
       if (animMode === 'body_kaleido') {
         isWarpMode = 1.0;
 
-        sliders.kSegs.value = 4;
-        numDisplays.kSegs.textContent = '4 (Locked)';
-        slKMode.value = '1';
-
-        sliders.kAngle.value = 45;
-        numDisplays.kAngle.textContent = '45° (Corners)';
-
-        sliders.kZoom.value = 1.00;
-        numDisplays.kZoom.textContent = '1.00 (Fixed)';
+        // Flow angle is directly linked to the user's Flow Direction slider
+        currentAngleDeg = parseFloat(sliders.angle.value);
 
         // 400ms grace period buffer against momentary tracking drops
         const isTrackingFresh = (now - lastValidHandTime) < 400;
