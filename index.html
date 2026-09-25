@@ -331,12 +331,12 @@
           </select>
         </div>
         
-        <div class="slider-row">
-          <div class="slider-header">
-            <span>Flow Direction</span>
-            <span id="angle-num" class="val">37°</span>
-          </div>
-          <input type="range" id="sl-angle" min="0" max="360" step="1" value="37">
+       <div class="slider-row">
+  		<div class="slider-header">
+         <span>Flow Direction</span>
+         <span id="angle-num" class="val">37°</span>
+        </div>
+         <input type="range" id="sl-angle" min="-180" max="180" step="1" value="37">
         </div>
 
         <div class="slider-row">
@@ -1686,19 +1686,7 @@
         rightTarget.active = 0.0;
       }
 
-      // 4. Steer Flow Direction from Arm Angle
-      if (animModeSelect.value === 'body_arms') {
-        if (leftTarget.active > 0.5 && rightTarget.active > 0.5) {
-          const dx = rightTarget.x - leftTarget.x;
-          const dy = rightTarget.y - leftTarget.y;
-          let armAngle = (Math.atan2(dy, dx) * 180.0 / Math.PI);
-          if (armAngle < 0.0) armAngle += 360.0;
-
-          currentAngleDeg += (armAngle - currentAngleDeg) * 0.15;
-          sliders.angle.value = currentAngleDeg;
-          numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
-        }
-      }
+     
     }
 
     async function togglePoseTracking() {
@@ -1840,26 +1828,50 @@
       lastAnimTime = now;
       if (dt > 0.1) dt = 0.1;
 
+     // Ambient & Body-driven Flow kinematics
       const animMode = animModeSelect.value;
       const rotSpeedMult = parseFloat(sliders.rotSpeed.value);
       const baseAngularSpeed = 32.0;
 
       if (animMode === 'manual') {
         currentAngleDeg = parseFloat(sliders.angle.value);
+      } else if (animMode === 'body_arms') {
+        // Smooth 60fps arm tilt tracking centered at 0° (horizontal)
+        if (leftCur.active > 0.5 && rightCur.active > 0.5) {
+          const dx = rightCur.x - leftCur.x;
+          const dy = rightCur.y - leftCur.y;
+
+          // Math.atan2 returns [-180°, +180°] with 0° perfectly horizontal
+          const targetAngle = (Math.atan2(dy, dx) * 180.0) / Math.PI;
+
+          // Shortest-arc delta calculation across circular domain
+          let diff = (targetAngle - currentAngleDeg) % 360.0;
+          if (diff > 180.0)  diff -= 360.0;
+          if (diff < -180.0) diff += 360.0;
+
+          currentAngleDeg += diff * 0.15;
+
+          // Keep strictly within [-180°, +180°]
+          if (currentAngleDeg > 180.0)  currentAngleDeg -= 360.0;
+          if (currentAngleDeg < -180.0) currentAngleDeg += 360.0;
+
+          sliders.angle.value = currentAngleDeg;
+          numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
+        }
       } else if (animMode === 'continuous_cw') {
-        currentAngleDeg = (currentAngleDeg + baseAngularSpeed * rotSpeedMult * dt) % 360.0;
-        if (currentAngleDeg < 0.0) currentAngleDeg += 360.0;
+        currentAngleDeg += baseAngularSpeed * rotSpeedMult * dt;
+        if (currentAngleDeg > 180.0) currentAngleDeg -= 360.0;
         sliders.angle.value = currentAngleDeg;
         numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
       } else if (animMode === 'continuous_ccw') {
-        currentAngleDeg = (currentAngleDeg - baseAngularSpeed * rotSpeedMult * dt) % 360.0;
-        if (currentAngleDeg < 0.0) currentAngleDeg += 360.0;
+        currentAngleDeg -= baseAngularSpeed * rotSpeedMult * dt;
+        if (currentAngleDeg < -180.0) currentAngleDeg += 360.0;
         sliders.angle.value = currentAngleDeg;
         numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
       } else if (animMode === 'pingpong') {
         const omega = (baseAngularSpeed * rotSpeedMult * Math.PI) / 180.0;
         pingPongPhase += omega * dt;
-        currentAngleDeg = 180.0 * (1.0 - Math.cos(pingPongPhase));
+        currentAngleDeg = 180.0 * Math.sin(pingPongPhase);
         sliders.angle.value = currentAngleDeg;
         numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
       }
