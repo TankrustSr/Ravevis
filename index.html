@@ -1596,7 +1596,35 @@
 
       poseInstance.onResults(onPoseResults);
     }
+	// Helper: Calculates the shortest angular distance across the 0°/360° seam
+      function shortestAngleDiff(target, current) {
+        let diff = (target - current) % 360.0;
+        if (diff > 180.0)  diff -= 360.0;
+        if (diff < -180.0) diff += 360.0;
+        return diff;
+      }
 
+      // 4. Steer Flow Direction from Arm Angle (Smooth Shortest Arc)
+      if (animModeSelect.value === 'body_arms') {
+        if (leftTarget.active > 0.5 && rightTarget.active > 0.5) {
+          const dx = rightTarget.x - leftTarget.x;
+          const dy = rightTarget.y - leftTarget.y;
+
+          // Compute angle in [0, 360)
+          let armAngle = (Math.atan2(dy, dx) * 180.0 / Math.PI);
+          if (armAngle < 0.0) armAngle += 360.0;
+
+          // Interpolate along the shortest arc (-180° to +180°)
+          const angleDelta = shortestAngleDiff(armAngle, currentAngleDeg);
+          currentAngleDeg += angleDelta * 0.15;
+
+          // Keep within [0, 360)
+          currentAngleDeg = (currentAngleDeg % 360.0 + 360.0) % 360.0;
+
+          sliders.angle.value = currentAngleDeg;
+          numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
+        }
+      }
     function onPoseResults(results) {
       if (!poseActive || !results.image) return;
 
