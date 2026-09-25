@@ -548,6 +548,57 @@
       alert('WebGL not supported.');
     }
 
+    // Adaptive One-Euro (1€) Dynamic Filter Implementation
+    class OneEuroFilter {
+      constructor(minCutoff = 0.7, beta = 3.5, dcutoff = 1.0) {
+        this.minCutoff = minCutoff;
+        this.beta = beta;
+        this.dcutoff = dcutoff;
+        this.xPrev = null;
+        this.dxPrev = 0.0;
+        this.tPrev = null;
+      }
+
+      alpha(cutoff, dt) {
+        const tau = 1.0 / (2.0 * Math.PI * cutoff);
+        return 1.0 / (1.0 + tau / dt);
+      }
+
+      filter(x, t) {
+        if (this.xPrev === null || this.tPrev === null) {
+          this.xPrev = x;
+          this.dxPrev = 0.0;
+          this.tPrev = t;
+          return x;
+        }
+
+        let dt = (t - this.tPrev) * 0.001;
+        this.tPrev = t;
+        if (dt <= 0.0001 || dt > 0.3) dt = 0.0166;
+
+        const dx = (x - this.xPrev) / dt;
+        const a_d = this.alpha(this.dcutoff, dt);
+        const dxHat = a_d * dx + (1.0 - a_d) * this.dxPrev;
+        this.dxPrev = dxHat;
+
+        const cutoff = this.minCutoff + this.beta * Math.abs(dxHat);
+        const a = this.alpha(cutoff, dt);
+        const xHat = a * x + (1.0 - a) * this.xPrev;
+        this.xPrev = xHat;
+
+        return xHat;
+      }
+
+      reset() {
+        this.xPrev = null;
+        this.dxPrev = 0.0;
+        this.tPrev = null;
+      }
+    }
+
+    const spanFilter = new OneEuroFilter(0.7, 3.5, 1.0);
+    const heightFilter = new OneEuroFilter(0.8, 3.0, 1.0);
+
     const quadVS = `
       attribute vec2 a_position;
       varying vec2 v_uv;
@@ -1265,10 +1316,10 @@
     let currentAngleDeg = 0.0;
     let smoothWarpSpeed = 0.50;
     let smoothRidge = 0.32;
-    let filteredSpan = 0.15;
     let travelDist = 0.0;
     let pingPongPhase = 0.0;
     let lastAnimTime = performance.now();
+    let lastValidHandTime = 0.0;
 
     const animModeSelect = document.getElementById('sl-angle-anim');
     const flowModeHUD = document.getElementById('flow-mode-val');
@@ -1600,8 +1651,8 @@
         modelComplexity: 0,
         smoothLandmarks: true,
         enableSegmentation: false,
-        minDetectionConfidence: 0.5,
-        minTrackingConfidence: 0.5
+        minDetectionConfidence: 0.45,
+        minTrackingConfidence: 0.45
       });
 
       poseInstance.onResults(onPoseResults);
@@ -1623,10 +1674,10 @@
         return;
       }
 
-      poseStatusHUD.textContent = 'Piloting Warp Corridor';
       const lm = results.poseLandmarks;
+      let handsFound = 0;
 
-      if (lm[0] && (lm[0].visibility === undefined || lm[0].visibility > 0.35)) {
+      if (lm[0] && (lm[0].visibility === undefined || lm[0].visibility > 0.30)) {
         headTarget.x = (1.0 - lm[0].x) * window.innerWidth;
         headTarget.y = (1.0 - lm[0].y) * window.innerHeight;
         headTarget.active = 1.0;
@@ -1639,10 +1690,11 @@
         headTarget.active = 0.0;
       }
 
-      if (lm[15] && (lm[15].visibility === undefined || lm[15].visibility > 0.35)) {
+      if (lm[15] && (lm[15].visibility === undefined || lm[15].visibility > 0.25)) {
         leftTarget.x = (1.0 - lm[15].x) * window.innerWidth;
         leftTarget.y = (1.0 - lm[15].y) * window.innerHeight;
         leftTarget.active = 1.0;
+        handsFound++;
 
         pipCtx.fillStyle = '#30d158';
         pipCtx.beginPath();
@@ -1652,10 +1704,11 @@
         leftTarget.active = 0.0;
       }
 
-      if (lm[16] && (lm[16].visibility === undefined || lm[16].visibility > 0.35)) {
+      if (lm[16] && (lm[16].visibility === undefined || lm[16].visibility > 0.25)) {
         rightTarget.x = (1.0 - lm[16].x) * window.innerWidth;
         rightTarget.y = (1.0 - lm[16].y) * window.innerHeight;
         rightTarget.active = 1.0;
+        handsFound++;
 
         pipCtx.fillStyle = '#0a84ff';
         pipCtx.beginPath();
@@ -1663,6 +1716,13 @@
         pipCtx.fill();
       } else {
         rightTarget.active = 0.0;
+      }
+
+      if (handsFound === 2) {
+        lastValidHandTime = performance.now();
+        poseStatusHUD.textContent = 'Piloting Warp Corridor';
+      } else {
+        poseStatusHUD.textContent = 'Keep both hands in frame';
       }
     }
 
@@ -1681,6 +1741,8 @@
         headTarget.active = 0.0;
         leftTarget.active = 0.0;
         rightTarget.active = 0.0;
+        spanFilter.reset();
+        heightFilter.reset();
         return;
       }
 
@@ -1814,34 +1876,36 @@
         numDisplays.kSegs.textContent = '4 (Locked)';
         slKMode.value = '1';
 
-        // Locked at 45 degrees: corners align with screen diagonals (zero roll/banking)
         sliders.kAngle.value = 45;
         numDisplays.kAngle.textContent = '45° (Corners)';
 
-        // Lock tunnel aperture completely rock-solid so coordinate geometry never jumps
         sliders.kZoom.value = 1.00;
         numDisplays.kZoom.textContent = '1.00 (Fixed)';
 
-        if (leftCur.active > 0.5 && rightCur.active > 0.5) {
-          // Hand Height (Y) Controls Forward Warp Speed (0.05x to 0.50x)
-          const avgY = ((leftCur.y + rightCur.y) * 0.5) / window.innerHeight;
-          const normY = Math.min(Math.max((avgY - 0.18) / 0.62, 0.0), 1.0);
-          const targetSpeed = 0.05 + normY * 0.45;
-          smoothWarpSpeed += (targetSpeed - smoothWarpSpeed) * 0.035;
+        // 400ms grace period buffer against momentary tracking drops
+        const isTrackingFresh = (now - lastValidHandTime) < 400;
 
-          // Hand X Distance Smoothly Modulates Ridge Brightness
-          const dx = Math.abs(rightCur.x - leftCur.x);
-          const rawSpan = dx / window.innerWidth;
-          filteredSpan += (rawSpan - filteredSpan) * 0.035;
+        if (isTrackingFresh) {
+          // 1. Hand Height (Y) -> Warp Throttle (0.05x to 0.50x) via 1€ filter
+          const rawAvgY = ((leftCur.y + rightCur.y) * 0.5) / window.innerHeight;
+          const filteredY = heightFilter.filter(rawAvgY, now);
+          const normY = Math.min(Math.max((filteredY - 0.18) / 0.62, 0.0), 1.0);
+          smoothWarpSpeed = 0.05 + normY * 0.45;
 
-          // Full transition between close hands (6% width) and open arms (28% width)
-          const normSpan = Math.min(Math.max((filteredSpan - 0.06) / 0.22, 0.0), 1.0);
-          // 0.05 = subtle soft silk folds up to 0.90 = radiant, electric topographical contours
-          const targetRidge = mix(0.05, 0.90, normSpan);
-          smoothRidge += (targetRidge - smoothRidge) * 0.035;
+          // 2. Hand X Distance -> Ridge Brightness (0.05 to 0.90) via 1€ filter
+          const rawDx = Math.abs(rightCur.x - leftCur.x) / window.innerWidth;
+          const filteredDx = spanFilter.filter(rawDx, now);
+          
+          // Scaled for comfortable reach: hands touching (~0.08) to open arms (~0.38)
+          const normSpan = Math.min(Math.max((filteredDx - 0.08) / 0.30, 0.0), 1.0);
+          smoothRidge = mix(0.05, 0.90, normSpan);
+
         } else {
-          smoothWarpSpeed += (0.25 - smoothWarpSpeed) * 0.02;
-          smoothRidge += (0.32 - smoothRidge) * 0.02;
+          // Graceful decay back to neutral cruise settings when body exits frame
+          spanFilter.reset();
+          heightFilter.reset();
+          smoothWarpSpeed += (0.25 - smoothWarpSpeed) * 0.04;
+          smoothRidge += (0.32 - smoothRidge) * 0.04;
         }
 
         sliders.rotSpeed.value = smoothWarpSpeed.toFixed(2);
@@ -1850,7 +1914,6 @@
         sliders.ridge.value = smoothRidge.toFixed(2);
         numDisplays.ridge.textContent = smoothRidge.toFixed(2);
 
-        // Calibrated Warp Travel Integration (steady, smooth flow)
         travelDist += smoothWarpSpeed * dt * 1.5;
 
       } else if (animMode === 'manual') {
@@ -1927,17 +1990,17 @@
       prevHeadCurX = headCur.x;
       prevHeadCurY = headCur.y;
 
-      leftCur.x += (leftTarget.x - leftCur.x) * 0.2;
-      leftCur.y += (leftTarget.y - leftCur.y) * 0.2;
-      leftCur.active += (leftTarget.active - leftCur.active) * 0.14;
+      leftCur.x += (leftTarget.x - leftCur.x) * 0.25;
+      leftCur.y += (leftTarget.y - leftCur.y) * 0.25;
+      leftCur.active += (leftTarget.active - leftCur.active) * 0.2;
 
       const lVel = toNormVel(leftCur.x - prevLeftCurX, leftCur.y - prevLeftCurY);
       prevLeftCurX = leftCur.x;
       prevLeftCurY = leftCur.y;
 
-      rightCur.x += (rightTarget.x - rightCur.x) * 0.2;
-      rightCur.y += (rightTarget.y - rightCur.y) * 0.2;
-      rightCur.active += (rightTarget.active - rightCur.active) * 0.14;
+      rightCur.x += (rightTarget.x - rightCur.x) * 0.25;
+      rightCur.y += (rightTarget.y - rightCur.y) * 0.25;
+      rightCur.active += (rightTarget.active - rightCur.active) * 0.2;
 
       const rVel = toNormVel(rightCur.x - prevRightCurX, rightCur.y - prevRightCurY);
       prevRightCurX = rightCur.x;
