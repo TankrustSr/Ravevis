@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Volumetric Contours - AI Pose Studio</title>
+  <title>Volumetric Contours - Persistent Paint Studio</title>
   
-  <!-- MediaPipe Pose CDN Libraries (Lite Mobile Model) -->
+  <!-- MediaPipe Pose CDN Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
 
@@ -263,6 +263,7 @@
       </div>
 
       <div id="drawer">
+        <!-- Preset Manager Section -->
         <div class="sub-heading" style="margin-top:4px;">Preset Manager</div>
         <div style="display:flex; gap:6px; margin-top:4px;">
           <select id="presetSelect" style="flex:1;">
@@ -280,6 +281,38 @@
           <button id="delPresetBtn" title="Delete custom preset" style="display:none; color:#ff6b6b;">✕</button>
         </div>
 
+        <!-- 1. Physical Paint Persistence & Body Influences -->
+        <div class="sub-heading">Physical Paint Dynamics</div>
+
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>Paint Persistence</span>
+            <span id="persist-num" class="val">0.992</span>
+          </div>
+          <input type="range" id="sl-persistence" min="0.85" max="1.00" step="0.002" value="0.992">
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>Head Influence</span>
+            <span id="head-force-num" class="val">1.60</span>
+          </div>
+          <input type="range" id="sl-head-force" min="0.0" max="3.5" step="0.05" value="1.60">
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>Hands Influence</span>
+            <span id="hand-force-num" class="val">1.30</span>
+          </div>
+          <input type="range" id="sl-hand-force" min="0.0" max="3.5" step="0.05" value="1.30">
+        </div>
+
+        <div style="margin-top:6px;">
+          <button id="clearPaintBtn" style="width:100%; background:rgba(247,168,68,0.2); border-color:#f7a844;">✨ Clear Paint Canvas</button>
+        </div>
+
+        <!-- 2. Engine Archetype -->
         <div class="sub-heading">Engine Archetype</div>
         <div style="margin-top: 4px;">
           <select id="engineSelect" style="width: 100%;">
@@ -290,6 +323,7 @@
           </select>
         </div>
 
+        <!-- 3. Kinematics & Vector Flow -->
         <div class="sub-heading">Kinematics & Vector Flow</div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
           <span class="slider-header" style="margin:0;">Rotation Mode</span>
@@ -342,6 +376,7 @@
           <input type="range" id="sl-stretch" min="0.3" max="4.0" step="0.05" value="1.40">
         </div>
 
+        <!-- 4. Kaleidoscope Symmetry Suite -->
         <div class="sub-heading">Kaleidoscope Symmetry</div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
           <span class="slider-header" style="margin:0;">Symmetry Mode</span>
@@ -391,6 +426,7 @@
           <input type="range" id="sl-k-pinch" min="0.4" max="2.5" step="0.05" value="1.00">
         </div>
 
+        <!-- 5. Strata & Ridges -->
         <div class="sub-heading">Topographical Strata</div>
         <div class="slider-row">
           <div class="slider-header">
@@ -416,7 +452,8 @@
           <input type="range" id="sl-ridge" min="0.0" max="1.0" step="0.02" value="0.32">
         </div>
 
-        <div class="sub-heading">Optics & Lighting</div>
+        <!-- 6. Optics & Lighting -->
+        <div class="sub-heading">Optics & Volumetric Shading</div>
         <div class="slider-row">
           <div class="slider-header">
             <span>Iridescence (Prism)</span>
@@ -449,7 +486,8 @@
           <input type="range" id="sl-grain" min="0.0" max="0.25" step="0.01" value="0.04">
         </div>
 
-        <div class="sub-heading">Dynamics & Force</div>
+        <!-- 7. Contrast & Depth -->
+        <div class="sub-heading">Depth Contrast</div>
         <div class="slider-row">
           <div class="slider-header">
             <span>Depth Contrast</span>
@@ -458,14 +496,7 @@
           <input type="range" id="sl-contrast" min="0.5" max="2.0" step="0.05" value="1.00">
         </div>
 
-        <div class="slider-row">
-          <div class="slider-header">
-            <span>Body Interaction Force</span>
-            <span id="vortex-num" class="val">1.20</span>
-          </div>
-          <input type="range" id="sl-vortex" min="0.0" max="3.0" step="0.05" value="1.20">
-        </div>
-
+        <!-- 8. Palette Swatches -->
         <div class="sub-heading">Palette Swatches</div>
         <div class="swatch-row">
           <input type="color" id="colShadow" value="#0d0a12" title="Shadow Base">
@@ -478,6 +509,7 @@
       </div>
     </div>
 
+    <!-- Action Bar -->
     <div class="btn-group">
       <label class="btn" for="imageLoader">📷 Load Image</label>
       <input type="file" id="imageLoader" accept="image/*">
@@ -488,6 +520,7 @@
     </div>
   </div>
 
+  <!-- Custom Preset Save Dialog -->
   <div id="presetModal">
     <div style="background:#181920; border:1px solid rgba(255,255,255,0.18); border-radius:14px; padding:18px; width:290px; box-shadow:0 12px 40px rgba(0,0,0,0.6); pointer-events:auto;">
       <div style="font-size:13px; font-weight:700; color:#fff; margin-bottom:6px;">Save Preset</div>
@@ -500,6 +533,7 @@
     </div>
   </div>
 
+  <!-- Export Modal -->
   <div id="saveModal">
     <div id="modalMsg" style="color: #fff; font-family: -apple-system, sans-serif; font-size: 14px; margin-bottom: 12px; text-align: center;">
       Touch and hold below to tap <b>"Save to Photos"</b>
@@ -508,6 +542,7 @@
     <button id="closeModalBtn" style="margin-top: 16px; background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 9px 24px; border-radius: 8px; font-size: 13px; font-weight: 600;">Done</button>
   </div>
 
+  <!-- Canvas elements -->
   <canvas id="camPreviewCanvas"></canvas>
   <canvas id="glcanvas"></canvas>
 
@@ -519,29 +554,143 @@
       alert('WebGL not supported.');
     }
 
-    const vsSource = `
+    // Shared Fullscreen Quad Vertex Shader
+    const quadVS = `
       attribute vec2 a_position;
       varying vec2 v_uv;
       void main() {
         v_uv = (a_position + 1.0) * 0.5;
-        v_uv.y = 1.0 - v_uv.y;
         gl_Position = vec4(a_position, 0.0, 1.0);
       }
     `;
 
-    const fsSource = `
+    // -------------------------------------------------------------
+    // PASS 1: STATEFUL ADVECTION SIMULATION SHADER (Ping-Pong FBO)
+    // -------------------------------------------------------------
+    const simFS = `
       precision highp float;
-
       varying vec2 v_uv;
 
+      uniform sampler2D u_prevBuffer;
+      uniform vec2 u_resolution;
+      uniform float u_persistence;
+      uniform float u_head_force;
+      uniform float u_hand_force;
+
+      // Stylus / Touch
+      uniform vec2 u_mouse;
+      uniform vec2 u_mouse_vel;
+      uniform float u_pressure;
+
+      // Body Pose Effectors & Velocities
+      uniform vec2 u_head;
+      uniform vec2 u_head_vel;
+      uniform float u_head_active;
+
+      uniform vec2 u_left_wrist;
+      uniform vec2 u_left_vel;
+      uniform float u_left_active;
+
+      uniform vec2 u_right_wrist;
+      uniform vec2 u_right_vel;
+      uniform float u_right_active;
+
+      void main() {
+        vec2 st = (gl_FragCoord.xy * 2.0 - u_resolution) / min(u_resolution.x, u_resolution.y);
+        vec2 uv = v_uv;
+
+        // Sample previous accumulated paint displacement (offset from neutral 0.5)
+        vec4 prevData = texture2D(u_prevBuffer, uv);
+        vec2 disp = (prevData.xy - 0.5) * 4.0;
+
+        vec2 totalImpulse = vec2(0.0);
+
+        // --- 1. STYLUS / TOUCH DRAG ---
+        if (u_pressure > 0.01) {
+          vec2 toMouse = st - u_mouse;
+          float dMouse = length(toMouse);
+          float force = exp(-dMouse * 4.5) * u_pressure;
+          totalImpulse += u_mouse_vel * force * 1.8;
+          // Stylus vortex
+          totalImpulse += vec2(-toMouse.y, toMouse.x) / (dMouse + 0.15) * force * 0.4;
+        }
+
+        // --- 2. HEAD INFLUENCE (Lens, Bow-Wave & Torque) ---
+        if (u_head_active > 0.05) {
+          vec2 toHead = st - u_head;
+          float dHead = length(toHead);
+          
+          // Broad radial displacement (parts the paint)
+          float fHead = exp(-dHead * 1.5) * u_head_active * u_head_force;
+          totalImpulse -= toHead * (fHead * 0.45);
+
+          // Head velocity jet (pushes paint along head trajectory)
+          totalImpulse += u_head_vel * (fHead * 0.65);
+
+          // Head rotational torque
+          vec2 vHead = vec2(-toHead.y, toHead.x) / (dHead + 0.2);
+          totalImpulse += vHead * (fHead * 0.35);
+        }
+
+        // --- 3. LEFT HAND (Counter-Clockwise Paddle + Velocity Jet) ---
+        if (u_left_active > 0.05) {
+          vec2 toL = st - u_left_wrist;
+          float dL = length(toL);
+          float fL = exp(-dL * 3.2) * u_left_active * u_hand_force;
+          
+          // Direct velocity jet
+          totalImpulse += u_left_vel * fL * 1.2;
+
+          // CCW fluid vortex
+          vec2 vL = vec2(-toL.y, toL.x) / (dL + 0.15);
+          totalImpulse += vL * fL * 0.65;
+        }
+
+        // --- 4. RIGHT HAND (Clockwise Paddle + Velocity Jet) ---
+        if (u_right_active > 0.05) {
+          vec2 toR = st - u_right_wrist;
+          float dR = length(toR);
+          float fR = exp(-dR * 3.2) * u_right_active * u_hand_force;
+          
+          // Direct velocity jet
+          totalImpulse += u_right_vel * fR * 1.2;
+
+          // CW fluid vortex
+          vec2 vR = vec2(toR.y, -toR.x) / (dR + 0.15);
+          totalImpulse += vR * fR * 0.65;
+        }
+
+        // Advect: sample previous paint backwards along the local impulse
+        vec2 advectedUV = uv - totalImpulse * 0.015;
+        vec4 advectedData = texture2D(u_prevBuffer, advectedUV);
+        vec2 finalDisp = (advectedData.xy - 0.5) * 4.0;
+
+        // Accumulate new impulse & apply persistence decay
+        finalDisp = (finalDisp + totalImpulse * 0.35) * u_persistence;
+
+        // Repack back into normalized [0.0, 1.0] texture range
+        vec2 packedDisp = clamp(finalDisp / 4.0 + 0.5, 0.0, 1.0);
+
+        gl_FragColor = vec4(packedDisp, 0.0, 1.0);
+      }
+    `;
+
+    // -------------------------------------------------------------
+    // PASS 2: DISPLAY & LIGHTING SHADER (Renders Deformed Paint)
+    // -------------------------------------------------------------
+    const displayFS = `
+      precision highp float;
+      varying vec2 v_uv;
+
+      uniform sampler2D u_simTexture;
+      uniform sampler2D u_imageTexture;
       uniform vec2 u_resolution;
       uniform vec2 u_image_resolution;
       uniform float u_time;
-      uniform sampler2D u_texture;
       uniform float u_use_image;
-
       uniform float u_shader_type;
 
+      // Kaleidoscope
       uniform float u_kaleido_segs;
       uniform float u_kaleido_angle;
       uniform float u_kaleido_zoom;
@@ -549,22 +698,17 @@
       uniform float u_kaleido_mirror;
       uniform float u_kaleido_blur;
 
+      // Kinematics & Flow
       uniform float u_flow_angle;
       uniform float u_speed;
       uniform float u_warp_scale;
       uniform float u_flow_stretch;
-      uniform float u_vortex_scale;
 
-      uniform vec2 u_mouse;
-      uniform float u_pressure;
-
+      // Head Glow
       uniform vec2 u_head;
       uniform float u_head_active;
-      uniform vec2 u_left_wrist;
-      uniform float u_left_active;
-      uniform vec2 u_right_wrist;
-      uniform float u_right_active;
 
+      // Topographical & Optics
       uniform float u_contour_freq;
       uniform float u_step_quant;
       uniform float u_ridge_weight;
@@ -574,6 +718,7 @@
       uniform float u_grain_level;
       uniform float u_contrast;
 
+      // Colors
       uniform vec3 u_col_shadow;
       uniform vec3 u_col_cool_a;
       uniform vec3 u_col_cool_b;
@@ -675,61 +820,17 @@
         return newUV;
       }
 
-      vec3 evaluateScene(vec2 st, vec2 mouse, vec2 headPos, vec2 leftPos, vec2 rightPos) {
+      vec3 evaluateScene(vec2 st, vec2 screenUV) {
         float t = u_time * u_speed;
 
-        // 1. HEAD PERSPECTIVE PARALLAX
-        if (u_head_active > 0.05) {
-          st -= headPos * 0.28 * u_head_active;
-        }
+        // Sample accumulated permanent paint displacement
+        vec4 simData = texture2D(u_simTexture, screenUV);
+        vec2 paintDisplacement = (simData.xy - 0.5) * 4.0;
 
-        // 2. STYLUS / TOUCH VORTEX
-        if (u_pressure > 0.01) {
-          vec2 toMouse = st - mouse;
-          float distToMouse = length(toMouse);
-          float penForce = exp(-distToMouse * (4.2 - u_pressure * 1.5)) * (0.2 + u_pressure * 1.4) * u_vortex_scale;
-          vec2 vortex = vec2(-toMouse.y, toMouse.x) / (distToMouse + 0.12);
-          st += vortex * penForce * 0.6;
-          st -= toMouse * penForce * 0.2;
-        }
+        // Apply physical paint displacement directly into spatial domain
+        st += paintDisplacement;
 
-        // 3. AMPLIFIED HEAD INFLUENCE
-        float headGlow = 0.0;
-        if (u_head_active > 0.05) {
-          vec2 toHead = st - headPos;
-          float dHead = length(toHead);
-          
-          float fHead = exp(-dHead * 1.4) * u_head_active * u_vortex_scale;
-          st -= toHead * (fHead * 0.85);
-
-          float ripple = sin(dHead * 11.0 - t * 3.5) * exp(-dHead * 2.0) * (0.22 * u_head_active * u_vortex_scale);
-          st += normalize(toHead + 0.001) * ripple;
-
-          vec2 vHead = vec2(-toHead.y, toHead.x) / (dHead + 0.18);
-          st += vHead * (fHead * 0.55);
-
-          headGlow = exp(-dHead * 2.0) * u_head_active;
-        }
-
-        // 4. HAND FLUID PADDLES
-        if (u_left_active > 0.05) {
-          vec2 toL = st - leftPos;
-          float dL = length(toL);
-          float fL = exp(-dL * 3.4) * u_left_active * u_vortex_scale;
-          vec2 vL = vec2(-toL.y, toL.x) / (dL + 0.14);
-          st += vL * fL * 0.75;
-          st -= toL * fL * 0.25;
-        }
-
-        if (u_right_active > 0.05) {
-          vec2 toR = st - rightPos;
-          float dR = length(toR);
-          float fR = exp(-dR * 3.4) * u_right_active * u_vortex_scale;
-          vec2 vR = vec2(toR.y, -toR.x) / (dR + 0.14);
-          st += vR * fR * 0.75;
-          st -= toR * fR * 0.25;
-        }
-
+        // Directional Flow Alignment
         float rad = u_flow_angle;
         mat2 alignFlow = mat2(cos(rad), sin(rad), -sin(rad), cos(rad));
         vec2 p = alignFlow * st * vec2(0.55, u_flow_stretch);
@@ -810,24 +911,23 @@
             vec2 foldedScreen = (st * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
             baseUV = getCoverUV(clamp(foldedScreen, 0.0, 1.0), u_resolution, u_image_resolution);
           } else {
-            baseUV = getCoverUV(v_uv, u_resolution, u_image_resolution);
+            baseUV = getCoverUV(screenUV, u_resolution, u_image_resolution);
           }
 
-          vec2 warpDelta = r * (0.07 * u_warp_scale);
+          vec2 warpDelta = (r * (0.07 * u_warp_scale)) + (paintDisplacement * 0.1);
           vec2 uvR = abs(mod(baseUV + warpDelta * (1.0 + chromaOffset * 0.4) - 1.0, 2.0) - 1.0);
           vec2 uvG = abs(mod(baseUV + warpDelta - 1.0, 2.0) - 1.0);
           vec2 uvB = abs(mod(baseUV + warpDelta * (1.0 - chromaOffset * 0.4) - 1.0, 2.0) - 1.0);
 
           vec3 imgColor = vec3(
-            texture2D(u_texture, uvR).r,
-            texture2D(u_texture, uvG).g,
-            texture2D(u_texture, uvB).b
+            texture2D(u_imageTexture, uvR).r,
+            texture2D(u_imageTexture, uvG).g,
+            texture2D(u_imageTexture, uvB).b
           );
 
           float luma = dot(imgColor, vec3(0.299, 0.587, 0.114));
           vec3 crestLight = u_col_crest * (bands * 0.22 + ridges * u_ridge_weight) * (0.4 + 0.6 * luma);
           finalColor = imgColor + crestLight + (u_col_crest * (spec + fresnel) * luma);
-          finalColor += u_col_crest * (headGlow * 0.5);
           finalColor *= (0.8 + 0.35 * f * u_contrast);
         } else {
           vec3 col = mix(u_col_shadow, u_col_cool_a, clamp((f * f) * (3.2 * u_contrast), 0.0, 1.0));
@@ -838,7 +938,6 @@
           col += (u_col_crest * bands * 0.18) + (ridges * u_col_crest * u_ridge_weight);
           col += u_col_crest * spec * 0.65;
           col += mix(u_col_cool_b, u_col_crest, 0.5) * fresnel;
-          col += u_col_crest * (headGlow * 0.5);
           col *= (0.75 + 0.45 * f * u_contrast);
           finalColor = col;
         }
@@ -848,11 +947,6 @@
 
       void main() {
         vec2 raw_st = (gl_FragCoord.xy * 2.0 - u_resolution) / min(u_resolution.x, u_resolution.y);
-        vec2 raw_mouse = (u_mouse * 2.0 - u_resolution) / min(u_resolution.x, u_resolution.y);
-        vec2 raw_head = (u_head * 2.0 - u_resolution) / min(u_resolution.x, u_resolution.y);
-        vec2 raw_left = (u_left_wrist * 2.0 - u_resolution) / min(u_resolution.x, u_resolution.y);
-        vec2 raw_right = (u_right_wrist * 2.0 - u_resolution) / min(u_resolution.x, u_resolution.y);
-
         vec3 finalColor = vec3(0.0);
 
         if (u_kaleido_segs > 1.5) {
@@ -872,21 +966,19 @@
             float blendWidth = u_kaleido_blur * (H * 0.5);
 
             vec2 st1 = vec2(cos(foldA), sin(foldA)) * rP;
-            vec2 m1 = foldKaleido(raw_mouse, u_kaleido_segs, u_kaleido_angle, u_kaleido_zoom, u_kaleido_pinch, 1.0);
-            vec2 h1 = foldKaleido(raw_head, u_kaleido_segs, u_kaleido_angle, u_kaleido_zoom, u_kaleido_pinch, 1.0);
-            vec2 l1 = foldKaleido(raw_left, u_kaleido_segs, u_kaleido_angle, u_kaleido_zoom, u_kaleido_pinch, 1.0);
-            vec2 r1 = foldKaleido(raw_right, u_kaleido_segs, u_kaleido_angle, u_kaleido_zoom, u_kaleido_pinch, 1.0);
+            vec2 screenUV1 = (st1 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
 
             if (u_kaleido_blur > 0.005 && blendWidth > 0.0001) {
               float altA = (foldA < H * 0.5) ? -foldA : (2.0 * H - foldA);
               vec2 st2 = vec2(cos(altA), sin(altA)) * rP;
+              vec2 screenUV2 = (st2 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
 
-              vec3 col1 = evaluateScene(st1, m1, h1, l1, r1);
-              vec3 col2 = evaluateScene(st2, m1, h1, l1, r1);
+              vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
+              vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0));
               float blendFactor = smoothstep(0.0, blendWidth, d);
               finalColor = mix(mix(col1, col2, 0.5), col1, blendFactor);
             } else {
-              finalColor = evaluateScene(st1, m1, h1, l1, r1);
+              finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
             }
           } else {
             float foldA = modA;
@@ -894,25 +986,23 @@
             float blendWidth = u_kaleido_blur * (segAngle * 0.5);
 
             vec2 st1 = vec2(cos(foldA), sin(foldA)) * rP;
-            vec2 m1 = foldKaleido(raw_mouse, u_kaleido_segs, u_kaleido_angle, u_kaleido_zoom, u_kaleido_pinch, 0.0);
-            vec2 h1 = foldKaleido(raw_head, u_kaleido_segs, u_kaleido_angle, u_kaleido_zoom, u_kaleido_pinch, 0.0);
-            vec2 l1 = foldKaleido(raw_left, u_kaleido_segs, u_kaleido_angle, u_kaleido_zoom, u_kaleido_pinch, 0.0);
-            vec2 r1 = foldKaleido(raw_right, u_kaleido_segs, u_kaleido_angle, u_kaleido_zoom, u_kaleido_pinch, 0.0);
+            vec2 screenUV1 = (st1 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
 
             if (u_kaleido_blur > 0.005 && blendWidth > 0.0001) {
               float altA = (foldA < segAngle * 0.5) ? (foldA + segAngle) : (foldA - segAngle);
               vec2 st2 = vec2(cos(altA), sin(altA)) * rP;
+              vec2 screenUV2 = (st2 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
 
-              vec3 col1 = evaluateScene(st1, m1, h1, l1, r1);
-              vec3 col2 = evaluateScene(st2, m1, h1, l1, r1);
+              vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
+              vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0));
               float blendFactor = smoothstep(0.0, blendWidth, d);
               finalColor = mix(mix(col1, col2, 0.5), col1, blendFactor);
             } else {
-              finalColor = evaluateScene(st1, m1, h1, l1, r1);
+              finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
             }
           }
         } else {
-          finalColor = evaluateScene(raw_st, raw_mouse, raw_head, raw_left, raw_right);
+          finalColor = evaluateScene(raw_st, v_uv);
         }
 
         if (u_grain_level > 0.001) {
@@ -923,6 +1013,7 @@
         gl_FragColor = vec4(clamp(finalColor, 0.0, 1.0), 1.0);
       }
     `;
+    // Shader & Program compilation helpers
     function createShader(gl, type, source) {
       const shader = gl.createShader(type);
       gl.shaderSource(shader, source);
@@ -935,13 +1026,24 @@
       return shader;
     }
 
-    const vertexShader = createShader(gl, gl.VERTEX_SHADER, vsSource);
-    const fragmentShader = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
-    const program = gl.createProgram();
-    gl.attachShader(program, vertexShader);
-    gl.attachShader(program, fragmentShader);
-    gl.linkProgram(program);
+    function createProgram(gl, vsSource, fsSource) {
+      const vs = createShader(gl, gl.VERTEX_SHADER, vsSource);
+      const fs = createShader(gl, gl.FRAGMENT_SHADER, fsSource);
+      const prog = gl.createProgram();
+      gl.attachShader(prog, vs);
+      gl.attachShader(prog, fs);
+      gl.linkProgram(prog);
+      if (!gl.getProgramParameter(prog, gl.LINK_STATUS)) {
+        console.error(gl.getProgramInfoLog(prog));
+      }
+      return prog;
+    }
 
+    // Compile Simulation & Display Programs
+    const simProgram = createProgram(gl, quadVS, simFS);
+    const displayProgram = createProgram(gl, quadVS, displayFS);
+
+    // Full-screen Quad Buffer
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
@@ -949,62 +1051,230 @@
       -1.0,  1.0,  1.0, -1.0,  1.0,  1.0,
     ]), gl.STATIC_DRAW);
 
-    const positionLocation = gl.getAttribLocation(program, 'a_position');
-    gl.enableVertexAttribArray(positionLocation);
-    gl.vertexAttribPointer(positionLocation, 2, gl.FLOAT, false, 0, 0);
+    // Simulation Uniform Locations
+    const simResLoc       = gl.getUniformLocation(simProgram, 'u_resolution');
+    const simPrevTexLoc   = gl.getUniformLocation(simProgram, 'u_prevBuffer');
+    const simPersistLoc   = gl.getUniformLocation(simProgram, 'u_persistence');
+    const simHeadForceLoc = gl.getUniformLocation(simProgram, 'u_head_force');
+    const simHandForceLoc = gl.getUniformLocation(simProgram, 'u_hand_force');
 
-    // Uniform Locations
-    const resLoc = gl.getUniformLocation(program, 'u_resolution');
-    const imgResLoc = gl.getUniformLocation(program, 'u_image_resolution');
-    const timeLoc = gl.getUniformLocation(program, 'u_time');
-    const useImageLoc = gl.getUniformLocation(program, 'u_use_image');
-    const textureLoc = gl.getUniformLocation(program, 'u_texture');
-    const shaderTypeLoc = gl.getUniformLocation(program, 'u_shader_type');
+    const simMouseLoc     = gl.getUniformLocation(simProgram, 'u_mouse');
+    const simMouseVelLoc  = gl.getUniformLocation(simProgram, 'u_mouse_vel');
+    const simPressureLoc  = gl.getUniformLocation(simProgram, 'u_pressure');
 
-    // Pointer Uniforms
-    const mouseLoc = gl.getUniformLocation(program, 'u_mouse');
-    const pressureLoc = gl.getUniformLocation(program, 'u_pressure');
+    const simHeadLoc      = gl.getUniformLocation(simProgram, 'u_head');
+    const simHeadVelLoc   = gl.getUniformLocation(simProgram, 'u_head_vel');
+    const simHeadActLoc   = gl.getUniformLocation(simProgram, 'u_head_active');
 
-    // Multi-Point Body Tracking Uniforms
-    const headLoc = gl.getUniformLocation(program, 'u_head');
-    const headActiveLoc = gl.getUniformLocation(program, 'u_head_active');
-    const leftWristLoc = gl.getUniformLocation(program, 'u_left_wrist');
-    const leftActiveLoc = gl.getUniformLocation(program, 'u_left_active');
-    const rightWristLoc = gl.getUniformLocation(program, 'u_right_wrist');
-    const rightActiveLoc = gl.getUniformLocation(program, 'u_right_active');
+    const simLeftLoc      = gl.getUniformLocation(simProgram, 'u_left_wrist');
+    const simLeftVelLoc   = gl.getUniformLocation(simProgram, 'u_left_vel');
+    const simLeftActLoc   = gl.getUniformLocation(simProgram, 'u_left_active');
 
-    // Kaleidoscope Uniforms
-    const kSegsLoc   = gl.getUniformLocation(program, 'u_kaleido_segs');
-    const kAngleLoc  = gl.getUniformLocation(program, 'u_kaleido_angle');
-    const kZoomLoc   = gl.getUniformLocation(program, 'u_kaleido_zoom');
-    const kPinchLoc  = gl.getUniformLocation(program, 'u_kaleido_pinch');
-    const kMirrorLoc = gl.getUniformLocation(program, 'u_kaleido_mirror');
-    const kBlurLoc   = gl.getUniformLocation(program, 'u_kaleido_blur');
+    const simRightLoc     = gl.getUniformLocation(simProgram, 'u_right_wrist');
+    const simRightVelLoc  = gl.getUniformLocation(simProgram, 'u_right_vel');
+    const simRightActLoc  = gl.getUniformLocation(simProgram, 'u_right_active');
 
-    // Kinematics & Shading Uniforms
-    const angleLoc     = gl.getUniformLocation(program, 'u_flow_angle');
-    const speedLoc     = gl.getUniformLocation(program, 'u_speed');
-    const warpLoc      = gl.getUniformLocation(program, 'u_warp_scale');
-    const stretchLoc   = gl.getUniformLocation(program, 'u_flow_stretch');
-    const densityLoc   = gl.getUniformLocation(program, 'u_contour_freq');
-    const stepLoc      = gl.getUniformLocation(program, 'u_step_quant');
-    const ridgeLoc     = gl.getUniformLocation(program, 'u_ridge_weight');
-    const chromaLoc    = gl.getUniformLocation(program, 'u_chroma_aberration');
-    const shimmerLoc   = gl.getUniformLocation(program, 'u_specular_shimmer');
-    const rimLoc       = gl.getUniformLocation(program, 'u_rim_glow');
-    const grainLoc     = gl.getUniformLocation(program, 'u_grain_level');
-    const contrastLoc  = gl.getUniformLocation(program, 'u_contrast');
-    const vortexLoc    = gl.getUniformLocation(program, 'u_vortex_scale');
+    // Display Uniform Locations
+    const dispResLoc       = gl.getUniformLocation(displayProgram, 'u_resolution');
+    const dispImgResLoc    = gl.getUniformLocation(displayProgram, 'u_image_resolution');
+    const dispTimeLoc      = gl.getUniformLocation(displayProgram, 'u_time');
+    const dispUseImgLoc    = gl.getUniformLocation(displayProgram, 'u_use_image');
+    const dispShaderTypeLoc= gl.getUniformLocation(displayProgram, 'u_shader_type');
+    const dispSimTexLoc    = gl.getUniformLocation(displayProgram, 'u_simTexture');
+    const dispImgTexLoc    = gl.getUniformLocation(displayProgram, 'u_imageTexture');
 
-    // Palette Uniforms
-    const colShadowLoc = gl.getUniformLocation(program, 'u_col_shadow');
-    const colCoolALoc  = gl.getUniformLocation(program, 'u_col_cool_a');
-    const colCoolBLoc  = gl.getUniformLocation(program, 'u_col_cool_b');
-    const colWarmALoc  = gl.getUniformLocation(program, 'u_col_warm_a');
-    const colWarmBLoc  = gl.getUniformLocation(program, 'u_col_warm_b');
-    const colCrestLoc  = gl.getUniformLocation(program, 'u_col_crest');
+    const dispKSegsLoc     = gl.getUniformLocation(displayProgram, 'u_kaleido_segs');
+    const dispKAngleLoc    = gl.getUniformLocation(displayProgram, 'u_kaleido_angle');
+    const dispKZoomLoc     = gl.getUniformLocation(displayProgram, 'u_kaleido_zoom');
+    const dispKPinchLoc    = gl.getUniformLocation(displayProgram, 'u_kaleido_pinch');
+    const dispKMirrorLoc   = gl.getUniformLocation(displayProgram, 'u_kaleido_mirror');
+    const dispKBlurLoc     = gl.getUniformLocation(displayProgram, 'u_kaleido_blur');
 
-    // State Variables
+    const dispAngleLoc     = gl.getUniformLocation(displayProgram, 'u_flow_angle');
+    const dispSpeedLoc     = gl.getUniformLocation(displayProgram, 'u_speed');
+    const dispWarpLoc      = gl.getUniformLocation(displayProgram, 'u_warp_scale');
+    const dispStretchLoc   = gl.getUniformLocation(displayProgram, 'u_flow_stretch');
+
+    const dispHeadLoc      = gl.getUniformLocation(displayProgram, 'u_head');
+    const dispHeadActLoc   = gl.getUniformLocation(displayProgram, 'u_head_active');
+
+    const dispDensityLoc   = gl.getUniformLocation(displayProgram, 'u_contour_freq');
+    const dispStepLoc      = gl.getUniformLocation(displayProgram, 'u_step_quant');
+    const dispRidgeLoc     = gl.getUniformLocation(displayProgram, 'u_ridge_weight');
+    const dispChromaLoc    = gl.getUniformLocation(displayProgram, 'u_chroma_aberration');
+    const dispShimmerLoc   = gl.getUniformLocation(displayProgram, 'u_specular_shimmer');
+    const dispRimLoc       = gl.getUniformLocation(displayProgram, 'u_rim_glow');
+    const dispGrainLoc     = gl.getUniformLocation(displayProgram, 'u_grain_level');
+    const dispContrastLoc  = gl.getUniformLocation(displayProgram, 'u_contrast');
+
+    const dispColShadowLoc = gl.getUniformLocation(displayProgram, 'u_col_shadow');
+    const dispColCoolALoc  = gl.getUniformLocation(displayProgram, 'u_col_cool_a');
+    const dispColCoolBLoc  = gl.getUniformLocation(displayProgram, 'u_col_cool_b');
+    const dispColWarmALoc  = gl.getUniformLocation(displayProgram, 'u_col_warm_a');
+    const dispColWarmBLoc  = gl.getUniformLocation(displayProgram, 'u_col_warm_b');
+    const dispColCrestLoc  = gl.getUniformLocation(displayProgram, 'u_col_crest');
+
+    // --- PING-PONG FRAMEBUFFERS (FBOs) FOR STATEFUL PAINT MEMORY ---
+    let simWidth = 512;
+    let simHeight = 512;
+
+    let fboA = gl.createFramebuffer();
+    let fboB = gl.createFramebuffer();
+    let texA = gl.createTexture();
+    let texB = gl.createTexture();
+
+    function initFBOTexture(tex) {
+      gl.bindTexture(gl.TEXTURE_2D, tex);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+    }
+
+    initFBOTexture(texA);
+    initFBOTexture(texB);
+
+    function setupFBOs(width, height) {
+      simWidth = width;
+      simHeight = height;
+
+      // Neutral displacement state: (0.5, 0.5) is zero vector offset
+      const blankData = new Uint8Array(width * height * 4);
+      for (let i = 0; i < blankData.length; i += 4) {
+        blankData[i]   = 128; // X: 0.5
+        blankData[i+1] = 128; // Y: 0.5
+        blankData[i+2] = 0;
+        blankData[i+3] = 255;
+      }
+
+      gl.bindTexture(gl.TEXTURE_2D, texA);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, blankData);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fboA);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texA, 0);
+
+      gl.bindTexture(gl.TEXTURE_2D, texB);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, blankData);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fboB);
+      gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texB, 0);
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+    }
+
+    let readFBO = { fbo: fboA, tex: texA };
+    let writeFBO = { fbo: fboB, tex: texB };
+
+    function swapFBOs() {
+      const temp = readFBO;
+      readFBO = writeFBO;
+      writeFBO = temp;
+    }
+
+    function clearPaintCanvas() {
+      const blankData = new Uint8Array(simWidth * simHeight * 4);
+      for (let i = 0; i < blankData.length; i += 4) {
+        blankData[i]   = 128;
+        blankData[i+1] = 128;
+        blankData[i+2] = 0;
+        blankData[i+3] = 255;
+      }
+      gl.bindTexture(gl.TEXTURE_2D, texA);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, simWidth, simHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, blankData);
+      gl.bindTexture(gl.TEXTURE_2D, texB);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, simWidth, simHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, blankData);
+    }
+
+    document.getElementById('clearPaintBtn').addEventListener('click', (e) => {
+      e.stopPropagation();
+      clearPaintCanvas();
+    });
+
+    // Custom Image Texture
+    const customImgTexture = gl.createTexture();
+    initFBOTexture(customImgTexture);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255]));
+
+    let useImage = false;
+    let imageWidth = 1;
+    let imageHeight = 1;
+
+    const fileInput = document.getElementById('imageLoader');
+    const resetBtn = document.getElementById('resetBtn');
+
+    fileInput.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        const img = new Image();
+        img.onload = () => {
+          imageWidth = img.width;
+          imageHeight = img.height;
+          gl.bindTexture(gl.TEXTURE_2D, customImgTexture);
+          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+          useImage = true;
+          resetBtn.style.display = 'inline-flex';
+        };
+        img.src = event.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    resetBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      useImage = false;
+      fileInput.value = '';
+      resetBtn.style.display = 'none';
+    });
+
+    // --- SLIDERS & CONTROLS BINDING ---
+    const sliders = {
+      persistence: document.getElementById('sl-persistence'),
+      headForce:   document.getElementById('sl-head-force'),
+      handForce:   document.getElementById('sl-hand-force'),
+      angle:       document.getElementById('sl-angle'),
+      rotSpeed:    document.getElementById('sl-rot-speed'),
+      kSegs:       document.getElementById('sl-k-segs'),
+      kBlur:       document.getElementById('sl-k-blur'),
+      kAngle:      document.getElementById('sl-k-angle'),
+      kZoom:       document.getElementById('sl-k-zoom'),
+      kPinch:      document.getElementById('sl-k-pinch'),
+      speed:       document.getElementById('sl-speed'),
+      warp:        document.getElementById('sl-warp'),
+      stretch:     document.getElementById('sl-stretch'),
+      density:     document.getElementById('sl-density'),
+      step:        document.getElementById('sl-step'),
+      ridge:       document.getElementById('sl-ridge'),
+      chroma:      document.getElementById('sl-chroma'),
+      shimmer:     document.getElementById('sl-shimmer'),
+      rim:         document.getElementById('sl-rim'),
+      grain:       document.getElementById('sl-grain'),
+      contrast:    document.getElementById('sl-contrast')
+    };
+
+    const numDisplays = {
+      persistence: document.getElementById('persist-num'),
+      headForce:   document.getElementById('head-force-num'),
+      handForce:   document.getElementById('hand-force-num'),
+      angle:       document.getElementById('angle-num'),
+      rotSpeed:    document.getElementById('rot-speed-num'),
+      kSegs:       document.getElementById('k-segs-num'),
+      kBlur:       document.getElementById('k-blur-num'),
+      kAngle:      document.getElementById('k-angle-num'),
+      kZoom:       document.getElementById('k-zoom-num'),
+      kPinch:      document.getElementById('k-pinch-num'),
+      speed:       document.getElementById('speed-num'),
+      warp:        document.getElementById('warp-num'),
+      stretch:     document.getElementById('stretch-num'),
+      density:     document.getElementById('density-num'),
+      step:        document.getElementById('step-num'),
+      ridge:       document.getElementById('ridge-num'),
+      chroma:      document.getElementById('chroma-num'),
+      shimmer:     document.getElementById('shimmer-num'),
+      rim:         document.getElementById('rim-num'),
+      grain:       document.getElementById('grain-num'),
+      contrast:    document.getElementById('contrast-num')
+    };
+
     let currentEngine = 0.0;
     const engineSelect = document.getElementById('engineSelect');
     const engineValHUD = document.getElementById('engine-val');
@@ -1037,78 +1307,19 @@
       }
     });
 
-    const kaleidoHUD = document.getElementById('kaleido-val');
     const slKMode = document.getElementById('sl-k-mode');
     slKMode.addEventListener('pointerdown', (e) => e.stopPropagation());
-    slKMode.addEventListener('change', () => updateKaleidoHUD());
-
-    const sliders = {
-      angle:    document.getElementById('sl-angle'),
-      rotSpeed: document.getElementById('sl-rot-speed'),
-      kSegs:    document.getElementById('sl-k-segs'),
-      kBlur:    document.getElementById('sl-k-blur'),
-      kAngle:   document.getElementById('sl-k-angle'),
-      kZoom:    document.getElementById('sl-k-zoom'),
-      kPinch:   document.getElementById('sl-k-pinch'),
-      speed:    document.getElementById('sl-speed'),
-      warp:     document.getElementById('sl-warp'),
-      stretch:  document.getElementById('sl-stretch'),
-      density:  document.getElementById('sl-density'),
-      step:     document.getElementById('sl-step'),
-      ridge:    document.getElementById('sl-ridge'),
-      chroma:   document.getElementById('sl-chroma'),
-      shimmer:  document.getElementById('sl-shimmer'),
-      rim:      document.getElementById('sl-rim'),
-      grain:    document.getElementById('sl-grain'),
-      contrast: document.getElementById('sl-contrast'),
-      vortex:   document.getElementById('sl-vortex')
-    };
-
-    const numDisplays = {
-      angle:    document.getElementById('angle-num'),
-      rotSpeed: document.getElementById('rot-speed-num'),
-      kSegs:    document.getElementById('k-segs-num'),
-      kBlur:    document.getElementById('k-blur-num'),
-      kAngle:   document.getElementById('k-angle-num'),
-      kZoom:    document.getElementById('k-zoom-num'),
-      kPinch:   document.getElementById('k-pinch-num'),
-      speed:    document.getElementById('speed-num'),
-      warp:     document.getElementById('warp-num'),
-      stretch:  document.getElementById('stretch-num'),
-      density:  document.getElementById('density-num'),
-      step:     document.getElementById('step-num'),
-      ridge:    document.getElementById('ridge-num'),
-      chroma:   document.getElementById('chroma-num'),
-      shimmer:  document.getElementById('shimmer-num'),
-      rim:      document.getElementById('rim-num'),
-      grain:    document.getElementById('grain-num'),
-      contrast: document.getElementById('contrast-num'),
-      vortex:   document.getElementById('vortex-num')
-    };
-
-    function updateKaleidoHUD() {
-      const segs = parseInt(sliders.kSegs.value, 10);
-      if (segs <= 1) {
-        kaleidoHUD.textContent = 'Off';
-      } else {
-        const mode = slKMode.value === '1' ? 'Mirror' : 'Repeat';
-        kaleidoHUD.textContent = `${segs}x ${mode}`;
-      }
-    }
 
     for (const key in sliders) {
       const el = sliders[key];
       const updateVal = () => {
         if (key === 'angle') {
-          if (animModeSelect.value === 'manual') {
-            currentAngleDeg = parseFloat(el.value);
-          }
+          if (animModeSelect.value === 'manual') currentAngleDeg = parseFloat(el.value);
           numDisplays[key].textContent = Math.round(parseFloat(el.value)) + '°';
         } else if (key === 'rotSpeed') {
           numDisplays[key].textContent = parseFloat(el.value).toFixed(2) + 'x';
         } else if (key === 'kSegs') {
           numDisplays[key].textContent = el.value === '1' ? 'Off' : `${el.value} Petals`;
-          updateKaleidoHUD();
         } else if (key === 'kAngle') {
           numDisplays[key].textContent = el.value + '°';
         } else {
@@ -1156,30 +1367,12 @@
     }
 
     const stockPresets = {
-      amberSlate: {
-        shadow: '#0d0a12', coolA: '#2e5c70', coolB: '#8cb0ba',
-        warmA: '#f59e3d', warmB: '#e04717', crest: '#fff0e0'
-      },
-      emeraldGold: {
-        shadow: '#050d0a', coolA: '#0f3d32', coolB: '#3da688',
-        warmA: '#e6b543', warmB: '#b37517', crest: '#fbf5db'
-      },
-      velvetOrchid: {
-        shadow: '#0c0514', coolA: '#39154a', coolB: '#8739a8',
-        warmA: '#f28e2b', warmB: '#c7385a', crest: '#ffe8f6'
-      },
-      pearlOpal: {
-        shadow: '#0c1014', coolA: '#384852', coolB: '#7fa1b3',
-        warmA: '#d6b0a1', warmB: '#997369', crest: '#ffffff'
-      },
-      crimsonDusk: {
-        shadow: '#0d0305', coolA: '#3b1118', coolB: '#6b2230',
-        warmA: '#f75c40', warmB: '#ab1326', crest: '#ffede6'
-      },
-      deepAbyss: {
-        shadow: '#02060d', coolA: '#08203e', coolB: '#197278',
-        warmA: '#28e8a6', warmB: '#044343', crest: '#d6fff6'
-      }
+      amberSlate: { shadow: '#0d0a12', coolA: '#2e5c70', coolB: '#8cb0ba', warmA: '#f59e3d', warmB: '#e04717', crest: '#fff0e0' },
+      emeraldGold: { shadow: '#050d0a', coolA: '#0f3d32', coolB: '#3da688', warmA: '#e6b543', warmB: '#b37517', crest: '#fbf5db' },
+      velvetOrchid: { shadow: '#0c0514', coolA: '#39154a', coolB: '#8739a8', warmA: '#f28e2b', warmB: '#c7385a', crest: '#ffe8f6' },
+      pearlOpal: { shadow: '#0c1014', coolA: '#384852', coolB: '#7fa1b3', warmA: '#d6b0a1', warmB: '#997369', crest: '#ffffff' },
+      crimsonDusk: { shadow: '#0d0305', coolA: '#3b1118', coolB: '#6b2230', warmA: '#f75c40', warmB: '#ab1326', crest: '#ffede6' },
+      deepAbyss: { shadow: '#02060d', coolA: '#08203e', coolB: '#197278', warmA: '#28e8a6', warmB: '#044343', crest: '#d6fff6' }
     };
 
     // --- PRESET MANAGER ---
@@ -1193,23 +1386,16 @@
     const cancelPresetBtn = document.getElementById('cancelPresetBtn');
 
     let memoryPresetStore = {};
-
     function getSavedPresets() {
       try {
         const item = localStorage.getItem('user_shader_presets');
         return item ? JSON.parse(item) : memoryPresetStore;
-      } catch (err) {
-        return memoryPresetStore;
-      }
+      } catch (err) { return memoryPresetStore; }
     }
-
     function commitPresets(data) {
       memoryPresetStore = data;
-      try {
-        localStorage.setItem('user_shader_presets', JSON.stringify(data));
-      } catch (err) {}
+      try { localStorage.setItem('user_shader_presets', JSON.stringify(data)); } catch (err) {}
     }
-
     function refreshUserPresetsMenu() {
       userPresetsGroup.innerHTML = '';
       const saved = getSavedPresets();
@@ -1232,13 +1418,9 @@
 
     function captureCurrentPresetState() {
       const sliderVals = {};
-      for (const k in sliders) {
-        sliderVals[k] = sliders[k].value;
-      }
+      for (const k in sliders) sliderVals[k] = sliders[k].value;
       const colorVals = {};
-      for (const k in pickers) {
-        colorVals[k] = pickers[k].value;
-      }
+      for (const k in pickers) colorVals[k] = pickers[k].value;
       return {
         engine: currentEngine,
         animMode: animModeSelect.value,
@@ -1259,9 +1441,7 @@
         animModeSelect.value = data.animMode;
         animModeSelect.dispatchEvent(new Event('change'));
       }
-      if (data.kMode) {
-        slKMode.value = data.kMode;
-      }
+      if (data.kMode) slKMode.value = data.kMode;
       if (data.sliders) {
         for (const k in data.sliders) {
           if (sliders[k]) {
@@ -1271,9 +1451,7 @@
         }
       }
       if (data.colors) {
-        for (const k in data.colors) {
-          if (pickers[k]) pickers[k].value = data.colors[k];
-        }
+        for (const k in data.colors) if (pickers[k]) pickers[k].value = data.colors[k];
       }
     }
 
@@ -1284,12 +1462,7 @@
       presetModal.style.display = 'flex';
       setTimeout(() => presetNameInput.focus(), 50);
     });
-
-    cancelPresetBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      presetModal.style.display = 'none';
-    });
-
+    cancelPresetBtn.addEventListener('click', (e) => { e.stopPropagation(); presetModal.style.display = 'none'; });
     confirmPresetBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       const name = presetNameInput.value.trim();
@@ -1329,57 +1502,8 @@
       } else {
         delPresetBtn.style.display = 'none';
         const p = stockPresets[val];
-        if (p) {
-          for (const k in p) {
-            if (pickers[k]) pickers[k].value = p[k];
-          }
-        }
+        if (p) for (const k in p) if (pickers[k]) pickers[k].value = p[k];
       }
-    });
-
-    // --- TEXTURE LOADER ---
-    const texture = gl.createTexture();
-    gl.bindTexture(gl.TEXTURE_2D, texture);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
-    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255]));
-
-    let useImage = false;
-    let imageWidth = 1;
-    let imageHeight = 1;
-
-    const fileInput = document.getElementById('imageLoader');
-    const resetBtn = document.getElementById('resetBtn');
-    const saveBtn = document.getElementById('saveBtn');
-    const recordBtn = document.getElementById('recordBtn');
-    const recStatusHUD = document.getElementById('rec-status-val');
-
-    fileInput.addEventListener('change', (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          imageWidth = img.width;
-          imageHeight = img.height;
-          gl.bindTexture(gl.TEXTURE_2D, texture);
-          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-          useImage = true;
-          resetBtn.style.display = 'inline-flex';
-        };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
-    });
-
-    resetBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      useImage = false;
-      fileInput.value = '';
-      resetBtn.style.display = 'none';
     });
 
     // --- PHOTO SNAPSHOT & 60FPS VIDEO RECORDER ---
@@ -1394,21 +1518,16 @@
       mediaContainer.innerHTML = '';
     });
 
-    saveBtn.addEventListener('click', (e) => {
+    document.getElementById('saveBtn').addEventListener('click', (e) => {
       e.stopPropagation();
       canvas.toBlob(async (blob) => {
         if (!blob) return;
         const kTag = sliders.kSegs.value > 1 ? `-kaleido-${sliders.kSegs.value}x` : '';
-        const fileName = `contour-${engineNames[currentEngine].toLowerCase().replace(/\s+/g, '-')}${kTag}-${Date.now()}.png`;
+        const fileName = `paint-${engineNames[currentEngine].toLowerCase().replace(/\s+/g, '-')}${kTag}-${Date.now()}.png`;
         const file = new File([blob], fileName, { type: 'image/png' });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({ files: [file], title: 'Volumetric Contour Artwork' });
-            return;
-          } catch (err) {
-            if (err.name === 'AbortError') return;
-          }
+          try { await navigator.share({ files: [file], title: 'Permanent Paint Artwork' }); return; } catch (err) { if (err.name === 'AbortError') return; }
         }
         mediaContainer.innerHTML = `<img src="${URL.createObjectURL(blob)}" alt="Snapshot">`;
         modalMsg.innerHTML = 'Touch and hold image to tap <b>"Save to Photos"</b>';
@@ -1416,69 +1535,41 @@
       }, 'image/png');
     });
 
-    let mediaRecorder = null;
-    let recordedChunks = [];
-    let isRecording = false;
-    let recTimer = null;
-    let recSeconds = 0;
-
+    let mediaRecorder = null, recordedChunks = [], isRecording = false, recTimer = null, recSeconds = 0;
     function getSupportedMimeType() {
       const candidates = ['video/mp4;codecs=avc1', 'video/mp4', 'video/webm;codecs=vp9', 'video/webm;codecs=vp8', 'video/webm'];
-      for (const t of candidates) {
-        if (MediaRecorder.isTypeSupported(t)) return t;
-      }
+      for (const t of candidates) if (MediaRecorder.isTypeSupported(t)) return t;
       return '';
     }
 
+    const recordBtn = document.getElementById('recordBtn');
     recordBtn.addEventListener('click', async (e) => {
       e.stopPropagation();
-      if (isRecording) {
-        mediaRecorder.stop();
-        return;
-      }
+      if (isRecording) { mediaRecorder.stop(); return; }
 
       const stream = canvas.captureStream(60);
       const mimeType = getSupportedMimeType();
-      if (!mimeType) {
-        alert('MediaRecorder is not supported on this browser context.');
-        return;
-      }
+      if (!mimeType) { alert('MediaRecorder is not supported on this browser context.'); return; }
 
       recordedChunks = [];
       try {
         mediaRecorder = new MediaRecorder(stream, { mimeType: mimeType, videoBitsPerSecond: 16000000 });
-      } catch (err) {
-        alert('Recorder error: ' + err.message);
-        return;
-      }
+      } catch (err) { alert('Recorder error: ' + err.message); return; }
 
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) recordedChunks.push(event.data);
-      };
-
+      mediaRecorder.ondataavailable = (event) => { if (event.data && event.data.size > 0) recordedChunks.push(event.data); };
       mediaRecorder.onstop = async () => {
-        isRecording = false;
-        clearInterval(recTimer);
+        isRecording = false; clearInterval(recTimer);
         recordBtn.classList.remove('recording');
         recordBtn.textContent = '🎥 Record 60fps';
-        recStatusHUD.textContent = 'Processing...';
 
         const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
         const blob = new Blob(recordedChunks, { type: mimeType });
-        const fileName = `contour-60fps-${Date.now()}.${ext}`;
+        const fileName = `paint-60fps-${Date.now()}.${ext}`;
         const file = new File([blob], fileName, { type: mimeType });
 
-        recStatusHUD.textContent = 'Ready (60fps)';
-
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try {
-            await navigator.share({ files: [file], title: 'Volumetric Contour 60fps Video' });
-            return;
-          } catch (err) {
-            if (err.name === 'AbortError') return;
-          }
+          try { await navigator.share({ files: [file], title: 'Persistent Paint Video' }); return; } catch (err) { if (err.name === 'AbortError') return; }
         }
-
         const videoUrl = URL.createObjectURL(blob);
         mediaContainer.innerHTML = `<video src="${videoUrl}" controls autoplay loop playsinline></video>`;
         modalMsg.innerHTML = 'Video ready! Touch & hold or tap share to <b>"Save Video"</b>';
@@ -1486,21 +1577,13 @@
       };
 
       mediaRecorder.start(100);
-      isRecording = true;
-      recSeconds = 0;
+      isRecording = true; recSeconds = 0;
       recordBtn.classList.add('recording');
       recordBtn.textContent = '⏹️ Stop & Save';
-      recStatusHUD.textContent = 'REC 00:00 (60fps)';
-
-      recTimer = setInterval(() => {
-        recSeconds++;
-        const mins = String(Math.floor(recSeconds / 60)).padStart(2, '0');
-        const secs = String(recSeconds % 60).padStart(2, '0');
-        recStatusHUD.textContent = `REC ${mins}:${secs} (60fps)`;
-      }, 1000);
+      recTimer = setInterval(() => { recSeconds++; }, 1000);
     });
 
-    // --- MEDIAPIPE MULTI-POINT BODY POSE TRACKING ---
+    // --- MEDIAPIPE BODY POSE & VELOCITY TRACKING ---
     const poseToggleBtn = document.getElementById('poseToggleBtn');
     const poseStatusHUD = document.getElementById('pose-status-val');
     const hudInput = document.getElementById('input-type');
@@ -1511,12 +1594,16 @@
     let cameraInstance = null;
     let poseInstance = null;
 
-    let headTarget = { x: window.innerWidth * 0.5, y: window.innerHeight * 0.5, active: 0.0 };
-    let leftTarget = { x: window.innerWidth * 0.25, y: window.innerHeight * 0.5, active: 0.0 };
-    let rightTarget = { x: window.innerWidth * 0.75, y: window.innerHeight * 0.5, active: 0.0 };
+    let headTarget  = { x: window.innerWidth * 0.5, y: window.innerHeight * 0.5, active: 0.0, velX: 0.0, velY: 0.0 };
+    let leftTarget  = { x: window.innerWidth * 0.25, y: window.innerHeight * 0.5, active: 0.0, velX: 0.0, velY: 0.0 };
+    let rightTarget = { x: window.innerWidth * 0.75, y: window.innerHeight * 0.5, active: 0.0, velX: 0.0, velY: 0.0 };
 
-    let headCur = { ...headTarget };
-    let leftCur = { ...leftTarget };
+    let prevHeadPos = { x: headTarget.x, y: headTarget.y };
+    let prevLeftPos = { x: leftTarget.x, y: leftTarget.y };
+    let prevRightPos= { x: rightTarget.x, y: rightTarget.y };
+
+    let headCur  = { ...headTarget };
+    let leftCur  = { ...leftTarget };
     let rightCur = { ...rightTarget };
 
     const trackingVideo = document.createElement('video');
@@ -1558,7 +1645,7 @@
         return;
       }
 
-      poseStatusHUD.textContent = 'Tracking Head & Arms';
+      poseStatusHUD.textContent = 'Advecting Paint with Body';
       const lm = results.poseLandmarks;
 
       // 1. Head tracking (Nose = Landmark 0)
@@ -1566,6 +1653,11 @@
         headTarget.x = (1.0 - lm[0].x) * window.innerWidth;
         headTarget.y = (1.0 - lm[0].y) * window.innerHeight;
         headTarget.active = 1.0;
+
+        headTarget.velX = headTarget.x - prevHeadPos.x;
+        headTarget.velY = headTarget.y - prevHeadPos.y;
+        prevHeadPos.x = headTarget.x;
+        prevHeadPos.y = headTarget.y;
 
         pipCtx.fillStyle = '#f7a844';
         pipCtx.beginPath();
@@ -1581,6 +1673,11 @@
         leftTarget.y = (1.0 - lm[15].y) * window.innerHeight;
         leftTarget.active = 1.0;
 
+        leftTarget.velX = leftTarget.x - prevLeftPos.x;
+        leftTarget.velY = leftTarget.y - prevLeftPos.y;
+        prevLeftPos.x = leftTarget.x;
+        prevLeftPos.y = leftTarget.y;
+
         pipCtx.fillStyle = '#30d158';
         pipCtx.beginPath();
         pipCtx.arc(lm[15].x * pipCanvas.width, lm[15].y * pipCanvas.height, 5, 0, 2 * Math.PI);
@@ -1594,6 +1691,11 @@
         rightTarget.x = (1.0 - lm[16].x) * window.innerWidth;
         rightTarget.y = (1.0 - lm[16].y) * window.innerHeight;
         rightTarget.active = 1.0;
+
+        rightTarget.velX = rightTarget.x - prevRightPos.x;
+        rightTarget.velY = rightTarget.y - prevRightPos.y;
+        prevRightPos.x = rightTarget.x;
+        prevRightPos.y = rightTarget.y;
 
         pipCtx.fillStyle = '#0a84ff';
         pipCtx.beginPath();
@@ -1656,7 +1758,7 @@
         poseToggleBtn.classList.add('active-toggle');
         poseToggleBtn.textContent = '⏹️ Stop Body Tracking';
         hudInput.textContent = 'AI Body Pose Active';
-        poseStatusHUD.textContent = 'Tracking Head & Arms';
+        poseStatusHUD.textContent = 'Searching for body...';
       } catch (err) {
         alert('Could not start selfie camera: ' + err.message + '\nNote: Requires HTTPS or localhost.');
         poseStatusHUD.textContent = 'Camera Error';
@@ -1671,6 +1773,11 @@
     // --- POINTER & STYLUS HANDLING ---
     let pointerTargetX = window.innerWidth * 0.5;
     let pointerTargetY = window.innerHeight * 0.5;
+    let pointerPrevX = pointerTargetX;
+    let pointerPrevY = pointerTargetY;
+    let pointerVelX = 0.0;
+    let pointerVelY = 0.0;
+
     let pointerCurX = pointerTargetX;
     let pointerCurY = pointerTargetY;
     let pointerTargetPressure = 0.0;
@@ -1683,6 +1790,11 @@
       const rect = canvas.getBoundingClientRect();
       pointerTargetX = e.clientX - rect.left;
       pointerTargetY = window.innerHeight - (e.clientY - rect.top);
+
+      pointerVelX = pointerTargetX - pointerPrevX;
+      pointerVelY = pointerTargetY - pointerPrevY;
+      pointerPrevX = pointerTargetX;
+      pointerPrevY = pointerTargetY;
 
       if (e.pointerType === 'pen') {
         if (!poseActive) hudInput.textContent = 'Apple Pencil';
@@ -1700,6 +1812,8 @@
     canvas.addEventListener('pointerdown', (e) => {
       isDrawing = true;
       canvas.setPointerCapture(e.pointerId);
+      pointerPrevX = e.clientX - canvas.getBoundingClientRect().left;
+      pointerPrevY = window.innerHeight - (e.clientY - canvas.getBoundingClientRect().top);
       updatePointer(e);
       e.preventDefault();
     }, { passive: false });
@@ -1712,6 +1826,8 @@
     function releasePointer(e) {
       isDrawing = false;
       pointerTargetPressure = 0.0;
+      pointerVelX = 0.0;
+      pointerVelY = 0.0;
       hudPressure.textContent = '0.00';
       if (e.pointerId) {
         try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
@@ -1723,21 +1839,45 @@
 
     function resize() {
       const dpr = Math.min(window.devicePixelRatio || 1, 2.0);
-      canvas.width = Math.floor(window.innerWidth * dpr);
-      canvas.height = Math.floor(window.innerHeight * dpr);
-      gl.viewport(0, 0, canvas.width, canvas.height);
+      const w = Math.floor(window.innerWidth * dpr);
+      const h = Math.floor(window.innerHeight * dpr);
+      canvas.width = w;
+      canvas.height = h;
+
+      // Keep simulation resolution responsive and memory-efficient
+      const simW = Math.min(w, 1024);
+      const simH = Math.min(h, 1024);
+      setupFBOs(simW, simH);
     }
     window.addEventListener('resize', resize);
     window.addEventListener('orientationchange', () => setTimeout(resize, 100));
     resize();
 
-    // --- MAIN RENDER LOOP ---
+    // Helper: Convert pixel coordinates to aspect-normalized WebGL space
+    function toNormCoord(px, py) {
+      const minDim = Math.min(window.innerWidth, window.innerHeight);
+      return [
+        (px * 2.0 - window.innerWidth) / minDim,
+        (py * 2.0 - window.innerHeight) / minDim
+      ];
+    }
+
+    function toNormVel(vx, vy) {
+      const minDim = Math.min(window.innerWidth, window.innerHeight);
+      return [
+        (vx * 2.0) / minDim,
+        (vy * 2.0) / minDim
+      ];
+    }
+
+    // --- TWO-PASS MAIN RENDER LOOP ---
     function render(time) {
       const now = performance.now();
       let dt = (now - lastAnimTime) * 0.001;
       lastAnimTime = now;
       if (dt > 0.1) dt = 0.1;
 
+      // Ambient Flow kinematics
       const animMode = animModeSelect.value;
       const rotSpeedMult = parseFloat(sliders.rotSpeed.value);
       const baseAngularSpeed = 32.0;
@@ -1762,12 +1902,11 @@
         numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
       }
 
-      // Smooth pointer interpolation
-      pointerCurX += (pointerTargetX - pointerCurX) * 0.12;
-      pointerCurY += (pointerTargetY - pointerCurY) * 0.12;
-      pointerCurPressure += (pointerTargetPressure - pointerCurPressure) * 0.08;
+      // Smooth pointer & body interpolations
+      pointerCurX += (pointerTargetX - pointerCurX) * 0.15;
+      pointerCurY += (pointerTargetY - pointerCurY) * 0.15;
+      pointerCurPressure += (pointerTargetPressure - pointerCurPressure) * 0.1;
 
-      // Smooth multi-point body effectors interpolation
       headCur.x += (headTarget.x - headCur.x) * 0.15;
       headCur.y += (headTarget.y - headCur.y) * 0.15;
       headCur.active += (headTarget.active - headCur.active) * 0.1;
@@ -1780,56 +1919,116 @@
       rightCur.y += (rightTarget.y - rightCur.y) * 0.18;
       rightCur.active += (rightTarget.active - rightCur.active) * 0.12;
 
-      gl.useProgram(program);
+      // ============================================================
+      // PASS 1: STATEFUL ADVECTION SIMULATION (Write to writeFBO)
+      // ============================================================
+      gl.bindFramebuffer(gl.FRAMEBUFFER, writeFBO.fbo);
+      gl.viewport(0, 0, simWidth, simHeight);
+      gl.useProgram(simProgram);
 
-      const dpr = canvas.width / window.innerWidth;
-      gl.uniform2f(resLoc, canvas.width, canvas.height);
-      gl.uniform2f(imgResLoc, imageWidth, imageHeight);
-      gl.uniform1f(timeLoc, time * 0.001);
-      gl.uniform1f(useImageLoc, useImage ? 1.0 : 0.0);
-      gl.uniform1f(shaderTypeLoc, currentEngine);
+      gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+      const simPosLoc = gl.getAttribLocation(simProgram, 'a_position');
+      gl.enableVertexAttribArray(simPosLoc);
+      gl.vertexAttribPointer(simPosLoc, 2, gl.FLOAT, false, 0, 0);
 
-      // Pass Pointer Uniforms
-      gl.uniform2f(mouseLoc, pointerCurX * dpr, pointerCurY * dpr);
-      gl.uniform1f(pressureLoc, pointerCurPressure);
+      // Bind previous frame's accumulated paint texture
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, readFBO.tex);
+      gl.uniform1i(simPrevTexLoc, 0);
 
-      // Pass Multi-Point Body Pose Uniforms
-      gl.uniform2f(headLoc, headCur.x * dpr, headCur.y * dpr);
-      gl.uniform1f(headActiveLoc, headCur.active);
-      gl.uniform2f(leftWristLoc, leftCur.x * dpr, leftCur.y * dpr);
-      gl.uniform1f(leftActiveLoc, leftCur.active);
-      gl.uniform2f(rightWristLoc, rightCur.x * dpr, rightCur.y * dpr);
-      gl.uniform1f(rightActiveLoc, rightCur.active);
+      gl.uniform2f(simResLoc, window.innerWidth, window.innerHeight);
+      gl.uniform1f(simPersistLoc, parseFloat(sliders.persistence.value));
+      gl.uniform1f(simHeadForceLoc, parseFloat(sliders.headForce.value));
+      gl.uniform1f(simHandForceLoc, parseFloat(sliders.handForce.value));
+
+      // Stylus / Touch Uniforms
+      const mNorm = toNormCoord(pointerCurX, pointerCurY);
+      const mVel  = toNormVel(pointerVelX, pointerVelY);
+      gl.uniform2f(simMouseLoc, mNorm[0], mNorm[1]);
+      gl.uniform2f(simMouseVelLoc, mVel[0], mVel[1]);
+      gl.uniform1f(simPressureLoc, pointerCurPressure);
+
+      // Body Pose Uniforms
+      const hNorm = toNormCoord(headCur.x, headCur.y);
+      const hVel  = toNormVel(headTarget.velX, headTarget.velY);
+      gl.uniform2f(simHeadLoc, hNorm[0], hNorm[1]);
+      gl.uniform2f(simHeadVelLoc, hVel[0], hVel[1]);
+      gl.uniform1f(simHeadActLoc, headCur.active);
+
+      const lNorm = toNormCoord(leftCur.x, leftCur.y);
+      const lVel  = toNormVel(leftTarget.velX, leftTarget.velY);
+      gl.uniform2f(simLeftLoc, lNorm[0], lNorm[1]);
+      gl.uniform2f(simLeftVelLoc, lVel[0], lVel[1]);
+      gl.uniform1f(simLeftActLoc, leftCur.active);
+
+      const rNorm = toNormCoord(rightCur.x, rightCur.y);
+      const rVel  = toNormVel(rightTarget.velX, rightTarget.velY);
+      gl.uniform2f(simRightLoc, rNorm[0], rNorm[1]);
+      gl.uniform2f(simRightVelLoc, rVel[0], rVel[1]);
+      gl.uniform1f(simRightActLoc, rightCur.active);
+
+      gl.drawArrays(gl.TRIANGLES, 0, 6);
+
+      // Swap FBO textures so writeFBO becomes the read input for the next cycle
+      swapFBOs();
+
+      // ============================================================
+      // PASS 2: DISPLAY & SHADING PASS (Renders to Canvas Screen)
+      // ============================================================
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+      gl.viewport(0, 0, canvas.width, canvas.height);
+      gl.useProgram(displayProgram);
+
+      const dispPosLoc = gl.getAttribLocation(displayProgram, 'a_position');
+      gl.enableVertexAttribArray(dispPosLoc);
+      gl.vertexAttribPointer(dispPosLoc, 2, gl.FLOAT, false, 0, 0);
+
+      // Texture 0: Newly accumulated paint displacement from readFBO
+      gl.activeTexture(gl.TEXTURE0);
+      gl.bindTexture(gl.TEXTURE_2D, readFBO.tex);
+      gl.uniform1i(dispSimTexLoc, 0);
+
+      // Texture 1: Custom image overlay
+      gl.activeTexture(gl.TEXTURE1);
+      gl.bindTexture(gl.TEXTURE_2D, customImgTexture);
+      gl.uniform1i(dispImgTexLoc, 1);
+
+      gl.uniform2f(dispResLoc, canvas.width, canvas.height);
+      gl.uniform2f(dispImgResLoc, imageWidth, imageHeight);
+      gl.uniform1f(dispTimeLoc, time * 0.001);
+      gl.uniform1f(dispUseImgLoc, useImage ? 1.0 : 0.0);
+      gl.uniform1f(dispShaderTypeLoc, currentEngine);
 
       // Kaleidoscope Uniforms
-      gl.uniform1f(kSegsLoc, parseFloat(sliders.kSegs.value));
-      gl.uniform1f(kAngleLoc, (parseFloat(sliders.kAngle.value) * Math.PI) / 180.0);
-      gl.uniform1f(kZoomLoc, parseFloat(sliders.kZoom.value));
-      gl.uniform1f(kPinchLoc, parseFloat(sliders.kPinch.value));
-      gl.uniform1f(kMirrorLoc, parseFloat(slKMode.value));
-      gl.uniform1f(kBlurLoc, parseFloat(sliders.kBlur.value));
+      gl.uniform1f(dispKSegsLoc, parseFloat(sliders.kSegs.value));
+      gl.uniform1f(dispKAngleLoc, (parseFloat(sliders.kAngle.value) * Math.PI) / 180.0);
+      gl.uniform1f(dispKZoomLoc, parseFloat(sliders.kZoom.value));
+      gl.uniform1f(dispKPinchLoc, parseFloat(sliders.kPinch.value));
+      gl.uniform1f(dispKMirrorLoc, parseFloat(slKMode.value));
+      gl.uniform1f(dispKBlurLoc, parseFloat(sliders.kBlur.value));
 
-      // Animated Flow Angle
+      // Kinematics & Flow
       const angleRad = (currentAngleDeg * Math.PI) / 180.0;
-      gl.uniform1f(angleLoc, angleRad);
+      gl.uniform1f(dispAngleLoc, angleRad);
+      gl.uniform1f(dispSpeedLoc, parseFloat(sliders.speed.value));
+      gl.uniform1f(dispWarpLoc, parseFloat(sliders.warp.value));
+      gl.uniform1f(dispStretchLoc, parseFloat(sliders.stretch.value));
 
-      // Dynamics & Optics Uniforms
-      gl.uniform1f(speedLoc, parseFloat(sliders.speed.value));
-      gl.uniform1f(warpLoc, parseFloat(sliders.warp.value));
-      gl.uniform1f(stretchLoc, parseFloat(sliders.stretch.value));
-      gl.uniform1f(vortexLoc, parseFloat(sliders.vortex.value));
+      // Head Radiance
+      gl.uniform2f(dispHeadLoc, hNorm[0], hNorm[1]);
+      gl.uniform1f(dispHeadActLoc, headCur.active);
 
-      gl.uniform1f(densityLoc, parseFloat(sliders.density.value));
-      gl.uniform1f(stepLoc, parseFloat(sliders.step.value));
-      gl.uniform1f(ridgeLoc, parseFloat(sliders.ridge.value));
+      // Optics & Strata
+      gl.uniform1f(dispDensityLoc, parseFloat(sliders.density.value));
+      gl.uniform1f(dispStepLoc, parseFloat(sliders.step.value));
+      gl.uniform1f(dispRidgeLoc, parseFloat(sliders.ridge.value));
+      gl.uniform1f(dispChromaLoc, parseFloat(sliders.chroma.value));
+      gl.uniform1f(dispShimmerLoc, parseFloat(sliders.shimmer.value));
+      gl.uniform1f(dispRimLoc, parseFloat(sliders.rim.value));
+      gl.uniform1f(dispGrainLoc, parseFloat(sliders.grain.value));
+      gl.uniform1f(dispContrastLoc, parseFloat(sliders.contrast.value));
 
-      gl.uniform1f(chromaLoc, parseFloat(sliders.chroma.value));
-      gl.uniform1f(shimmerLoc, parseFloat(sliders.shimmer.value));
-      gl.uniform1f(rimLoc, parseFloat(sliders.rim.value));
-      gl.uniform1f(grainLoc, parseFloat(sliders.grain.value));
-      gl.uniform1f(contrastLoc, parseFloat(sliders.contrast.value));
-
-      // Dynamic Color Palette
+      // Palette
       const rgbShadow = hexToRgb(pickers.shadow.value);
       const rgbCoolA  = hexToRgb(pickers.coolA.value);
       const rgbCoolB  = hexToRgb(pickers.coolB.value);
@@ -1837,18 +2036,15 @@
       const rgbWarmB  = hexToRgb(pickers.warmB.value);
       const rgbCrest  = hexToRgb(pickers.crest.value);
 
-      gl.uniform3f(colShadowLoc, rgbShadow[0], rgbShadow[1], rgbShadow[2]);
-      gl.uniform3f(colCoolALoc,  rgbCoolA[0],  rgbCoolA[1],  rgbCoolA[2]);
-      gl.uniform3f(colCoolBLoc,  rgbCoolB[0],  rgbCoolB[1],  rgbCoolB[2]);
-      gl.uniform3f(colWarmALoc,  rgbWarmA[0],  rgbWarmA[1],  rgbWarmA[2]);
-      gl.uniform3f(colWarmBLoc,  rgbWarmB[0],  rgbWarmB[1],  rgbWarmB[2]);
-      gl.uniform3f(colCrestLoc,  rgbCrest[0],  rgbCrest[1],  rgbCrest[2]);
-
-      gl.activeTexture(gl.TEXTURE0);
-      gl.bindTexture(gl.TEXTURE_2D, texture);
-      gl.uniform1i(textureLoc, 0);
+      gl.uniform3f(dispColShadowLoc, rgbShadow[0], rgbShadow[1], rgbShadow[2]);
+      gl.uniform3f(dispColCoolALoc,  rgbCoolA[0],  rgbCoolA[1],  rgbCoolA[2]);
+      gl.uniform3f(dispColCoolBLoc,  rgbCoolB[0],  rgbCoolB[1],  rgbCoolB[2]);
+      gl.uniform3f(dispColWarmALoc,  rgbWarmA[0],  rgbWarmA[1],  rgbWarmA[2]);
+      gl.uniform3f(dispColWarmBLoc,  rgbWarmB[0],  rgbWarmB[1],  rgbWarmB[2]);
+      gl.uniform3f(dispColCrestLoc,  rgbCrest[0],  rgbCrest[1],  rgbCrest[2]);
 
       gl.drawArrays(gl.TRIANGLES, 0, 6);
+
       requestAnimationFrame(render);
     }
 
