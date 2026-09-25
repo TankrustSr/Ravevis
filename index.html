@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Volumetric Contours - Persistent Paint Studio</title>
+  <title>Volumetric Contours - 16-Bit Float Studio</title>
   
   <!-- MediaPipe Pose CDN Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
@@ -263,7 +263,6 @@
       </div>
 
       <div id="drawer">
-        <!-- Preset Manager Section -->
         <div class="sub-heading" style="margin-top:4px;">Preset Manager</div>
         <div style="display:flex; gap:6px; margin-top:4px;">
           <select id="presetSelect" style="flex:1;">
@@ -281,9 +280,7 @@
           <button id="delPresetBtn" title="Delete custom preset" style="display:none; color:#ff6b6b;">✕</button>
         </div>
 
-        <!-- 1. Physical Paint Persistence & Body Influences -->
         <div class="sub-heading">Physical Paint Dynamics</div>
-
         <div class="slider-row">
           <div class="slider-header">
             <span>Paint Persistence</span>
@@ -312,7 +309,6 @@
           <button id="clearPaintBtn" style="width:100%; background:rgba(247,168,68,0.2); border-color:#f7a844;">✨ Clear Paint Canvas</button>
         </div>
 
-        <!-- 2. Engine Archetype -->
         <div class="sub-heading">Engine Archetype</div>
         <div style="margin-top: 4px;">
           <select id="engineSelect" style="width: 100%;">
@@ -323,7 +319,6 @@
           </select>
         </div>
 
-        <!-- 3. Kinematics & Vector Flow -->
         <div class="sub-heading">Kinematics & Vector Flow</div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
           <span class="slider-header" style="margin:0;">Rotation Mode</span>
@@ -376,7 +371,6 @@
           <input type="range" id="sl-stretch" min="0.3" max="4.0" step="0.05" value="1.40">
         </div>
 
-        <!-- 4. Kaleidoscope Symmetry Suite -->
         <div class="sub-heading">Kaleidoscope Symmetry</div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
           <span class="slider-header" style="margin:0;">Symmetry Mode</span>
@@ -426,7 +420,6 @@
           <input type="range" id="sl-k-pinch" min="0.4" max="2.5" step="0.05" value="1.00">
         </div>
 
-        <!-- 5. Strata & Ridges -->
         <div class="sub-heading">Topographical Strata</div>
         <div class="slider-row">
           <div class="slider-header">
@@ -452,8 +445,7 @@
           <input type="range" id="sl-ridge" min="0.0" max="1.0" step="0.02" value="0.32">
         </div>
 
-        <!-- 6. Optics & Lighting -->
-        <div class="sub-heading">Optics & Volumetric Shading</div>
+        <div class="sub-heading">Optics & Lighting</div>
         <div class="slider-row">
           <div class="slider-header">
             <span>Iridescence (Prism)</span>
@@ -486,8 +478,7 @@
           <input type="range" id="sl-grain" min="0.0" max="0.25" step="0.01" value="0.04">
         </div>
 
-        <!-- 7. Contrast & Depth -->
-        <div class="sub-heading">Depth Contrast</div>
+        <div class="sub-heading">Contrast & Depth</div>
         <div class="slider-row">
           <div class="slider-header">
             <span>Depth Contrast</span>
@@ -496,7 +487,6 @@
           <input type="range" id="sl-contrast" min="0.5" max="2.0" step="0.05" value="1.00">
         </div>
 
-        <!-- 8. Palette Swatches -->
         <div class="sub-heading">Palette Swatches</div>
         <div class="swatch-row">
           <input type="color" id="colShadow" value="#0d0a12" title="Shadow Base">
@@ -509,7 +499,6 @@
       </div>
     </div>
 
-    <!-- Action Bar -->
     <div class="btn-group">
       <label class="btn" for="imageLoader">📷 Load Image</label>
       <input type="file" id="imageLoader" accept="image/*">
@@ -520,7 +509,6 @@
     </div>
   </div>
 
-  <!-- Custom Preset Save Dialog -->
   <div id="presetModal">
     <div style="background:#181920; border:1px solid rgba(255,255,255,0.18); border-radius:14px; padding:18px; width:290px; box-shadow:0 12px 40px rgba(0,0,0,0.6); pointer-events:auto;">
       <div style="font-size:13px; font-weight:700; color:#fff; margin-bottom:6px;">Save Preset</div>
@@ -533,7 +521,6 @@
     </div>
   </div>
 
-  <!-- Export Modal -->
   <div id="saveModal">
     <div id="modalMsg" style="color: #fff; font-family: -apple-system, sans-serif; font-size: 14px; margin-bottom: 12px; text-align: center;">
       Touch and hold below to tap <b>"Save to Photos"</b>
@@ -542,19 +529,24 @@
     <button id="closeModalBtn" style="margin-top: 16px; background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 9px 24px; border-radius: 8px; font-size: 13px; font-weight: 600;">Done</button>
   </div>
 
-  <!-- Canvas elements -->
   <canvas id="camPreviewCanvas"></canvas>
   <canvas id="glcanvas"></canvas>
 
   <script>
     const canvas = document.getElementById('glcanvas');
-    const gl = canvas.getContext('webgl', { powerPreference: 'high-performance', preserveDrawingBuffer: true });
+    // Request WebGL 2 first for native 16-bit Float FBO textures
+    let gl = canvas.getContext('webgl2', { powerPreference: 'high-performance', preserveDrawingBuffer: true });
+    let isWebGL2 = true;
+
+    if (!gl) {
+      isWebGL2 = false;
+      gl = canvas.getContext('webgl', { powerPreference: 'high-performance', preserveDrawingBuffer: true });
+    }
 
     if (!gl) {
       alert('WebGL not supported.');
     }
 
-    // Shared Fullscreen Quad Vertex Shader
     const quadVS = `
       attribute vec2 a_position;
       varying vec2 v_uv;
@@ -564,9 +556,7 @@
       }
     `;
 
-    // -------------------------------------------------------------
-    // PASS 1: STATEFUL ADVECTION SIMULATION SHADER (Ping-Pong FBO)
-    // -------------------------------------------------------------
+    // PASS 1: High-Precision 16-bit Float Paint Simulation Shader
     const simFS = `
       precision highp float;
       varying vec2 v_uv;
@@ -577,12 +567,10 @@
       uniform float u_head_force;
       uniform float u_hand_force;
 
-      // Stylus / Touch
       uniform vec2 u_mouse;
       uniform vec2 u_mouse_vel;
       uniform float u_pressure;
 
-      // Body Pose Effectors & Velocities
       uniform vec2 u_head;
       uniform vec2 u_head_vel;
       uniform float u_head_active;
@@ -599,85 +587,63 @@
         vec2 st = (gl_FragCoord.xy * 2.0 - u_resolution) / min(u_resolution.x, u_resolution.y);
         vec2 uv = v_uv;
 
-        // Sample previous accumulated paint displacement (offset from neutral 0.5)
-        vec4 prevData = texture2D(u_prevBuffer, uv);
-        vec2 disp = (prevData.xy - 0.5) * 4.0;
-
         vec2 totalImpulse = vec2(0.0);
 
-        // --- 1. STYLUS / TOUCH DRAG ---
+        // 1. Stylus Drag & Vortex
         if (u_pressure > 0.01) {
           vec2 toMouse = st - u_mouse;
           float dMouse = length(toMouse);
           float force = exp(-dMouse * 4.5) * u_pressure;
-          totalImpulse += u_mouse_vel * force * 1.8;
-          // Stylus vortex
-          totalImpulse += vec2(-toMouse.y, toMouse.x) / (dMouse + 0.15) * force * 0.4;
+          totalImpulse += u_mouse_vel * force * 2.2;
+          totalImpulse += vec2(-toMouse.y, toMouse.x) / (dMouse + 0.15) * force * 0.5;
         }
 
-        // --- 2. HEAD INFLUENCE (Lens, Bow-Wave & Torque) ---
+        // 2. Head Gravitational Lens & Wave Displacement
         if (u_head_active > 0.05) {
           vec2 toHead = st - u_head;
           float dHead = length(toHead);
-          
-          // Broad radial displacement (parts the paint)
           float fHead = exp(-dHead * 1.5) * u_head_active * u_head_force;
-          totalImpulse -= toHead * (fHead * 0.45);
-
-          // Head velocity jet (pushes paint along head trajectory)
-          totalImpulse += u_head_vel * (fHead * 0.65);
-
-          // Head rotational torque
+          totalImpulse -= toHead * (fHead * 0.55);
+          totalImpulse += u_head_vel * (fHead * 0.85);
           vec2 vHead = vec2(-toHead.y, toHead.x) / (dHead + 0.2);
-          totalImpulse += vHead * (fHead * 0.35);
+          totalImpulse += vHead * (fHead * 0.4);
         }
 
-        // --- 3. LEFT HAND (Counter-Clockwise Paddle + Velocity Jet) ---
+        // 3. Left Hand CCW Vortex Paddle
         if (u_left_active > 0.05) {
           vec2 toL = st - u_left_wrist;
           float dL = length(toL);
           float fL = exp(-dL * 3.2) * u_left_active * u_hand_force;
-          
-          // Direct velocity jet
-          totalImpulse += u_left_vel * fL * 1.2;
-
-          // CCW fluid vortex
+          totalImpulse += u_left_vel * fL * 1.4;
           vec2 vL = vec2(-toL.y, toL.x) / (dL + 0.15);
-          totalImpulse += vL * fL * 0.65;
+          totalImpulse += vL * fL * 0.85;
         }
 
-        // --- 4. RIGHT HAND (Clockwise Paddle + Velocity Jet) ---
+        // 4. Right Hand CW Vortex Paddle
         if (u_right_active > 0.05) {
           vec2 toR = st - u_right_wrist;
           float dR = length(toR);
           float fR = exp(-dR * 3.2) * u_right_active * u_hand_force;
-          
-          // Direct velocity jet
-          totalImpulse += u_right_vel * fR * 1.2;
-
-          // CW fluid vortex
+          totalImpulse += u_right_vel * fR * 1.4;
           vec2 vR = vec2(toR.y, -toR.x) / (dR + 0.15);
-          totalImpulse += vR * fR * 0.65;
+          totalImpulse += vR * fR * 0.85;
         }
 
-        // Advect: sample previous paint backwards along the local impulse
-        vec2 advectedUV = uv - totalImpulse * 0.015;
-        vec4 advectedData = texture2D(u_prevBuffer, advectedUV);
-        vec2 finalDisp = (advectedData.xy - 0.5) * 4.0;
+        // Isotropic UV advection step
+        vec2 uvDelta = vec2(totalImpulse.x * (u_resolution.y / u_resolution.x), totalImpulse.y) * 0.007;
+        vec2 advectedUV = clamp(uv - uvDelta, 0.001, 0.999);
 
-        // Accumulate new impulse & apply persistence decay
-        finalDisp = (finalDisp + totalImpulse * 0.35) * u_persistence;
+        // Read previous signed float displacement directly
+        vec2 prevDisp = texture2D(u_prevBuffer, advectedUV).xy;
 
-        // Repack back into normalized [0.0, 1.0] texture range
-        vec2 packedDisp = clamp(finalDisp / 4.0 + 0.5, 0.0, 1.0);
+        // Accumulate displacement with exact zero-drift persistence
+        vec2 finalDisp = (prevDisp + totalImpulse * 0.25) * u_persistence;
 
-        gl_FragColor = vec4(packedDisp, 0.0, 1.0);
+        gl_FragColor = vec4(finalDisp, 0.0, 1.0);
       }
     `;
 
-    // -------------------------------------------------------------
-    // PASS 2: DISPLAY & LIGHTING SHADER (Renders Deformed Paint)
-    // -------------------------------------------------------------
+    // PASS 2: Display & Lighting Shader
     const displayFS = `
       precision highp float;
       varying vec2 v_uv;
@@ -704,7 +670,7 @@
       uniform float u_warp_scale;
       uniform float u_flow_stretch;
 
-      // Head Glow
+      // Head Radiance
       uniform vec2 u_head;
       uniform float u_head_active;
 
@@ -823,14 +789,11 @@
       vec3 evaluateScene(vec2 st, vec2 screenUV) {
         float t = u_time * u_speed;
 
-        // Sample accumulated permanent paint displacement
-        vec4 simData = texture2D(u_simTexture, screenUV);
-        vec2 paintDisplacement = (simData.xy - 0.5) * 4.0;
-
-        // Apply physical paint displacement directly into spatial domain
+        // Sample smooth floating-point displacement directly
+        vec2 paintDisplacement = texture2D(u_simTexture, screenUV).xy;
         st += paintDisplacement;
 
-        // Directional Flow Alignment
+        // Steerable Directional Flow Alignment
         float rad = u_flow_angle;
         mat2 alignFlow = mat2(cos(rad), sin(rad), -sin(rad), cos(rad));
         vec2 p = alignFlow * st * vec2(0.55, u_flow_stretch);
@@ -1013,7 +976,6 @@
         gl_FragColor = vec4(clamp(finalColor, 0.0, 1.0), 1.0);
       }
     `;
-    // Shader & Program compilation helpers
     function createShader(gl, type, source) {
       const shader = gl.createShader(type);
       gl.shaderSource(shader, source);
@@ -1039,11 +1001,9 @@
       return prog;
     }
 
-    // Compile Simulation & Display Programs
     const simProgram = createProgram(gl, quadVS, simFS);
     const displayProgram = createProgram(gl, quadVS, displayFS);
 
-    // Full-screen Quad Buffer
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([
@@ -1051,7 +1011,7 @@
       -1.0,  1.0,  1.0, -1.0,  1.0,  1.0,
     ]), gl.STATIC_DRAW);
 
-    // Simulation Uniform Locations
+    // Uniform Locations (Simulation)
     const simResLoc       = gl.getUniformLocation(simProgram, 'u_resolution');
     const simPrevTexLoc   = gl.getUniformLocation(simProgram, 'u_prevBuffer');
     const simPersistLoc   = gl.getUniformLocation(simProgram, 'u_persistence');
@@ -1074,7 +1034,7 @@
     const simRightVelLoc  = gl.getUniformLocation(simProgram, 'u_right_vel');
     const simRightActLoc  = gl.getUniformLocation(simProgram, 'u_right_active');
 
-    // Display Uniform Locations
+    // Uniform Locations (Display)
     const dispResLoc       = gl.getUniformLocation(displayProgram, 'u_resolution');
     const dispImgResLoc    = gl.getUniformLocation(displayProgram, 'u_image_resolution');
     const dispTimeLoc      = gl.getUniformLocation(displayProgram, 'u_time');
@@ -1114,9 +1074,24 @@
     const dispColWarmBLoc  = gl.getUniformLocation(displayProgram, 'u_col_warm_b');
     const dispColCrestLoc  = gl.getUniformLocation(displayProgram, 'u_col_crest');
 
-    // --- PING-PONG FRAMEBUFFERS (FBOs) FOR STATEFUL PAINT MEMORY ---
-    let simWidth = 512;
-    let simHeight = 512;
+    // --- 16-BIT HALF-FLOAT HARDWARE SETUP ---
+    let floatInternalFormat, floatFormat, floatType;
+
+    if (isWebGL2) {
+      gl.getExtension('EXT_color_buffer_float');
+      floatInternalFormat = gl.RGBA16F;
+      floatFormat = gl.RGBA;
+      floatType = gl.HALF_FLOAT;
+    } else {
+      const extHalf = gl.getExtension('OES_texture_half_float');
+      gl.getExtension('OES_texture_half_float_linear');
+      floatInternalFormat = gl.RGBA;
+      floatFormat = gl.RGBA;
+      floatType = extHalf ? extHalf.HALF_FLOAT_OES : gl.UNSIGNED_BYTE;
+    }
+
+    let simWidth = 1024;
+    let simHeight = 1024;
 
     let fboA = gl.createFramebuffer();
     let fboB = gl.createFramebuffer();
@@ -1138,24 +1113,20 @@
       simWidth = width;
       simHeight = height;
 
-      // Neutral displacement state: (0.5, 0.5) is zero vector offset
-      const blankData = new Uint8Array(width * height * 4);
-      for (let i = 0; i < blankData.length; i += 4) {
-        blankData[i]   = 128; // X: 0.5
-        blankData[i+1] = 128; // Y: 0.5
-        blankData[i+2] = 0;
-        blankData[i+3] = 255;
-      }
-
+      // Allocate textures with high float precision
       gl.bindTexture(gl.TEXTURE_2D, texA);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, blankData);
+      gl.texImage2D(gl.TEXTURE_2D, 0, floatInternalFormat, width, height, 0, floatFormat, floatType, null);
       gl.bindFramebuffer(gl.FRAMEBUFFER, fboA);
       gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texA, 0);
+      gl.clearColor(0.0, 0.0, 0.0, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
 
       gl.bindTexture(gl.TEXTURE_2D, texB);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, width, height, 0, gl.RGBA, gl.UNSIGNED_BYTE, blankData);
+      gl.texImage2D(gl.TEXTURE_2D, 0, floatInternalFormat, width, height, 0, floatFormat, floatType, null);
       gl.bindFramebuffer(gl.FRAMEBUFFER, fboB);
       gl.framebufferTexture2D(gl.FRAMEBUFFER, gl.COLOR_ATTACHMENT0, gl.TEXTURE_2D, texB, 0);
+      gl.clearColor(0.0, 0.0, 0.0, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
 
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
@@ -1170,17 +1141,15 @@
     }
 
     function clearPaintCanvas() {
-      const blankData = new Uint8Array(simWidth * simHeight * 4);
-      for (let i = 0; i < blankData.length; i += 4) {
-        blankData[i]   = 128;
-        blankData[i+1] = 128;
-        blankData[i+2] = 0;
-        blankData[i+3] = 255;
-      }
-      gl.bindTexture(gl.TEXTURE_2D, texA);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, simWidth, simHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, blankData);
-      gl.bindTexture(gl.TEXTURE_2D, texB);
-      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, simWidth, simHeight, 0, gl.RGBA, gl.UNSIGNED_BYTE, blankData);
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fboA);
+      gl.clearColor(0.0, 0.0, 0.0, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, fboB);
+      gl.clearColor(0.0, 0.0, 0.0, 1.0);
+      gl.clear(gl.COLOR_BUFFER_BIT);
+
+      gl.bindFramebuffer(gl.FRAMEBUFFER, null);
     }
 
     document.getElementById('clearPaintBtn').addEventListener('click', (e) => {
@@ -1188,7 +1157,6 @@
       clearPaintCanvas();
     });
 
-    // Custom Image Texture
     const customImgTexture = gl.createTexture();
     initFBOTexture(customImgTexture);
     gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, 1, 1, 0, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array([0, 0, 0, 255]));
@@ -1226,7 +1194,7 @@
       resetBtn.style.display = 'none';
     });
 
-    // --- SLIDERS & CONTROLS BINDING ---
+    // Sliders
     const sliders = {
       persistence: document.getElementById('sl-persistence'),
       headForce:   document.getElementById('sl-head-force'),
@@ -1260,19 +1228,19 @@
       kSegs:       document.getElementById('k-segs-num'),
       kBlur:       document.getElementById('k-blur-num'),
       kAngle:      document.getElementById('k-angle-num'),
-      kZoom:       document.getElementById('k-zoom-num'),
-      kPinch:      document.getElementById('k-pinch-num'),
-      speed:       document.getElementById('speed-num'),
-      warp:        document.getElementById('warp-num'),
-      stretch:     document.getElementById('stretch-num'),
-      density:     document.getElementById('density-num'),
-      step:        document.getElementById('step-num'),
-      ridge:       document.getElementById('ridge-num'),
-      chroma:      document.getElementById('chroma-num'),
-      shimmer:     document.getElementById('shimmer-num'),
-      rim:         document.getElementById('rim-num'),
-      grain:       document.getElementById('grain-num'),
-      contrast:    document.getElementById('contrast-num')
+      kZoom:    document.getElementById('k-zoom-num'),
+      kPinch:   document.getElementById('k-pinch-num'),
+      speed:    document.getElementById('speed-num'),
+      warp:     document.getElementById('warp-num'),
+      stretch:  document.getElementById('stretch-num'),
+      density:  document.getElementById('density-num'),
+      step:     document.getElementById('step-num'),
+      ridge:    document.getElementById('ridge-num'),
+      chroma:   document.getElementById('chroma-num'),
+      shimmer:  document.getElementById('shimmer-num'),
+      rim:      document.getElementById('rim-num'),
+      grain:    document.getElementById('grain-num'),
+      contrast: document.getElementById('contrast-num')
     };
 
     let currentEngine = 0.0;
@@ -1375,7 +1343,7 @@
       deepAbyss: { shadow: '#02060d', coolA: '#08203e', coolB: '#197278', warmA: '#28e8a6', warmB: '#044343', crest: '#d6fff6' }
     };
 
-    // --- PRESET MANAGER ---
+    // Preset Manager
     const presetSelect = document.getElementById('presetSelect');
     const userPresetsGroup = document.getElementById('userPresetsGroup');
     const savePresetBtn = document.getElementById('savePresetBtn');
@@ -1506,7 +1474,7 @@
       }
     });
 
-    // --- PHOTO SNAPSHOT & 60FPS VIDEO RECORDER ---
+    // Snapshot & Recorder
     const saveModal = document.getElementById('saveModal');
     const modalMsg = document.getElementById('modalMsg');
     const mediaContainer = document.getElementById('mediaContainer');
@@ -1583,7 +1551,7 @@
       recTimer = setInterval(() => { recSeconds++; }, 1000);
     });
 
-    // --- MEDIAPIPE BODY POSE & VELOCITY TRACKING ---
+    // MediaPipe Pose & Velocity Tracking
     const poseToggleBtn = document.getElementById('poseToggleBtn');
     const poseStatusHUD = document.getElementById('pose-status-val');
     const hudInput = document.getElementById('input-type');
@@ -1648,7 +1616,7 @@
       poseStatusHUD.textContent = 'Advecting Paint with Body';
       const lm = results.poseLandmarks;
 
-      // 1. Head tracking (Nose = Landmark 0)
+      // 1. Head tracking (Nose)
       if (lm[0] && (lm[0].visibility === undefined || lm[0].visibility > 0.35)) {
         headTarget.x = (1.0 - lm[0].x) * window.innerWidth;
         headTarget.y = (1.0 - lm[0].y) * window.innerHeight;
@@ -1667,7 +1635,7 @@
         headTarget.active = 0.0;
       }
 
-      // 2. Left Wrist / Arm (Landmark 15)
+      // 2. Left Wrist / Arm
       if (lm[15] && (lm[15].visibility === undefined || lm[15].visibility > 0.35)) {
         leftTarget.x = (1.0 - lm[15].x) * window.innerWidth;
         leftTarget.y = (1.0 - lm[15].y) * window.innerHeight;
@@ -1686,7 +1654,7 @@
         leftTarget.active = 0.0;
       }
 
-      // 3. Right Wrist / Arm (Landmark 16)
+      // 3. Right Wrist / Arm
       if (lm[16] && (lm[16].visibility === undefined || lm[16].visibility > 0.35)) {
         rightTarget.x = (1.0 - lm[16].x) * window.innerWidth;
         rightTarget.y = (1.0 - lm[16].y) * window.innerHeight;
@@ -1705,7 +1673,7 @@
         rightTarget.active = 0.0;
       }
 
-      // 4. Steer Flow Direction from Arm Angle if selected
+      // 4. Steer Flow Direction from Arm Angle
       if (animModeSelect.value === 'body_arms') {
         if (leftTarget.active > 0.5 && rightTarget.active > 0.5) {
           const dx = rightTarget.x - leftTarget.x;
@@ -1770,7 +1738,7 @@
       togglePoseTracking();
     });
 
-    // --- POINTER & STYLUS HANDLING ---
+    // Pointer Handling
     let pointerTargetX = window.innerWidth * 0.5;
     let pointerTargetY = window.innerHeight * 0.5;
     let pointerPrevX = pointerTargetX;
@@ -1783,8 +1751,6 @@
     let pointerTargetPressure = 0.0;
     let pointerCurPressure = 0.0;
     let isDrawing = false;
-
-    const hudPressure = document.getElementById('pressure-val');
 
     function updatePointer(e) {
       const rect = canvas.getBoundingClientRect();
@@ -1806,7 +1772,6 @@
         if (!poseActive) hudInput.textContent = 'Mouse';
         pointerTargetPressure = isDrawing ? 0.5 : 0.0;
       }
-      hudPressure.textContent = pointerTargetPressure.toFixed(2);
     }
 
     canvas.addEventListener('pointerdown', (e) => {
@@ -1828,7 +1793,6 @@
       pointerTargetPressure = 0.0;
       pointerVelX = 0.0;
       pointerVelY = 0.0;
-      hudPressure.textContent = '0.00';
       if (e.pointerId) {
         try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
       }
@@ -1844,16 +1808,13 @@
       canvas.width = w;
       canvas.height = h;
 
-      // Keep simulation resolution responsive and memory-efficient
-      const simW = Math.min(w, 1024);
-      const simH = Math.min(h, 1024);
-      setupFBOs(simW, simH);
+      // Full 1:1 screen resolution FBO mapping
+      setupFBOs(w, h);
     }
     window.addEventListener('resize', resize);
     window.addEventListener('orientationchange', () => setTimeout(resize, 100));
     resize();
 
-    // Helper: Convert pixel coordinates to aspect-normalized WebGL space
     function toNormCoord(px, py) {
       const minDim = Math.min(window.innerWidth, window.innerHeight);
       return [
@@ -1870,14 +1831,13 @@
       ];
     }
 
-    // --- TWO-PASS MAIN RENDER LOOP ---
+    // TWO-PASS RENDER LOOP
     function render(time) {
       const now = performance.now();
       let dt = (now - lastAnimTime) * 0.001;
       lastAnimTime = now;
       if (dt > 0.1) dt = 0.1;
 
-      // Ambient Flow kinematics
       const animMode = animModeSelect.value;
       const rotSpeedMult = parseFloat(sliders.rotSpeed.value);
       const baseAngularSpeed = 32.0;
@@ -1902,7 +1862,6 @@
         numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
       }
 
-      // Smooth pointer & body interpolations
       pointerCurX += (pointerTargetX - pointerCurX) * 0.15;
       pointerCurY += (pointerTargetY - pointerCurY) * 0.15;
       pointerCurPressure += (pointerTargetPressure - pointerCurPressure) * 0.1;
@@ -1919,9 +1878,7 @@
       rightCur.y += (rightTarget.y - rightCur.y) * 0.18;
       rightCur.active += (rightTarget.active - rightCur.active) * 0.12;
 
-      // ============================================================
-      // PASS 1: STATEFUL ADVECTION SIMULATION (Write to writeFBO)
-      // ============================================================
+      // PASS 1: Simulation Step (Write to writeFBO)
       gl.bindFramebuffer(gl.FRAMEBUFFER, writeFBO.fbo);
       gl.viewport(0, 0, simWidth, simHeight);
       gl.useProgram(simProgram);
@@ -1931,7 +1888,6 @@
       gl.enableVertexAttribArray(simPosLoc);
       gl.vertexAttribPointer(simPosLoc, 2, gl.FLOAT, false, 0, 0);
 
-      // Bind previous frame's accumulated paint texture
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, readFBO.tex);
       gl.uniform1i(simPrevTexLoc, 0);
@@ -1941,14 +1897,12 @@
       gl.uniform1f(simHeadForceLoc, parseFloat(sliders.headForce.value));
       gl.uniform1f(simHandForceLoc, parseFloat(sliders.handForce.value));
 
-      // Stylus / Touch Uniforms
       const mNorm = toNormCoord(pointerCurX, pointerCurY);
       const mVel  = toNormVel(pointerVelX, pointerVelY);
       gl.uniform2f(simMouseLoc, mNorm[0], mNorm[1]);
       gl.uniform2f(simMouseVelLoc, mVel[0], mVel[1]);
       gl.uniform1f(simPressureLoc, pointerCurPressure);
 
-      // Body Pose Uniforms
       const hNorm = toNormCoord(headCur.x, headCur.y);
       const hVel  = toNormVel(headTarget.velX, headTarget.velY);
       gl.uniform2f(simHeadLoc, hNorm[0], hNorm[1]);
@@ -1969,12 +1923,9 @@
 
       gl.drawArrays(gl.TRIANGLES, 0, 6);
 
-      // Swap FBO textures so writeFBO becomes the read input for the next cycle
       swapFBOs();
 
-      // ============================================================
-      // PASS 2: DISPLAY & SHADING PASS (Renders to Canvas Screen)
-      // ============================================================
+      // PASS 2: Display & Lighting Render (Write to Canvas Screen)
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.useProgram(displayProgram);
@@ -1983,12 +1934,10 @@
       gl.enableVertexAttribArray(dispPosLoc);
       gl.vertexAttribPointer(dispPosLoc, 2, gl.FLOAT, false, 0, 0);
 
-      // Texture 0: Newly accumulated paint displacement from readFBO
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, readFBO.tex);
       gl.uniform1i(dispSimTexLoc, 0);
 
-      // Texture 1: Custom image overlay
       gl.activeTexture(gl.TEXTURE1);
       gl.bindTexture(gl.TEXTURE_2D, customImgTexture);
       gl.uniform1i(dispImgTexLoc, 1);
@@ -1999,7 +1948,6 @@
       gl.uniform1f(dispUseImgLoc, useImage ? 1.0 : 0.0);
       gl.uniform1f(dispShaderTypeLoc, currentEngine);
 
-      // Kaleidoscope Uniforms
       gl.uniform1f(dispKSegsLoc, parseFloat(sliders.kSegs.value));
       gl.uniform1f(dispKAngleLoc, (parseFloat(sliders.kAngle.value) * Math.PI) / 180.0);
       gl.uniform1f(dispKZoomLoc, parseFloat(sliders.kZoom.value));
@@ -2007,18 +1955,15 @@
       gl.uniform1f(dispKMirrorLoc, parseFloat(slKMode.value));
       gl.uniform1f(dispKBlurLoc, parseFloat(sliders.kBlur.value));
 
-      // Kinematics & Flow
       const angleRad = (currentAngleDeg * Math.PI) / 180.0;
       gl.uniform1f(dispAngleLoc, angleRad);
       gl.uniform1f(dispSpeedLoc, parseFloat(sliders.speed.value));
       gl.uniform1f(dispWarpLoc, parseFloat(sliders.warp.value));
       gl.uniform1f(dispStretchLoc, parseFloat(sliders.stretch.value));
 
-      // Head Radiance
       gl.uniform2f(dispHeadLoc, hNorm[0], hNorm[1]);
       gl.uniform1f(dispHeadActLoc, headCur.active);
 
-      // Optics & Strata
       gl.uniform1f(dispDensityLoc, parseFloat(sliders.density.value));
       gl.uniform1f(dispStepLoc, parseFloat(sliders.step.value));
       gl.uniform1f(dispRidgeLoc, parseFloat(sliders.ridge.value));
@@ -2028,7 +1973,6 @@
       gl.uniform1f(dispGrainLoc, parseFloat(sliders.grain.value));
       gl.uniform1f(dispContrastLoc, parseFloat(sliders.contrast.value));
 
-      // Palette
       const rgbShadow = hexToRgb(pickers.shadow.value);
       const rgbCoolA  = hexToRgb(pickers.coolA.value);
       const rgbCoolB  = hexToRgb(pickers.coolB.value);
