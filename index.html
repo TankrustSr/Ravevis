@@ -411,7 +411,7 @@
             <span>Tunnel Aperture / Scale</span>
             <span id="k-zoom-num" class="val">1.00</span>
           </div>
-          <input type="range" id="sl-k-zoom" min="0.3" max="3.0" step="0.05" value="1.00">
+          <input type="range" id="sl-k-zoom" min="0.2" max="3.0" step="0.02" value="1.00">
         </div>
 
         <div class="slider-row">
@@ -893,8 +893,10 @@
           if (modA < 0.0) modA += segAngle;
 
           if (u_is_warp_mode > 0.5) {
+            // Conformal Cylindrical Tunnel Mapping
+            // Anchored at r0 = 0.32: eliminates radial phase shudder when zoom changes
             float tunnelScale = 1.9 * u_kaleido_zoom;
-            float V = log(max(r, 0.003)) * tunnelScale - u_travel_dist;
+            float V = (log(max(r, 0.003)) - (-1.1394)) * tunnelScale - u_travel_dist;
 
             float H = segAngle * 0.5;
             float foldA = (u_kaleido_mirror > 0.5) ? abs(modA - H) : modA;
@@ -1265,6 +1267,7 @@
     let currentAngleDeg = 0.0;
     let smoothWarpSpeed = 0.50;
     let smoothZoom = 1.0;
+    let filteredSpan = 0.15;
     let travelDist = 0.0;
     let pingPongPhase = 0.0;
     let lastAnimTime = performance.now();
@@ -1813,7 +1816,7 @@
         numDisplays.kSegs.textContent = '4 (Locked)';
         slKMode.value = '1';
 
-        // Locked squarely at 45 degrees: corners align with 0 roll
+        // Locked at 45 degrees: corners align with screen diagonals (zero roll/banking)
         sliders.kAngle.value = 45;
         numDisplays.kAngle.textContent = '45° (Corners)';
 
@@ -1825,14 +1828,19 @@
           smoothWarpSpeed += (targetSpeed - smoothWarpSpeed) * 0.035;
 
           // Hand X Distance Expands Tunnel Aperture / Scale
-          const dx = rightCur.x - leftCur.x;
-          const spanX = Math.abs(dx) / window.innerWidth;
-          const normSpan = Math.min(Math.max((spanX - 0.08) / 0.28, 0.0), 1.0);
-          const targetZoom = mix(1.65, 0.40, normSpan);
+          // Low-pass filter the span distance to eliminate landmark flutter
+          const dx = Math.abs(rightCur.x - leftCur.x);
+          const rawSpan = dx / window.innerWidth;
+          filteredSpan += (rawSpan - filteredSpan) * 0.04;
+
+          // Re-scaled for close webcam proximity: full sweep between 5% and 22% of screen width
+          const normSpan = Math.min(Math.max((filteredSpan - 0.05) / 0.17, 0.0), 1.0);
+          // 1.50 = narrow focal aperture down to 0.35 = wide, magnificent open corridor
+          const targetZoom = mix(1.50, 0.35, normSpan);
           smoothZoom += (targetZoom - smoothZoom) * 0.035;
         } else {
           smoothWarpSpeed += (0.25 - smoothWarpSpeed) * 0.02;
-          smoothZoom += (1.0 - smoothZoom) * 0.02;
+          smoothZoom += (0.95 - smoothZoom) * 0.02;
         }
 
         sliders.rotSpeed.value = smoothWarpSpeed.toFixed(2);
@@ -1841,7 +1849,7 @@
         sliders.kZoom.value = smoothZoom.toFixed(2);
         numDisplays.kZoom.textContent = smoothZoom.toFixed(2);
 
-        // Calibrated Warp Travel Integration
+        // Calibrated Warp Travel Integration (steady, non-blurring speed)
         travelDist += smoothWarpSpeed * dt * 1.5;
 
       } else if (animMode === 'manual') {
