@@ -976,7 +976,7 @@
         gl_FragColor = vec4(clamp(finalColor, 0.0, 1.0), 1.0);
       }
     `;
-    function createShader(gl, type, source) {
+  function createShader(gl, type, source) {
       const shader = gl.createShader(type);
       gl.shaderSource(shader, source);
       gl.compileShader(shader);
@@ -1113,7 +1113,6 @@
       simWidth = width;
       simHeight = height;
 
-      // Allocate textures with high float precision
       gl.bindTexture(gl.TEXTURE_2D, texA);
       gl.texImage2D(gl.TEXTURE_2D, 0, floatInternalFormat, width, height, 0, floatFormat, floatType, null);
       gl.bindFramebuffer(gl.FRAMEBUFFER, fboA);
@@ -1228,19 +1227,19 @@
       kSegs:       document.getElementById('k-segs-num'),
       kBlur:       document.getElementById('k-blur-num'),
       kAngle:      document.getElementById('k-angle-num'),
-      kZoom:    document.getElementById('k-zoom-num'),
-      kPinch:   document.getElementById('k-pinch-num'),
-      speed:    document.getElementById('speed-num'),
-      warp:     document.getElementById('warp-num'),
-      stretch:  document.getElementById('stretch-num'),
-      density:  document.getElementById('density-num'),
-      step:     document.getElementById('step-num'),
-      ridge:    document.getElementById('ridge-num'),
-      chroma:   document.getElementById('chroma-num'),
-      shimmer:  document.getElementById('shimmer-num'),
-      rim:      document.getElementById('rim-num'),
-      grain:    document.getElementById('grain-num'),
-      contrast: document.getElementById('contrast-num')
+      kZoom:       document.getElementById('k-zoom-num'),
+      kPinch:      document.getElementById('k-pinch-num'),
+      speed:       document.getElementById('speed-num'),
+      warp:        document.getElementById('warp-num'),
+      stretch:     document.getElementById('stretch-num'),
+      density:     document.getElementById('density-num'),
+      step:        document.getElementById('step-num'),
+      ridge:       document.getElementById('ridge-num'),
+      chroma:      document.getElementById('chroma-num'),
+      shimmer:     document.getElementById('shimmer-num'),
+      rim:         document.getElementById('rim-num'),
+      grain:       document.getElementById('grain-num'),
+      contrast:    document.getElementById('contrast-num')
     };
 
     let currentEngine = 0.0;
@@ -1562,17 +1561,18 @@
     let cameraInstance = null;
     let poseInstance = null;
 
-    let headTarget  = { x: window.innerWidth * 0.5, y: window.innerHeight * 0.5, active: 0.0, velX: 0.0, velY: 0.0 };
-    let leftTarget  = { x: window.innerWidth * 0.25, y: window.innerHeight * 0.5, active: 0.0, velX: 0.0, velY: 0.0 };
-    let rightTarget = { x: window.innerWidth * 0.75, y: window.innerHeight * 0.5, active: 0.0, velX: 0.0, velY: 0.0 };
-
-    let prevHeadPos = { x: headTarget.x, y: headTarget.y };
-    let prevLeftPos = { x: leftTarget.x, y: leftTarget.y };
-    let prevRightPos= { x: rightTarget.x, y: rightTarget.y };
+    let headTarget  = { x: window.innerWidth * 0.5, y: window.innerHeight * 0.5, active: 0.0 };
+    let leftTarget  = { x: window.innerWidth * 0.25, y: window.innerHeight * 0.5, active: 0.0 };
+    let rightTarget = { x: window.innerWidth * 0.75, y: window.innerHeight * 0.5, active: 0.0 };
 
     let headCur  = { ...headTarget };
     let leftCur  = { ...leftTarget };
     let rightCur = { ...rightTarget };
+
+    // Previous position buffers for frame-rate-interpolated velocity
+    let prevHeadCurX  = headCur.x, prevHeadCurY  = headCur.y;
+    let prevLeftCurX  = leftCur.x, prevLeftCurY  = leftCur.y;
+    let prevRightCurX = rightCur.x, prevRightCurY = rightCur.y;
 
     const trackingVideo = document.createElement('video');
     trackingVideo.playsInline = true;
@@ -1622,11 +1622,6 @@
         headTarget.y = (1.0 - lm[0].y) * window.innerHeight;
         headTarget.active = 1.0;
 
-        headTarget.velX = headTarget.x - prevHeadPos.x;
-        headTarget.velY = headTarget.y - prevHeadPos.y;
-        prevHeadPos.x = headTarget.x;
-        prevHeadPos.y = headTarget.y;
-
         pipCtx.fillStyle = '#f7a844';
         pipCtx.beginPath();
         pipCtx.arc(lm[0].x * pipCanvas.width, lm[0].y * pipCanvas.height, 5, 0, 2 * Math.PI);
@@ -1641,11 +1636,6 @@
         leftTarget.y = (1.0 - lm[15].y) * window.innerHeight;
         leftTarget.active = 1.0;
 
-        leftTarget.velX = leftTarget.x - prevLeftPos.x;
-        leftTarget.velY = leftTarget.y - prevLeftPos.y;
-        prevLeftPos.x = leftTarget.x;
-        prevLeftPos.y = leftTarget.y;
-
         pipCtx.fillStyle = '#30d158';
         pipCtx.beginPath();
         pipCtx.arc(lm[15].x * pipCanvas.width, lm[15].y * pipCanvas.height, 5, 0, 2 * Math.PI);
@@ -1659,11 +1649,6 @@
         rightTarget.x = (1.0 - lm[16].x) * window.innerWidth;
         rightTarget.y = (1.0 - lm[16].y) * window.innerHeight;
         rightTarget.active = 1.0;
-
-        rightTarget.velX = rightTarget.x - prevRightPos.x;
-        rightTarget.velY = rightTarget.y - prevRightPos.y;
-        prevRightPos.x = rightTarget.x;
-        prevRightPos.y = rightTarget.y;
 
         pipCtx.fillStyle = '#0a84ff';
         pipCtx.beginPath();
@@ -1741,13 +1726,10 @@
     // Pointer Handling
     let pointerTargetX = window.innerWidth * 0.5;
     let pointerTargetY = window.innerHeight * 0.5;
-    let pointerPrevX = pointerTargetX;
-    let pointerPrevY = pointerTargetY;
-    let pointerVelX = 0.0;
-    let pointerVelY = 0.0;
-
     let pointerCurX = pointerTargetX;
     let pointerCurY = pointerTargetY;
+    let prevPointerCurX = pointerCurX;
+    let prevPointerCurY = pointerCurY;
     let pointerTargetPressure = 0.0;
     let pointerCurPressure = 0.0;
     let isDrawing = false;
@@ -1756,11 +1738,6 @@
       const rect = canvas.getBoundingClientRect();
       pointerTargetX = e.clientX - rect.left;
       pointerTargetY = window.innerHeight - (e.clientY - rect.top);
-
-      pointerVelX = pointerTargetX - pointerPrevX;
-      pointerVelY = pointerTargetY - pointerPrevY;
-      pointerPrevX = pointerTargetX;
-      pointerPrevY = pointerTargetY;
 
       if (e.pointerType === 'pen') {
         if (!poseActive) hudInput.textContent = 'Apple Pencil';
@@ -1777,8 +1754,6 @@
     canvas.addEventListener('pointerdown', (e) => {
       isDrawing = true;
       canvas.setPointerCapture(e.pointerId);
-      pointerPrevX = e.clientX - canvas.getBoundingClientRect().left;
-      pointerPrevY = window.innerHeight - (e.clientY - canvas.getBoundingClientRect().top);
       updatePointer(e);
       e.preventDefault();
     }, { passive: false });
@@ -1791,8 +1766,6 @@
     function releasePointer(e) {
       isDrawing = false;
       pointerTargetPressure = 0.0;
-      pointerVelX = 0.0;
-      pointerVelY = 0.0;
       if (e.pointerId) {
         try { canvas.releasePointerCapture(e.pointerId); } catch(err) {}
       }
@@ -1808,13 +1781,14 @@
       canvas.width = w;
       canvas.height = h;
 
-      // Full 1:1 screen resolution FBO mapping
+      // Full 1:1 Retina resolution simulation buffers
       setupFBOs(w, h);
     }
     window.addEventListener('resize', resize);
     window.addEventListener('orientationchange', () => setTimeout(resize, 100));
     resize();
 
+    // Normalization Helpers
     function toNormCoord(px, py) {
       const minDim = Math.min(window.innerWidth, window.innerHeight);
       return [
@@ -1862,23 +1836,43 @@
         numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
       }
 
-      pointerCurX += (pointerTargetX - pointerCurX) * 0.15;
-      pointerCurY += (pointerTargetY - pointerCurY) * 0.15;
-      pointerCurPressure += (pointerTargetPressure - pointerCurPressure) * 0.1;
+      // Smooth pointer interpolation & instantaneous velocity
+      pointerCurX += (pointerTargetX - pointerCurX) * 0.2;
+      pointerCurY += (pointerTargetY - pointerCurY) * 0.2;
+      pointerCurPressure += (pointerTargetPressure - pointerCurPressure) * 0.12;
 
-      headCur.x += (headTarget.x - headCur.x) * 0.15;
-      headCur.y += (headTarget.y - headCur.y) * 0.15;
-      headCur.active += (headTarget.active - headCur.active) * 0.1;
+      const pVel = toNormVel(pointerCurX - prevPointerCurX, pointerCurY - prevPointerCurY);
+      prevPointerCurX = pointerCurX;
+      prevPointerCurY = pointerCurY;
 
-      leftCur.x += (leftTarget.x - leftCur.x) * 0.18;
-      leftCur.y += (leftTarget.y - leftCur.y) * 0.18;
-      leftCur.active += (leftTarget.active - leftCur.active) * 0.12;
+      // Smooth body effector interpolation & instantaneous velocities
+      headCur.x += (headTarget.x - headCur.x) * 0.18;
+      headCur.y += (headTarget.y - headCur.y) * 0.18;
+      headCur.active += (headTarget.active - headCur.active) * 0.12;
 
-      rightCur.x += (rightTarget.x - rightCur.x) * 0.18;
-      rightCur.y += (rightTarget.y - rightCur.y) * 0.18;
-      rightCur.active += (rightTarget.active - rightCur.active) * 0.12;
+      const hVel = toNormVel(headCur.x - prevHeadCurX, headCur.y - prevHeadCurY);
+      prevHeadCurX = headCur.x;
+      prevHeadCurY = headCur.y;
 
+      leftCur.x += (leftTarget.x - leftCur.x) * 0.2;
+      leftCur.y += (leftTarget.y - leftCur.y) * 0.2;
+      leftCur.active += (leftTarget.active - leftCur.active) * 0.14;
+
+      const lVel = toNormVel(leftCur.x - prevLeftCurX, leftCur.y - prevLeftCurY);
+      prevLeftCurX = leftCur.x;
+      prevLeftCurY = leftCur.y;
+
+      rightCur.x += (rightTarget.x - rightCur.x) * 0.2;
+      rightCur.y += (rightTarget.y - rightCur.y) * 0.2;
+      rightCur.active += (rightTarget.active - rightCur.active) * 0.14;
+
+      const rVel = toNormVel(rightCur.x - prevRightCurX, rightCur.y - prevRightCurY);
+      prevRightCurX = rightCur.x;
+      prevRightCurY = rightCur.y;
+
+      // ============================================================
       // PASS 1: Simulation Step (Write to writeFBO)
+      // ============================================================
       gl.bindFramebuffer(gl.FRAMEBUFFER, writeFBO.fbo);
       gl.viewport(0, 0, simWidth, simHeight);
       gl.useProgram(simProgram);
@@ -1892,31 +1886,28 @@
       gl.bindTexture(gl.TEXTURE_2D, readFBO.tex);
       gl.uniform1i(simPrevTexLoc, 0);
 
-      gl.uniform2f(simResLoc, window.innerWidth, window.innerHeight);
+      // Pass true Retina resolution matching the FBO viewport
+      gl.uniform2f(simResLoc, simWidth, simHeight);
       gl.uniform1f(simPersistLoc, parseFloat(sliders.persistence.value));
       gl.uniform1f(simHeadForceLoc, parseFloat(sliders.headForce.value));
       gl.uniform1f(simHandForceLoc, parseFloat(sliders.handForce.value));
 
       const mNorm = toNormCoord(pointerCurX, pointerCurY);
-      const mVel  = toNormVel(pointerVelX, pointerVelY);
       gl.uniform2f(simMouseLoc, mNorm[0], mNorm[1]);
-      gl.uniform2f(simMouseVelLoc, mVel[0], mVel[1]);
+      gl.uniform2f(simMouseVelLoc, pVel[0], pVel[1]);
       gl.uniform1f(simPressureLoc, pointerCurPressure);
 
       const hNorm = toNormCoord(headCur.x, headCur.y);
-      const hVel  = toNormVel(headTarget.velX, headTarget.velY);
       gl.uniform2f(simHeadLoc, hNorm[0], hNorm[1]);
       gl.uniform2f(simHeadVelLoc, hVel[0], hVel[1]);
       gl.uniform1f(simHeadActLoc, headCur.active);
 
       const lNorm = toNormCoord(leftCur.x, leftCur.y);
-      const lVel  = toNormVel(leftTarget.velX, leftTarget.velY);
       gl.uniform2f(simLeftLoc, lNorm[0], lNorm[1]);
       gl.uniform2f(simLeftVelLoc, lVel[0], lVel[1]);
       gl.uniform1f(simLeftActLoc, leftCur.active);
 
       const rNorm = toNormCoord(rightCur.x, rightCur.y);
-      const rVel  = toNormVel(rightTarget.velX, rightTarget.velY);
       gl.uniform2f(simRightLoc, rNorm[0], rNorm[1]);
       gl.uniform2f(simRightVelLoc, rVel[0], rVel[1]);
       gl.uniform1f(simRightActLoc, rightCur.active);
@@ -1925,7 +1916,9 @@
 
       swapFBOs();
 
+      // ============================================================
       // PASS 2: Display & Lighting Render (Write to Canvas Screen)
+      // ============================================================
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.useProgram(displayProgram);
