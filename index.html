@@ -253,7 +253,7 @@
     <div id="hud" class="panel">
       Input: <span id="input-type">Apple Pencil / Touch</span><br>
       Body: <span id="pose-status-val">Waiting...</span><br>
-      Engine: <span id="engine-val">Laminar Silk</span> | Flow: <span id="flow-mode-val">Manual</span>
+      Engine: <span id="engine-val">Laminar Silk</span> | Flow: <span id="flow-mode-val">Kaleido Tunnel</span>
     </div>
 
     <div class="panel">
@@ -320,24 +320,25 @@
         </div>
 
         <div class="sub-heading">Kinematics & Vector Flow</div>
-       <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
-  <span class="slider-header" style="margin:0;">Rotation Mode</span>
-  <select id="sl-angle-anim">
-    <option value="manual">Manual (Slider)</option>
-    <option value="body_arms">Track Arm Angle (Pose)</option>
-    <option value="pour_hands" selected>💧 Pour Between Hands (Gravity Cascade)</option>
-    <option value="continuous_cw">Continuous (Clockwise)</option>
-    <option value="continuous_ccw">Continuous (Counter-CW)</option>
-    <option value="pingpong">Smooth Reversal (0° ⇄ 360°)</option>
-  </select>
-</div>
-        
-       <div class="slider-row">
-  		<div class="slider-header">
-         <span>Flow Direction</span>
-         <span id="angle-num" class="val">37°</span>
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
+          <span class="slider-header" style="margin:0;">Rotation Mode</span>
+          <select id="sl-angle-anim">
+            <option value="body_kaleido" selected>🌀 Body Kaleido Tunnel</option>
+            <option value="manual">Manual (Slider)</option>
+            <option value="body_arms">Track Arm Angle (Pose)</option>
+            <option value="pour_hands">💧 Pour Between Hands (Gravity Cascade)</option>
+            <option value="continuous_cw">Continuous (Clockwise)</option>
+            <option value="continuous_ccw">Continuous (Counter-CW)</option>
+            <option value="pingpong">Smooth Reversal (0° ⇄ 360°)</option>
+          </select>
         </div>
-         <input type="range" id="sl-angle" min="-180" max="180" step="1" value="37">
+        
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>Flow Direction</span>
+            <span id="angle-num" class="val">37°</span>
+          </div>
+          <input type="range" id="sl-angle" min="-180" max="180" step="1" value="37">
         </div>
 
         <div class="slider-row">
@@ -384,9 +385,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Symmetry Petals</span>
-            <span id="k-segs-num" class="val">Off</span>
+            <span id="k-segs-num" class="val">6 Petals</span>
           </div>
-          <input type="range" id="sl-k-segs" min="1" max="24" step="1" value="1">
+          <input type="range" id="sl-k-segs" min="1" max="24" step="1" value="6">
         </div>
 
         <div class="slider-row">
@@ -535,7 +536,6 @@
 
   <script>
     const canvas = document.getElementById('glcanvas');
-    // Request WebGL 2 first for native 16-bit Float FBO textures
     let gl = canvas.getContext('webgl2', { powerPreference: 'high-performance', preserveDrawingBuffer: true });
     let isWebGL2 = true;
 
@@ -567,11 +567,6 @@
       uniform float u_persistence;
       uniform float u_head_force;
       uniform float u_hand_force;
-      
-      uniform vec2 u_high_hand;
-      uniform vec2 u_low_hand;
-      uniform float u_pour_mode;
-      uniform float u_pour_strength;
 
       uniform vec2 u_mouse;
       uniform vec2 u_mouse_vel;
@@ -634,32 +629,6 @@
           vec2 vR = vec2(toR.y, -toR.x) / (dR + 0.15);
           totalImpulse += vR * fR * 0.85;
         }
-        
-        // --- 5. GRAVITY CASCADE POUR STREAM (Higher Hand -> Lower Hand) ---
-        if (u_pour_mode > 0.5 && u_pour_strength > 0.01) {
-          vec2 seg = u_low_hand - u_high_hand;
-          float segLen = length(seg);
-          if (segLen > 0.08) {
-            vec2 dir = seg / segLen;
-            vec2 toPt = st - u_high_hand;
-            float tProj = clamp(dot(toPt, dir) / segLen, 0.0, 1.0);
-            vec2 proj = u_high_hand + dir * (tProj * segLen);
-            float distToStream = length(st - proj);
-
-            // Cohesive fluid column between hands
-            float streamForce = exp(-distToStream * 7.5) * u_pour_strength;
-            totalImpulse += dir * streamForce * 3.2;
-
-            // Basin splash vortex where the stream lands at the lower hand
-            if (tProj > 0.65) {
-              float splashWeight = smoothstep(0.65, 1.0, tProj);
-              vec2 toLow = st - u_low_hand;
-              float dLow = length(toLow);
-              vec2 splashVortex = vec2(-toLow.y, toLow.x) / (dLow + 0.12);
-              totalImpulse += splashVortex * (splashWeight * streamForce * 1.4);
-            }
-          }
-        }
 
         // Isotropic UV advection step
         vec2 uvDelta = vec2(totalImpulse.x * (u_resolution.y / u_resolution.x), totalImpulse.y) * 0.007;
@@ -675,7 +644,7 @@
       }
     `;
 
-    // PASS 2: Display & Lighting Shader
+    // PASS 2: Display & Lighting Shader with Emanating Tunnel Logic
     const displayFS = `
       precision highp float;
       varying vec2 v_uv;
@@ -688,13 +657,14 @@
       uniform float u_use_image;
       uniform float u_shader_type;
 
-      // Kaleidoscope
+      // Kaleidoscope & Emanate Controls
       uniform float u_kaleido_segs;
       uniform float u_kaleido_angle;
       uniform float u_kaleido_zoom;
       uniform float u_kaleido_pinch;
       uniform float u_kaleido_mirror;
       uniform float u_kaleido_blur;
+      uniform float u_emanate_speed;
 
       // Kinematics & Flow
       uniform float u_flow_angle;
@@ -789,21 +759,6 @@
         return vec2((n1 - n2) / (2.0 * eps), -(n3 - n4) / (2.0 * eps));
       }
 
-      vec2 foldKaleido(vec2 coord, float segs, float angle, float zoom, float pinch, float mirror) {
-        float r = length(coord);
-        if (r < 0.0001) return coord;
-        r = pow(r, pinch) * zoom;
-        float a = atan(coord.y, coord.x) + angle;
-        float tau = 6.28318530718;
-        float segAngle = tau / segs;
-        float modA = mod(a, segAngle);
-        if (modA < 0.0) modA += segAngle;
-        if (mirror > 0.5) {
-          modA = abs(modA - segAngle * 0.5);
-        }
-        return vec2(cos(modA), sin(modA)) * r;
-      }
-
       vec2 getCoverUV(vec2 uv, vec2 screenRes, vec2 imgRes) {
         float screenAspect = screenRes.x / screenRes.y;
         float imgAspect = imgRes.x / imgRes.y;
@@ -821,7 +776,7 @@
       vec3 evaluateScene(vec2 st, vec2 screenUV) {
         float t = u_time * u_speed;
 
-        // Sample smooth floating-point displacement directly
+        // Physical floating-point displacement from hand/head tracking
         vec2 paintDisplacement = texture2D(u_simTexture, screenUV).xy;
         st += paintDisplacement;
 
@@ -953,6 +908,8 @@
           if (modA < 0.0) modA += segAngle;
 
           float rP = pow(max(r, 0.0001), u_kaleido_pinch) * u_kaleido_zoom;
+          // Outward radial emanate wave (tunnel traveling flight)
+          float rEmanate = rP - u_time * u_emanate_speed;
 
           if (u_kaleido_mirror > 0.5) {
             float H = segAngle * 0.5;
@@ -960,13 +917,15 @@
             float d = min(foldA, H - foldA);
             float blendWidth = u_kaleido_blur * (H * 0.5);
 
-            vec2 st1 = vec2(cos(foldA), sin(foldA)) * rP;
-            vec2 screenUV1 = (st1 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
+            vec2 dir = vec2(cos(foldA), sin(foldA));
+            vec2 st1 = dir * rEmanate;
+            vec2 screenUV1 = (dir * rP * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
 
             if (u_kaleido_blur > 0.005 && blendWidth > 0.0001) {
               float altA = (foldA < H * 0.5) ? -foldA : (2.0 * H - foldA);
-              vec2 st2 = vec2(cos(altA), sin(altA)) * rP;
-              vec2 screenUV2 = (st2 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
+              vec2 dir2 = vec2(cos(altA), sin(altA));
+              vec2 st2 = dir2 * rEmanate;
+              vec2 screenUV2 = (dir2 * rP * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
 
               vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
               vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0));
@@ -980,13 +939,15 @@
             float d = min(foldA, segAngle - foldA);
             float blendWidth = u_kaleido_blur * (segAngle * 0.5);
 
-            vec2 st1 = vec2(cos(foldA), sin(foldA)) * rP;
-            vec2 screenUV1 = (st1 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
+            vec2 dir = vec2(cos(foldA), sin(foldA));
+            vec2 st1 = dir * rEmanate;
+            vec2 screenUV1 = (dir * rP * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
 
             if (u_kaleido_blur > 0.005 && blendWidth > 0.0001) {
               float altA = (foldA < segAngle * 0.5) ? (foldA + segAngle) : (foldA - segAngle);
-              vec2 st2 = vec2(cos(altA), sin(altA)) * rP;
-              vec2 screenUV2 = (st2 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
+              vec2 dir2 = vec2(cos(altA), sin(altA));
+              vec2 st2 = dir2 * rEmanate;
+              vec2 screenUV2 = (dir2 * rP * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
 
               vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0));
               vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0));
@@ -1008,7 +969,8 @@
         gl_FragColor = vec4(clamp(finalColor, 0.0, 1.0), 1.0);
       }
     `;
-  function createShader(gl, type, source) {
+
+    function createShader(gl, type, source) {
       const shader = gl.createShader(type);
       gl.shaderSource(shader, source);
       gl.compileShader(shader);
@@ -1066,10 +1028,6 @@
     const simRightVelLoc  = gl.getUniformLocation(simProgram, 'u_right_vel');
     const simRightActLoc  = gl.getUniformLocation(simProgram, 'u_right_active');
 
-    const simHighHandLoc     = gl.getUniformLocation(simProgram, 'u_high_hand');
-    const simLowHandLoc      = gl.getUniformLocation(simProgram, 'u_low_hand');
-    const simPourModeLoc     = gl.getUniformLocation(simProgram, 'u_pour_mode');
-    const simPourStrengthLoc = gl.getUniformLocation(simProgram, 'u_pour_strength');
     // Uniform Locations (Display)
     const dispResLoc       = gl.getUniformLocation(displayProgram, 'u_resolution');
     const dispImgResLoc    = gl.getUniformLocation(displayProgram, 'u_image_resolution');
@@ -1085,6 +1043,7 @@
     const dispKPinchLoc    = gl.getUniformLocation(displayProgram, 'u_kaleido_pinch');
     const dispKMirrorLoc   = gl.getUniformLocation(displayProgram, 'u_kaleido_mirror');
     const dispKBlurLoc     = gl.getUniformLocation(displayProgram, 'u_kaleido_blur');
+    const dispEmanateLoc   = gl.getUniformLocation(displayProgram, 'u_emanate_speed');
 
     const dispAngleLoc     = gl.getUniformLocation(displayProgram, 'u_flow_angle');
     const dispSpeedLoc     = gl.getUniformLocation(displayProgram, 'u_speed');
@@ -1293,15 +1252,22 @@
     let pingPongPhase = 0.0;
     let lastAnimTime = performance.now();
 
+    // Body Kaleido Tunnel Smoothed State
+    let smoothPetals = 6.0;
+    let smoothRotSpeed = 0.5;
+    let kaleidoChamberAngle = 0.0;
+    let emanateSpeed = 0.0;
+
     const animModeSelect = document.getElementById('sl-angle-anim');
     const flowModeHUD = document.getElementById('flow-mode-val');
 
     animModeSelect.addEventListener('pointerdown', (e) => e.stopPropagation());
-   animModeSelect.addEventListener('change', () => {
+    animModeSelect.addEventListener('change', () => {
       const mode = animModeSelect.value;
       if (mode === 'manual') flowModeHUD.textContent = 'Manual';
       else if (mode === 'body_arms') flowModeHUD.textContent = 'Arm Angle (Pose)';
       else if (mode === 'pour_hands') flowModeHUD.textContent = 'Cascade Pour';
+      else if (mode === 'body_kaleido') flowModeHUD.textContent = 'Kaleido Tunnel';
       else if (mode === 'continuous_cw') flowModeHUD.textContent = 'CW Loop';
       else if (mode === 'continuous_ccw') flowModeHUD.textContent = 'CCW Loop';
       else if (mode === 'pingpong') {
@@ -1606,7 +1572,6 @@
     let leftCur  = { ...leftTarget };
     let rightCur = { ...rightTarget };
 
-    // Previous position buffers for frame-rate-interpolated velocity
     let prevHeadCurX  = headCur.x, prevHeadCurY  = headCur.y;
     let prevLeftCurX  = leftCur.x, prevLeftCurY  = leftCur.y;
     let prevRightCurX = rightCur.x, prevRightCurY = rightCur.y;
@@ -1633,35 +1598,7 @@
 
       poseInstance.onResults(onPoseResults);
     }
-	// Helper: Calculates the shortest angular distance across the 0°/360° seam
-      function shortestAngleDiff(target, current) {
-        let diff = (target - current) % 360.0;
-        if (diff > 180.0)  diff -= 360.0;
-        if (diff < -180.0) diff += 360.0;
-        return diff;
-      }
 
-      // 4. Steer Flow Direction from Arm Angle (Smooth Shortest Arc)
-      if (animModeSelect.value === 'body_arms') {
-        if (leftTarget.active > 0.5 && rightTarget.active > 0.5) {
-          const dx = rightTarget.x - leftTarget.x;
-          const dy = rightTarget.y - leftTarget.y;
-
-          // Compute angle in [0, 360)
-          let armAngle = (Math.atan2(dy, dx) * 180.0 / Math.PI);
-          if (armAngle < 0.0) armAngle += 360.0;
-
-          // Interpolate along the shortest arc (-180° to +180°)
-          const angleDelta = shortestAngleDiff(armAngle, currentAngleDeg);
-          currentAngleDeg += angleDelta * 0.15;
-
-          // Keep within [0, 360)
-          currentAngleDeg = (currentAngleDeg % 360.0 + 360.0) % 360.0;
-
-          sliders.angle.value = currentAngleDeg;
-          numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
-        }
-      }
     function onPoseResults(results) {
       if (!poseActive || !results.image) return;
 
@@ -1722,8 +1659,6 @@
       } else {
         rightTarget.active = 0.0;
       }
-
-     
     }
 
     async function togglePoseTracking() {
@@ -1834,7 +1769,6 @@
       canvas.width = w;
       canvas.height = h;
 
-      // Full 1:1 Retina resolution simulation buffers
       setupFBOs(w, h);
     }
     window.addEventListener('resize', resize);
@@ -1865,43 +1799,58 @@
       lastAnimTime = now;
       if (dt > 0.1) dt = 0.1;
 
-     // Ambient & Body-driven Flow kinematics
       const animMode = animModeSelect.value;
       const rotSpeedMult = parseFloat(sliders.rotSpeed.value);
       const baseAngularSpeed = 32.0;
 
-    // State variables for pour mode
-      let isPourActive = 0.0;
-      let pourStrength = 0.0;
-      let highHand = leftCur;
-      let lowHand = rightCur;
-
       if (animMode === 'manual') {
         currentAngleDeg = parseFloat(sliders.angle.value);
-      } else if (animMode === 'pour_hands') {
+        emanateSpeed = 0.0;
+      } else if (animMode === 'body_kaleido') {
+        // --- BODY KALEIDO TUNNEL MODE ---
         if (leftCur.active > 0.5 && rightCur.active > 0.5) {
-          isPourActive = 1.0;
+          // 1. Arm distance in X -> Smoothly maps petals from 2 to 12
+          const spanX = Math.abs(rightCur.x - leftCur.x) / window.innerWidth;
+          const normSpan = Math.min(Math.max((spanX - 0.12) / 0.58, 0.0), 1.0);
+          const targetPetals = Math.round(2.0 + normSpan * 10.0);
+          smoothPetals += (targetPetals - smoothPetals) * 0.14;
+          const activePetals = Math.max(2, Math.min(12, Math.round(smoothPetals)));
+          sliders.kSegs.value = activePetals;
+          numDisplays.kSegs.textContent = `${activePetals} Petals`;
 
-          // Normalized relative positions
-          const dy = (leftCur.y - rightCur.y) / window.innerHeight; // Positive = Left high, Negative = Right high
+          // 2. Arm height in Y -> Smoothly maps rotation speed from 0.0 up to 1.5
+          const avgY = ((leftCur.y + rightCur.y) * 0.5) / window.innerHeight;
+          const normY = Math.min(Math.max((avgY - 0.20) / 0.65, 0.0), 1.0);
+          const targetSpeed = normY * 1.5;
+          smoothRotSpeed += (targetSpeed - smoothRotSpeed) * 0.12;
+          sliders.rotSpeed.value = smoothRotSpeed.toFixed(2);
+          numDisplays.rotSpeed.textContent = smoothRotSpeed.toFixed(2) + 'x';
+
+          // 3. Drive continuous chamber rotation
+          kaleidoChamberAngle += 45.0 * smoothRotSpeed * dt;
+          if (kaleidoChamberAngle >= 360.0) kaleidoChamberAngle -= 360.0;
+          sliders.kAngle.value = Math.round(kaleidoChamberAngle);
+          numDisplays.kAngle.textContent = Math.round(kaleidoChamberAngle) + '°';
+
+          // 4. Outward radial flight velocity (emanating from center)
+          emanateSpeed = 0.22 + smoothRotSpeed * 0.35;
+        } else {
+          // Graceful fallback when tracking is acquiring body
+          emanateSpeed = 0.30;
+          kaleidoChamberAngle += 20.0 * dt;
+          if (kaleidoChamberAngle >= 360.0) kaleidoChamberAngle -= 360.0;
+          sliders.kAngle.value = Math.round(kaleidoChamberAngle);
+          numDisplays.kAngle.textContent = Math.round(kaleidoChamberAngle) + '°';
+        }
+      } else if (animMode === 'pour_hands') {
+        emanateSpeed = 0.0;
+        if (leftCur.active > 0.5 && rightCur.active > 0.5) {
+          const dy = (leftCur.y - rightCur.y) / window.innerHeight;
           const dx = (rightCur.x - leftCur.x) / window.innerWidth;
 
-          // Assign spout vs basin
-          if (dy >= 0.0) {
-            highHand = leftCur;
-            lowHand = rightCur;
-          } else {
-            highHand = rightCur;
-            lowHand = leftCur;
-          }
-
-          // --- CONTINUOUS GRAVITY ARC VECTOR ---
-          // Lateral drive scales with height delta; drops to 0 when hands are level
           const vX = dx * dy * 2.4;
-          // Downward drive: constant gravity pull + extra drop velocity
           const vY = -(0.38 + Math.abs(dy) * 0.7);
 
-          // Arcs continuously through -90° (downward) instead of jumping 180°
           const targetAngle = (Math.atan2(vY, vX) * 180.0) / Math.PI;
 
           let diff = (targetAngle - currentAngleDeg) % 360.0;
@@ -1914,13 +1863,9 @@
 
           sliders.angle.value = currentAngleDeg;
           numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
-
-          // Soft 2% elevation deadzone so the simulation conduit hand-swap is completely silent
-          const elev = Math.abs(dy);
-          const smoothElev = Math.max(0.0, elev - 0.02);
-          pourStrength = Math.min(smoothElev * 4.0, 2.5) * parseFloat(sliders.handForce.value);
         }
       } else if (animMode === 'body_arms') {
+        emanateSpeed = 0.0;
         if (leftCur.active > 0.5 && rightCur.active > 0.5) {
           const dx = rightCur.x - leftCur.x;
           const dy = rightCur.y - leftCur.y;
@@ -1938,16 +1883,19 @@
           numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
         }
       } else if (animMode === 'continuous_cw') {
+        emanateSpeed = 0.0;
         currentAngleDeg += baseAngularSpeed * rotSpeedMult * dt;
         if (currentAngleDeg > 180.0) currentAngleDeg -= 360.0;
         sliders.angle.value = currentAngleDeg;
         numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
       } else if (animMode === 'continuous_ccw') {
+        emanateSpeed = 0.0;
         currentAngleDeg -= baseAngularSpeed * rotSpeedMult * dt;
         if (currentAngleDeg < -180.0) currentAngleDeg += 360.0;
         sliders.angle.value = currentAngleDeg;
         numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
       } else if (animMode === 'pingpong') {
+        emanateSpeed = 0.0;
         const omega = (baseAngularSpeed * rotSpeedMult * Math.PI) / 180.0;
         pingPongPhase += omega * dt;
         currentAngleDeg = 180.0 * Math.sin(pingPongPhase);
@@ -2004,16 +1952,7 @@
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, readFBO.tex);
       gl.uniform1i(simPrevTexLoc, 0);
-      
-      // Pass Pour Cascade Uniforms to Simulation Program
-      const highNorm = toNormCoord(highHand.x, highHand.y);
-      const lowNorm  = toNormCoord(lowHand.x, lowHand.y);
-      gl.uniform2f(simHighHandLoc, highNorm[0], highNorm[1]);
-      gl.uniform2f(simLowHandLoc,  lowNorm[0],  lowNorm[1]);
-      gl.uniform1f(simPourModeLoc, isPourActive);
-      gl.uniform1f(simPourStrengthLoc, pourStrength);
-      
-      // Pass true Retina resolution matching the FBO viewport
+
       gl.uniform2f(simResLoc, simWidth, simHeight);
       gl.uniform1f(simPersistLoc, parseFloat(sliders.persistence.value));
       gl.uniform1f(simHeadForceLoc, parseFloat(sliders.headForce.value));
@@ -2074,6 +2013,7 @@
       gl.uniform1f(dispKPinchLoc, parseFloat(sliders.kPinch.value));
       gl.uniform1f(dispKMirrorLoc, parseFloat(slKMode.value));
       gl.uniform1f(dispKBlurLoc, parseFloat(sliders.kBlur.value));
+      gl.uniform1f(dispEmanateLoc, emanateSpeed);
 
       const angleRad = (currentAngleDeg * Math.PI) / 180.0;
       gl.uniform1f(dispAngleLoc, angleRad);
