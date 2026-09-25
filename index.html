@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Volumetric Contours - Water Ripples & Fluid Dynamics</title>
+  <title>Volumetric Contours - 3D Perspective Plane Edition</title>
   
   <!-- MediaPipe Pose Core Library -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
@@ -252,7 +252,7 @@
     <div id="hud" class="panel">
       Input: <span id="input-type">Apple Pencil / Touch</span><br>
       Body: <span id="pose-status-val">Waiting...</span><br>
-      Physics: <span id="influence-mode-hud">Water Ripples</span> | Engine: <span id="engine-val">Laminar Silk</span>
+      Physics: <span id="influence-mode-hud">Water Ripples</span> | Plane: <span id="plane-tilt-hud">Flat 2D</span>
     </div>
 
     <div class="panel">
@@ -287,7 +287,6 @@
 
         <div class="sub-heading">Physical Fluid & Ripple Dynamics</div>
         
-        <!-- Influence Modes Selector -->
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
           <span class="slider-header" style="margin:0;">Influence Dynamic</span>
           <select id="sl-influence-mode">
@@ -344,7 +343,17 @@
           </select>
         </div>
 
-        <div class="sub-heading">Kinematics & Perspective Flight</div>
+        <div class="sub-heading">Kinematics & 3D Perspective Flight</div>
+
+        <!-- 3D Ground Plane Tilt Slider -->
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>3D Ground Plane Tilt</span>
+            <span id="plane-tilt-num" class="val">38°</span>
+          </div>
+          <input type="range" id="sl-plane-tilt" min="0" max="65" step="1" value="38">
+        </div>
+
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
           <span class="slider-header" style="margin:0;">Rotation Mode</span>
           <select id="sl-angle-anim">
@@ -377,9 +386,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Ambient Drift</span>
-            <span id="speed-num" class="val">0.1</span>
+            <span id="speed-num" class="val">0.035</span>
           </div>
-          <input type="range" id="sl-speed" min="0.0" max="2.0" step="0.05" value="0.1">
+          <input type="range" id="sl-speed" min="0.0" max="0.12" step="0.002" value="0.035">
         </div>
 
         <div class="slider-row">
@@ -573,7 +582,6 @@
       alert('WebGL not supported.');
     }
 
-    // Adaptive One-Euro (1€) Dynamic Filter Implementation
     class OneEuroFilter {
       constructor(minCutoff = 0.7, beta = 3.5, dcutoff = 1.0) {
         this.minCutoff = minCutoff;
@@ -633,7 +641,7 @@
       }
     `;
 
-    // Multi-Physics Simulation Shader (Water Ripples, Viscous Drag, Whirlpools, Shockwaves)
+    // Perspective-Aware Multi-Physics Simulation Shader
     const simFS = `
       precision highp float;
       varying vec2 v_uv;
@@ -643,8 +651,9 @@
       uniform float u_persistence;
       uniform float u_head_force;
       uniform float u_hand_force;
-      uniform float u_influence_mode; // 0: Viscous Drag, 1: Water Wake & Ripples, 2: Vortex Whirlpools, 3: Acoustic Shockwave
+      uniform float u_influence_mode;
       uniform float u_ripple_freq;
+      uniform float u_plane_tilt; // Ground plane pitch in radians
       uniform float u_time;
 
       uniform vec2 u_mouse;
@@ -663,48 +672,54 @@
       uniform vec2 u_right_vel;
       uniform float u_right_active;
 
-      // Computes physical displacement impulses based on selected influence dynamic
       vec2 calcImpulse(vec2 st, vec2 targetPos, vec2 vel, float active, float forceMult) {
         if (active < 0.01) return vec2(0.0);
+
+        // Perspective depth factor based on target Y position
+        float depth = 1.0;
+        if (u_plane_tilt > 0.01) {
+          float sinP = sin(u_plane_tilt);
+          float cosP = cos(u_plane_tilt);
+          float yHorizon = (sinP / cosP) * 1.2;
+          // Normalized depth scaling: bottom of screen (-1.0) = 1.3, near horizon = 0.15
+          float normY = clamp((yHorizon - targetPos.y) / (yHorizon + 1.0), 0.14, 1.3);
+          depth = normY;
+        }
+
         vec2 toTarget = st - targetPos;
         float d = length(toTarget);
         vec2 dir = toTarget / (d + 0.001);
         float speed = length(vel);
         vec2 impulse = vec2(0.0);
 
-        // Mode 0: Viscous Fluid Drag (Classic Ink/Syrup)
-        if (u_influence_mode < 0.5) {
-          float f = exp(-d * 3.2) * active * forceMult;
+        // Scaled spatial distance: higher targets in the distance have a tighter footprint
+        float dScaled = d / depth;
+        float effectiveForce = active * forceMult * depth;
+
+        if (u_influence_mode < 0.5) { // Viscous Drag
+          float f = exp(-dScaled * 3.2) * effectiveForce;
           impulse += vel * f * 1.4;
-          vec2 v = vec2(-toTarget.y, toTarget.x) / (d + 0.15);
+          vec2 v = vec2(-toTarget.y, toTarget.x) / (d + 0.15 * depth);
           impulse += v * f * 0.85;
         }
-        // Mode 1: Water Wake & Ripples (Wave Equation Dispersion)
-        else if (u_influence_mode < 1.5) {
-          // Radiating capillary ripples propagating outward from the hand position
-          float wavePhase = d * u_ripple_freq - u_time * 6.5;
-          float wave = sin(wavePhase) * exp(-d * 3.4);
-          
-          // Directional bow-wave wake push along velocity vector
-          float wake = exp(-d * 2.6);
+        else if (u_influence_mode < 1.5) { // Water Wake & Ripples
+          float wavePhase = (dScaled * u_ripple_freq) - u_time * 6.5;
+          float wave = sin(wavePhase) * exp(-dScaled * 3.4);
+          float wake = exp(-dScaled * 2.6);
           float forwardDot = max(dot(dir, vel / (speed + 0.001)), -0.3);
           
-          // Radial push/pull creates water troughs and crests
-          impulse += dir * (wave * (0.45 + speed * 2.8)) * active * forceMult;
-          // Directional displacement wake
-          impulse += vel * (wake * (0.8 + forwardDot * 0.6)) * active * forceMult;
+          impulse += dir * (wave * (0.45 + speed * 2.8)) * effectiveForce;
+          impulse += vel * (wake * (0.8 + forwardDot * 0.6)) * effectiveForce;
         }
-        // Mode 2: Vortex Whirlpools (Rotational Shear & Eddies)
-        else if (u_influence_mode < 2.5) {
-          float f = exp(-d * 2.8) * active * forceMult;
-          vec2 vortex = vec2(-toTarget.y, toTarget.x) / (d + 0.09);
+        else if (u_influence_mode < 2.5) { // Vortex
+          float f = exp(-dScaled * 2.8) * effectiveForce;
+          vec2 vortex = vec2(-toTarget.y, toTarget.x) / (d + 0.09 * depth);
           impulse += vortex * (f * (1.2 + speed * 3.0));
           impulse += vel * (f * 0.6);
         }
-        // Mode 3: Acoustic Shockwave / Pulse (Radial Expansion)
-        else {
-          float ring = sin(d * u_ripple_freq * 0.6) * exp(-d * 2.4);
-          impulse += dir * (ring * 1.6 + exp(-d * 4.2)) * (0.5 + speed * 3.0) * active * forceMult;
+        else { // Acoustic Shockwave
+          float ring = sin(dScaled * u_ripple_freq * 0.6) * exp(-dScaled * 2.4);
+          impulse += dir * (ring * 1.6 + exp(-dScaled * 4.2)) * (0.5 + speed * 3.0) * effectiveForce;
         }
 
         return impulse;
@@ -716,22 +731,18 @@
 
         vec2 totalImpulse = vec2(0.0);
 
-        // Apple Pencil / Touch interaction
         if (u_pressure > 0.01) {
           totalImpulse += calcImpulse(st, u_mouse, u_mouse_vel, u_pressure, 1.2);
         }
 
-        // Head tracking interaction
         if (u_head_active > 0.05) {
           totalImpulse += calcImpulse(st, u_head, u_head_vel, u_head_active, u_head_force * 0.85);
         }
 
-        // Left wrist interaction
         if (u_left_active > 0.05) {
           totalImpulse += calcImpulse(st, u_left_wrist, u_left_vel, u_left_active, u_hand_force);
         }
 
-        // Right wrist interaction
         if (u_right_active > 0.05) {
           totalImpulse += calcImpulse(st, u_right_wrist, u_right_vel, u_right_active, u_hand_force);
         }
@@ -745,6 +756,7 @@
       }
     `;
 
+    // 3D Perspective-Tilted Display Shader
     const displayFS = `
       precision highp float;
       varying vec2 v_uv;
@@ -770,6 +782,7 @@
       uniform float u_speed;
       uniform float u_warp_scale;
       uniform float u_flow_stretch;
+      uniform float u_plane_tilt; // Ground pitch tilt angle
 
       uniform vec2 u_head;
       uniform float u_head_active;
@@ -869,10 +882,48 @@
         return newUV;
       }
 
+      // Exact 3D Ray-Plane Projection (Camera angled at horizontal floor)
+      vec2 getTiltedGroundCoords(vec2 st, out float fog) {
+        if (u_plane_tilt < 0.01) {
+          fog = 0.0;
+          return st;
+        }
+
+        float pitch = u_plane_tilt;
+        float sinP = sin(pitch);
+        float cosP = cos(pitch);
+
+        float h = 1.35;
+        float fov = 1.25;
+
+        // Camera ray through screen coord
+        float Ry = (st.y / fov) * cosP - sinP;
+        float Rz = (st.y / fov) * sinP + cosP;
+        float Rx = st.x / fov;
+
+        // Horizon clipping with smooth atmospheric blend
+        if (Ry >= -0.01) {
+          fog = 1.0;
+          return vec2(st.x * 20.0, 100.0);
+        }
+
+        float t = -h / Ry; // Ray distance to ground plane Y = 0
+        float Px = t * Rx;
+        float Pz = t * Rz;
+
+        // Soft fog as ground approaches horizon
+        fog = smoothstep(-0.28, -0.01, Ry);
+
+        return vec2(Px * 0.72, (Pz - 1.2) * 0.52);
+      }
+
       vec3 evaluateScene(vec2 st, vec2 screenUV) {
         float t = u_time * u_speed;
 
         vec2 paintDisplacement = texture2D(u_simTexture, screenUV).xy;
+        if (u_plane_tilt > 0.01) {
+          paintDisplacement.y *= cos(u_plane_tilt);
+        }
         st += paintDisplacement;
 
         float rad = u_flow_angle;
@@ -995,9 +1046,13 @@
         vec2 raw_st = (gl_FragCoord.xy * 2.0 - u_resolution) / min(u_resolution.x, u_resolution.y);
         vec3 finalColor = vec3(0.0);
 
+        // Ground Perspective Projection & Horizon Fog
+        float fog = 0.0;
+        vec2 st = getTiltedGroundCoords(raw_st, fog);
+
         if (u_kaleido_segs > 1.5) {
-          float r = length(raw_st);
-          float a = atan(raw_st.y, raw_st.x) + u_kaleido_angle;
+          float r = length(st);
+          float a = atan(st.y, st.x) + u_kaleido_angle;
           float tau = 6.28318530718;
           float segAngle = tau / u_kaleido_segs;
           float modA = mod(a, segAngle);
@@ -1086,7 +1141,13 @@
             }
           }
         } else {
-          finalColor = evaluateScene(raw_st, v_uv);
+          finalColor = evaluateScene(st, v_uv);
+        }
+
+        // Apply Atmospheric Horizon Fog when in 3D Perspective Mode
+        if (fog > 0.0) {
+          vec3 horizonCol = mix(u_col_shadow, u_col_cool_a * 0.7, 0.55);
+          finalColor = mix(finalColor, horizonCol, fog);
         }
 
         if (u_grain_level > 0.001) {
@@ -1133,7 +1194,7 @@
       -1.0,  1.0,  1.0, -1.0,  1.0,  1.0,
     ]), gl.STATIC_DRAW);
 
-    // Simulation Uniform Locations
+    // Sim Uniforms
     const simResLoc          = gl.getUniformLocation(simProgram, 'u_resolution');
     const simPrevTexLoc      = gl.getUniformLocation(simProgram, 'u_prevBuffer');
     const simPersistLoc      = gl.getUniformLocation(simProgram, 'u_persistence');
@@ -1141,6 +1202,7 @@
     const simHandForceLoc    = gl.getUniformLocation(simProgram, 'u_hand_force');
     const simInfluenceModeLoc= gl.getUniformLocation(simProgram, 'u_influence_mode');
     const simRippleFreqLoc   = gl.getUniformLocation(simProgram, 'u_ripple_freq');
+    const simPlaneTiltLoc    = gl.getUniformLocation(simProgram, 'u_plane_tilt');
     const simTimeLoc         = gl.getUniformLocation(simProgram, 'u_time');
 
     const simMouseLoc        = gl.getUniformLocation(simProgram, 'u_mouse');
@@ -1159,7 +1221,7 @@
     const simRightVelLoc     = gl.getUniformLocation(simProgram, 'u_right_vel');
     const simRightActLoc     = gl.getUniformLocation(simProgram, 'u_right_active');
 
-    // Display Uniform Locations
+    // Display Uniforms
     const dispResLoc       = gl.getUniformLocation(displayProgram, 'u_resolution');
     const dispImgResLoc    = gl.getUniformLocation(displayProgram, 'u_image_resolution');
     const dispTimeLoc      = gl.getUniformLocation(displayProgram, 'u_time');
@@ -1181,6 +1243,7 @@
     const dispSpeedLoc     = gl.getUniformLocation(displayProgram, 'u_speed');
     const dispWarpLoc      = gl.getUniformLocation(displayProgram, 'u_warp_scale');
     const dispStretchLoc   = gl.getUniformLocation(displayProgram, 'u_flow_stretch');
+    const dispPlaneTiltLoc = gl.getUniformLocation(displayProgram, 'u_plane_tilt');
 
     const dispHeadLoc      = gl.getUniformLocation(displayProgram, 'u_head');
     const dispHeadActLoc   = gl.getUniformLocation(displayProgram, 'u_head_active');
@@ -1320,6 +1383,7 @@
     });
 
     const sliders = {
+      planeTilt:   document.getElementById('sl-plane-tilt'),
       persistence: document.getElementById('sl-persistence'),
       rippleFreq:  document.getElementById('sl-ripple-freq'),
       headForce:   document.getElementById('sl-head-force'),
@@ -1345,6 +1409,7 @@
     };
 
     const numDisplays = {
+      planeTilt:   document.getElementById('plane-tilt-num'),
       persistence: document.getElementById('persist-num'),
       rippleFreq:  document.getElementById('ripple-freq-num'),
       headForce:   document.getElementById('head-force-num'),
@@ -1371,6 +1436,7 @@
 
     const slInfluenceMode = document.getElementById('sl-influence-mode');
     const influenceModeHUD = document.getElementById('influence-mode-hud');
+    const planeTiltHUD = document.getElementById('plane-tilt-hud');
     const modeNames = ['Viscous Drag', 'Water Ripples', 'Whirlpools', 'Shockwave'];
 
     slInfluenceMode.addEventListener('pointerdown', (e) => e.stopPropagation());
@@ -1380,13 +1446,11 @@
 
     let currentEngine = 0.0;
     const engineSelect = document.getElementById('engineSelect');
-    const engineValHUD = document.getElementById('engine-val');
     const engineNames = ['Laminar Silk', 'Agate Geode', 'Curl Nebula', 'Gyroid Cymatics'];
 
     engineSelect.addEventListener('pointerdown', (e) => e.stopPropagation());
     engineSelect.addEventListener('change', (e) => {
       currentEngine = parseFloat(e.target.value);
-      engineValHUD.textContent = engineNames[currentEngine];
     });
 
     let currentAngleDeg = 0.0;
@@ -1398,19 +1462,11 @@
     let lastValidHandTime = 0.0;
 
     const animModeSelect = document.getElementById('sl-angle-anim');
-    const flowModeHUD = document.getElementById('flow-mode-val');
 
     animModeSelect.addEventListener('pointerdown', (e) => e.stopPropagation());
     animModeSelect.addEventListener('change', () => {
       const mode = animModeSelect.value;
-      if (mode === 'body_kaleido') flowModeHUD.textContent = 'Warp Tunnel';
-      else if (mode === 'manual') flowModeHUD.textContent = 'Manual';
-      else if (mode === 'body_arms') flowModeHUD.textContent = 'Arm Angle (Pose)';
-      else if (mode === 'pour_hands') flowModeHUD.textContent = 'Cascade Pour';
-      else if (mode === 'continuous_cw') flowModeHUD.textContent = 'CW Loop';
-      else if (mode === 'continuous_ccw') flowModeHUD.textContent = 'CCW Loop';
-      else if (mode === 'pingpong') {
-        flowModeHUD.textContent = 'Reversing';
+      if (mode === 'pingpong') {
         const normalized = Math.min(Math.max(1.0 - (currentAngleDeg / 180.0), -1.0), 1.0);
         pingPongPhase = Math.acos(normalized);
       }
@@ -1422,7 +1478,10 @@
     for (const key in sliders) {
       const el = sliders[key];
       const updateVal = () => {
-        if (key === 'angle') {
+        if (key === 'planeTilt') {
+          numDisplays[key].textContent = el.value + '°';
+          planeTiltHUD.textContent = el.value === '0' ? 'Flat 2D' : `Tilt ${el.value}°`;
+        } else if (key === 'angle') {
           if (animModeSelect.value === 'manual' || animModeSelect.value === 'body_kaleido') {
             currentAngleDeg = parseFloat(el.value);
           }
@@ -1546,7 +1605,6 @@
       if (data.engine !== undefined) {
         currentEngine = parseFloat(data.engine);
         engineSelect.value = data.engine;
-        engineValHUD.textContent = engineNames[currentEngine];
       }
       if (data.animMode) {
         animModeSelect.value = data.animMode;
@@ -1636,11 +1694,11 @@
       e.stopPropagation();
       canvas.toBlob(async (blob) => {
         if (!blob) return;
-        const fileName = `warp-tunnel-${Date.now()}.png`;
+        const fileName = `perspective-contour-${Date.now()}.png`;
         const file = new File([blob], fileName, { type: 'image/png' });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try { await navigator.share({ files: [file], title: 'Warp Speed Artwork' }); return; } catch (err) { if (err.name === 'AbortError') return; }
+          try { await navigator.share({ files: [file], title: '3D Perspective Artwork' }); return; } catch (err) { if (err.name === 'AbortError') return; }
         }
         mediaContainer.innerHTML = `<img src="${URL.createObjectURL(blob)}" alt="Snapshot">`;
         modalMsg.innerHTML = 'Touch and hold image to tap <b>"Save to Photos"</b>';
@@ -1677,11 +1735,11 @@
 
         const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
         const blob = new Blob(recordedChunks, { type: mimeType });
-        const fileName = `warp-tunnel-60fps-${Date.now()}.${ext}`;
+        const fileName = `perspective-contour-60fps-${Date.now()}.${ext}`;
         const file = new File([blob], fileName, { type: mimeType });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try { await navigator.share({ files: [file], title: 'Warp Tunnel Video' }); return; } catch (err) { if (err.name === 'AbortError') return; }
+          try { await navigator.share({ files: [file], title: '3D Perspective Video' }); return; } catch (err) { if (err.name === 'AbortError') return; }
         }
         const videoUrl = URL.createObjectURL(blob);
         mediaContainer.innerHTML = `<video src="${videoUrl}" controls autoplay loop playsinline></video>`;
@@ -1821,7 +1879,7 @@
 
       if (handsFound === 2) {
         lastValidHandTime = performance.now();
-        poseStatusHUD.textContent = 'Piloting Warp Corridor';
+        poseStatusHUD.textContent = 'Piloting Plane';
       } else if (!allowHands) {
         poseStatusHUD.textContent = 'Head Tracking Active';
       } else {
@@ -2126,6 +2184,8 @@
       prevRightCurX = rightCur.x;
       prevRightCurY = rightCur.y;
 
+      const planeTiltRad = (parseFloat(sliders.planeTilt.value) * Math.PI) / 180.0;
+
       // Pass state to Simulation Pass
       gl.bindFramebuffer(gl.FRAMEBUFFER, writeFBO.fbo);
       gl.viewport(0, 0, simWidth, simHeight);
@@ -2146,6 +2206,7 @@
       gl.uniform1f(simHandForceLoc, parseFloat(sliders.handForce.value));
       gl.uniform1f(simInfluenceModeLoc, parseFloat(slInfluenceMode.value));
       gl.uniform1f(simRippleFreqLoc, parseFloat(sliders.rippleFreq.value));
+      gl.uniform1f(simPlaneTiltLoc, planeTiltRad);
       gl.uniform1f(simTimeLoc, time * 0.001);
 
       const mNorm = toNormCoord(pointerCurX, pointerCurY);
@@ -2172,7 +2233,7 @@
 
       swapFBOs();
 
-      // Display Shader Pass
+      // Display Shader Pass with 3D Plane Tilt
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.useProgram(displayProgram);
@@ -2209,6 +2270,7 @@
       gl.uniform1f(dispSpeedLoc, parseFloat(sliders.speed.value));
       gl.uniform1f(dispWarpLoc, parseFloat(sliders.warp.value));
       gl.uniform1f(dispStretchLoc, parseFloat(sliders.stretch.value));
+      gl.uniform1f(dispPlaneTiltLoc, planeTiltRad);
 
       gl.uniform2f(dispHeadLoc, hNorm[0], hNorm[1]);
       gl.uniform1f(dispHeadActLoc, headCur.active);
