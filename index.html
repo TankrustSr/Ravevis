@@ -1753,6 +1753,10 @@
       }
     }
 
+    let isInferring = false;
+    let lastInferenceTime = 0;
+    const AI_INTERVAL_MS = 33; // Caps AI inference to ~30 FPS
+
     async function togglePoseTracking() {
       if (poseActive) {
         poseActive = false;
@@ -1779,10 +1783,23 @@
       try {
         cameraInstance = new Camera(trackingVideo, {
           onFrame: async () => {
-            if (poseActive && poseInstance) {
+            if (!poseActive || !poseInstance) return;
+
+            const now = performance.now();
+            // Drop frame if AI is still calculating OR if under the 30 FPS cap
+            if (isInferring || (now - lastInferenceTime < AI_INTERVAL_MS)) {
+              return;
+            }
+
+            isInferring = true;
+            lastInferenceTime = now;
+            try {
               await poseInstance.send({ image: trackingVideo });
+            } finally {
+              isInferring = false;
             }
           },
+          // 320x240 stops Chrome from capturing/copying 1080p frames on the CPU
           width: 320,
           height: 240
         });
@@ -1795,7 +1812,7 @@
         hudInput.textContent = 'AI Body Pose Active';
         poseStatusHUD.textContent = 'Searching for body...';
       } catch (err) {
-        alert('Could not start selfie camera: ' + err.message + '\nNote: Requires HTTPS or localhost.');
+        alert('Could not start camera: ' + err.message + '\nNote: Requires HTTPS or localhost.');
         poseStatusHUD.textContent = 'Camera Error';
       }
     }
