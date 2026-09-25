@@ -1778,14 +1778,13 @@
 
       try {
         cameraInstance = new Camera(trackingVideo, {
-  onFrame: async () => {
-    if (poseActive && poseInstance) {
-      await poseInstance.send({ image: trackingVideo });
-    }
-  },
-  width: 320,  // Lowering from 480 cuts AI memory bandwidth in half
-  height: 240
-});
+          onFrame: async () => {
+            if (poseActive && poseInstance) {
+              await poseInstance.send({ image: trackingVideo });
+            }
+          },
+          width: 320,
+          height: 240
         });
 
         await cameraInstance.start();
