@@ -346,7 +346,7 @@
             <span>Warp Throttle</span>
             <span id="rot-speed-num" class="val">0.50x</span>
           </div>
-          <input type="range" id="sl-rot-speed" min="0.00" max="1.50" step="0.01" value="0.50">
+          <input type="range" id="sl-rot-speed" min="0.00" max="2.00" step="0.02" value="0.50">
         </div>
 
         <div class="slider-row">
@@ -1886,25 +1886,25 @@
         const isTrackingFresh = (now - lastValidHandTime) < 400;
 
         if (isTrackingFresh) {
-          // 1. Hand Height (Y) -> Warp Throttle (0.05x to 0.50x) via 1€ filter
+          // 1. Hand Height (Y) -> Warp Throttle (0.05x to 1.50x) via 1€ filter
           const rawAvgY = ((leftCur.y + rightCur.y) * 0.5) / window.innerHeight;
           const filteredY = heightFilter.filter(rawAvgY, now);
           const normY = Math.min(Math.max((filteredY - 0.18) / 0.62, 0.0), 1.0);
-          smoothWarpSpeed = 0.05 + normY * 0.45;
+          smoothWarpSpeed = 0.05 + normY * 1.45;
 
-          // 2. Hand X Distance -> Ridge Brightness (0.05 to 0.90) via 1€ filter
+          // 2. Hand X Distance -> Ridge Brightness (0.00 to 1.00) via 1€ filter
           const rawDx = Math.abs(rightCur.x - leftCur.x) / window.innerWidth;
           const filteredDx = spanFilter.filter(rawDx, now);
           
-          // Scaled for comfortable reach: hands touching (~0.08) to open arms (~0.38)
-          const normSpan = Math.min(Math.max((filteredDx - 0.08) / 0.30, 0.0), 1.0);
-          smoothRidge = mix(0.05, 0.90, normSpan);
+          // Lower deadband at 0.10 guarantees bringing hands close smoothly reaches 0.00
+          const normSpan = Math.min(Math.max((filteredDx - 0.10) / 0.28, 0.0), 1.0);
+          smoothRidge = mix(0.00, 1.00, normSpan);
 
         } else {
           // Graceful decay back to neutral cruise settings when body exits frame
           spanFilter.reset();
           heightFilter.reset();
-          smoothWarpSpeed += (0.25 - smoothWarpSpeed) * 0.04;
+          smoothWarpSpeed += (0.35 - smoothWarpSpeed) * 0.04;
           smoothRidge += (0.32 - smoothRidge) * 0.04;
         }
 
