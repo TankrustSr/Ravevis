@@ -38,7 +38,7 @@
       flex-direction: column;
       gap: 8px;
       z-index: 10;
-      max-width: 330px;
+      max-width: 340px;
       width: calc(100vw - 28px);
       pointer-events: none;
     }
@@ -47,7 +47,7 @@
       color: rgba(255, 255, 255, 0.85);
       font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", sans-serif;
       font-size: 12px;
-      background: rgba(14, 15, 20, 0.85);
+      background: rgba(14, 15, 20, 0.88);
       padding: 10px 14px;
       border-radius: 12px;
       border: 1px solid rgba(255, 255, 255, 0.12);
@@ -129,13 +129,15 @@
       display: flex;
       flex-direction: column;
       gap: 2px;
-      margin-top: 4px;
+      margin-top: 5px;
+      padding-bottom: 4px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
     }
     .slider-header {
       display: flex;
       justify-content: space-between;
       font-size: 10.5px;
-      color: rgba(255, 255, 255, 0.65);
+      color: rgba(255, 255, 255, 0.7);
       text-transform: uppercase;
       letter-spacing: 0.4px;
     }
@@ -151,17 +153,70 @@
       border-radius: 3px;
       background: rgba(255, 255, 255, 0.14);
       outline: none;
-      margin: 4px 0 2px 0;
+      margin: 3px 0 2px 0;
     }
     input[type="range"]::-webkit-slider-thumb {
       -webkit-appearance: none;
-      width: 16px;
-      height: 16px;
+      width: 15px;
+      height: 15px;
       border-radius: 50%;
       background: #ffffff;
       box-shadow: 0 1px 4px rgba(0,0,0,0.6);
       cursor: pointer;
     }
+    
+    /* Per-field modulation matrix bar */
+    .mod-bar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 6px;
+      font-size: 9.5px;
+      color: rgba(255, 255, 255, 0.55);
+      margin-top: 1px;
+    }
+    .mod-tag {
+      font-size: 8.5px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #f7a844;
+      margin-right: auto;
+    }
+    .mod-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      cursor: pointer;
+      color: rgba(255, 255, 255, 0.85);
+      font-weight: 500;
+    }
+    .mod-label input[type="checkbox"] {
+      width: 13px;
+      height: 13px;
+      accent-color: #f7a844;
+      cursor: pointer;
+      margin: 0;
+    }
+    .scale-input {
+      width: 40px;
+      height: 18px;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 4px;
+      color: #79c0ff;
+      font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+      font-size: 9.5px;
+      font-weight: 600;
+      text-align: center;
+      padding: 0 2px;
+      outline: none;
+    }
+    .scale-input:focus {
+      border-color: #f7a844;
+      background: rgba(255, 255, 255, 0.16);
+    }
+
     .swatch-row {
       display: flex;
       align-items: center;
@@ -198,7 +253,7 @@
       align-items: center;
     }
     #drawer {
-      max-height: 50vh;
+      max-height: 52vh;
       overflow-y: auto;
       -webkit-overflow-scrolling: touch;
       padding-right: 4px;
@@ -303,6 +358,13 @@
             <span id="ripple-freq-num" class="val">28.0</span>
           </div>
           <input type="range" id="sl-ripple-freq" min="10.0" max="64.0" step="1.0" value="28.0">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-rippleFreq"> X</label>
+            <input type="number" id="scale-x-rippleFreq" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-rippleFreq"> Y</label>
+            <input type="number" id="scale-y-rippleFreq" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="slider-row">
@@ -311,6 +373,13 @@
             <span id="persist-num" class="val">0.992</span>
           </div>
           <input type="range" id="sl-persistence" min="0.85" max="1.00" step="0.002" value="0.992">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-persistence"> X</label>
+            <input type="number" id="scale-x-persistence" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-persistence"> Y</label>
+            <input type="number" id="scale-y-persistence" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="slider-row">
@@ -319,6 +388,13 @@
             <span id="head-force-num" class="val">1.60</span>
           </div>
           <input type="range" id="sl-head-force" min="0.0" max="3.5" step="0.05" value="1.60">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-headForce"> X</label>
+            <input type="number" id="scale-x-headForce" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-headForce"> Y</label>
+            <input type="number" id="scale-y-headForce" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="slider-row">
@@ -327,6 +403,13 @@
             <span id="hand-force-num" class="val">1.30</span>
           </div>
           <input type="range" id="sl-hand-force" min="0.0" max="3.5" step="0.05" value="1.30">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-handForce"> X</label>
+            <input type="number" id="scale-x-handForce" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-handForce"> Y</label>
+            <input type="number" id="scale-y-handForce" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div style="margin-top:6px;">
@@ -351,21 +434,34 @@
             <span id="plane-tilt-num" class="val">38°</span>
           </div>
           <input type="range" id="sl-plane-tilt" min="0" max="62" step="1" value="38">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-planeTilt"> X</label>
+            <input type="number" id="scale-x-planeTilt" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-planeTilt"> Y</label>
+            <input type="number" id="scale-y-planeTilt" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
-        <!-- Center Point Depth Slider -->
         <div class="slider-row">
           <div class="slider-header">
             <span>Center Point Depth</span>
             <span id="center-depth-num" class="val">0.85</span>
           </div>
           <input type="range" id="sl-center-depth" min="-1.00" max="4.00" step="0.05" value="0.85">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-centerDepth"> X</label>
+            <input type="number" id="scale-x-centerDepth" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-centerDepth"> Y</label>
+            <input type="number" id="scale-y-centerDepth" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
           <span class="slider-header" style="margin:0;">Rotation Mode</span>
           <select id="sl-angle-anim">
-            <option value="body_kaleido" selected>🚀 Warp Tunnel (Body Speed & Ridge Glow)</option>
+            <option value="body_kaleido" selected>🚀 Warp Tunnel (Body Matrix Active)</option>
             <option value="manual">Manual (Slider)</option>
             <option value="body_arms">Track Arm Angle (Pose)</option>
             <option value="pour_hands">💧 Pour Between Hands (Gravity Cascade)</option>
@@ -381,22 +477,43 @@
             <span id="angle-num" class="val">0°</span>
           </div>
           <input type="range" id="sl-angle" min="-180" max="180" step="1" value="0">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-angle"> X</label>
+            <input type="number" id="scale-x-angle" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-angle"> Y</label>
+            <input type="number" id="scale-y-angle" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="slider-row">
           <div class="slider-header">
-            <span>Warp Throttle (Body Y)</span>
+            <span>Warp Throttle</span>
             <span id="rot-speed-num" class="val">0.50x</span>
           </div>
           <input type="range" id="sl-rot-speed" min="0.00" max="2.00" step="0.02" value="0.50">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-rotSpeed"> X</label>
+            <input type="number" id="scale-x-rotSpeed" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-rotSpeed" checked> Y</label>
+            <input type="number" id="scale-y-rotSpeed" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="slider-row">
           <div class="slider-header">
             <span>Ambient Drift</span>
-            <span id="speed-num" class="val">0.1</span>
+            <span id="speed-num" class="val">0.035</span>
           </div>
-          <input type="range" id="sl-speed" min="0.0" max="1.5" step="0.05" value="0.1">
+          <input type="range" id="sl-speed" min="0.0" max="0.12" step="0.002" value="0.035">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-speed"> X</label>
+            <input type="number" id="scale-x-speed" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-speed"> Y</label>
+            <input type="number" id="scale-y-speed" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="slider-row">
@@ -405,6 +522,13 @@
             <span id="warp-num" class="val">1.85</span>
           </div>
           <input type="range" id="sl-warp" min="0.1" max="4.0" step="0.05" value="1.85">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-warp"> X</label>
+            <input type="number" id="scale-x-warp" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-warp"> Y</label>
+            <input type="number" id="scale-y-warp" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="slider-row">
@@ -413,6 +537,13 @@
             <span id="stretch-num" class="val">1.40</span>
           </div>
           <input type="range" id="sl-stretch" min="0.3" max="4.0" step="0.05" value="1.40">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-stretch"> X</label>
+            <input type="number" id="scale-x-stretch" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-stretch"> Y</label>
+            <input type="number" id="scale-y-stretch" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="sub-heading">Perspective Corridor / Kaleidoscope</div>
@@ -438,6 +569,13 @@
             <span id="k-blur-num" class="val">0.08</span>
           </div>
           <input type="range" id="sl-k-blur" min="0.0" max="1.0" step="0.01" value="0.08">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-kBlur"> X</label>
+            <input type="number" id="scale-x-kBlur" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-kBlur"> Y</label>
+            <input type="number" id="scale-y-kBlur" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="slider-row">
@@ -446,6 +584,13 @@
             <span id="k-angle-num" class="val">45°</span>
           </div>
           <input type="range" id="sl-k-angle" min="0" max="360" step="1" value="45">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-kAngle"> X</label>
+            <input type="number" id="scale-x-kAngle" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-kAngle"> Y</label>
+            <input type="number" id="scale-y-kAngle" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="slider-row">
@@ -454,6 +599,13 @@
             <span id="k-zoom-num" class="val">1.00</span>
           </div>
           <input type="range" id="sl-k-zoom" min="0.2" max="3.0" step="0.02" value="1.00">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-kZoom"> X</label>
+            <input type="number" id="scale-x-kZoom" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-kZoom"> Y</label>
+            <input type="number" id="scale-y-kZoom" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="slider-row">
@@ -462,6 +614,13 @@
             <span id="k-pinch-num" class="val">1.00</span>
           </div>
           <input type="range" id="sl-k-pinch" min="0.4" max="2.5" step="0.05" value="1.00">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-kPinch"> X</label>
+            <input type="number" id="scale-x-kPinch" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-kPinch"> Y</label>
+            <input type="number" id="scale-y-kPinch" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="sub-heading">Topographical Strata</div>
@@ -471,6 +630,13 @@
             <span id="density-num" class="val">18.0</span>
           </div>
           <input type="range" id="sl-density" min="4.0" max="72.0" step="1.0" value="18.0">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-density"> X</label>
+            <input type="number" id="scale-x-density" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-density"> Y</label>
+            <input type="number" id="scale-y-density" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="slider-row">
@@ -479,14 +645,28 @@
             <span id="step-num" class="val">0.00</span>
           </div>
           <input type="range" id="sl-step" min="0.0" max="1.0" step="0.02" value="0.00">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-step"> X</label>
+            <input type="number" id="scale-x-step" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-step"> Y</label>
+            <input type="number" id="scale-y-step" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="slider-row">
           <div class="slider-header">
-            <span>Ridge Brightness (Body X)</span>
+            <span>Ridge Brightness</span>
             <span id="ridge-num" class="val">0.32</span>
           </div>
           <input type="range" id="sl-ridge" min="0.0" max="1.0" step="0.02" value="0.32">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-ridge" checked> X</label>
+            <input type="number" id="scale-x-ridge" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-ridge"> Y</label>
+            <input type="number" id="scale-y-ridge" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="sub-heading">Optics & Lighting</div>
@@ -496,6 +676,13 @@
             <span id="chroma-num" class="val">0.35</span>
           </div>
           <input type="range" id="sl-chroma" min="0.0" max="1.5" step="0.02" value="0.35">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-chroma"> X</label>
+            <input type="number" id="scale-x-chroma" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-chroma"> Y</label>
+            <input type="number" id="scale-y-chroma" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="slider-row">
@@ -504,6 +691,13 @@
             <span id="shimmer-num" class="val">0.45</span>
           </div>
           <input type="range" id="sl-shimmer" min="0.0" max="1.5" step="0.05" value="0.45">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-shimmer"> X</label>
+            <input type="number" id="scale-x-shimmer" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-shimmer"> Y</label>
+            <input type="number" id="scale-y-shimmer" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="slider-row">
@@ -512,6 +706,13 @@
             <span id="rim-num" class="val">0.30</span>
           </div>
           <input type="range" id="sl-rim" min="0.0" max="1.0" step="0.02" value="0.30">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-rim"> X</label>
+            <input type="number" id="scale-x-rim" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-rim"> Y</label>
+            <input type="number" id="scale-y-rim" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="slider-row">
@@ -520,6 +721,13 @@
             <span id="grain-num" class="val">0.04</span>
           </div>
           <input type="range" id="sl-grain" min="0.0" max="0.25" step="0.01" value="0.04">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-grain"> X</label>
+            <input type="number" id="scale-x-grain" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-grain"> Y</label>
+            <input type="number" id="scale-y-grain" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="sub-heading">Contrast & Depth</div>
@@ -529,6 +737,13 @@
             <span id="contrast-num" class="val">1.00</span>
           </div>
           <input type="range" id="sl-contrast" min="0.5" max="2.0" step="0.05" value="1.00">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-contrast"> X</label>
+            <input type="number" id="scale-x-contrast" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-contrast"> Y</label>
+            <input type="number" id="scale-y-contrast" value="1.0" step="0.1" class="scale-input">
+          </div>
         </div>
 
         <div class="sub-heading">Palette Swatches</div>
@@ -686,15 +901,12 @@
         float FL = 1.7;
         float k = tan(u_plane_tilt) / FL;
         
-        // Exact projective divisor W: large near bottom, small near top
         float W_target = clamp(1.0 - k * targetPos.y, 0.12, 1.85);
         float cosTilt = cos(u_plane_tilt);
 
-        // Compress Y-axis distance so circular ripples on the ground project as perspective ellipses
         vec2 toTarget = st - targetPos;
         vec2 toTargetPlane = vec2(toTarget.x, toTarget.y / max(cosTilt, 0.25));
         
-        // Distance scaled by W: high in frame = tight ripples, low in frame = broad tidal waves
         float dScaled = length(toTargetPlane) / W_target;
         vec2 dir = toTarget / (length(toTarget) + 0.001);
         float speed = length(vel);
@@ -910,16 +1122,12 @@
         depthFactor = clamp(W, 0.08, 1.85);
         float cosT = cos(tiltAngle);
 
-        // True 3D ground coordinates
         vec2 ground = vec2(screenST.x / W, screenST.y / (W * cosT));
-
-        // Atmospheric horizon haze
         fog = smoothstep(0.32, 0.04, W);
 
         return ground;
       }
 
-      // Analytical inverse: projects ground coordinates back to screen space for texture sampling
       vec2 groundToScreenST(vec2 groundPos, float tiltAngle) {
         if (tiltAngle < 0.005) return groundPos;
         float FL = 1.7;
@@ -933,7 +1141,6 @@
       vec3 evaluateScene(vec2 st, vec2 screenUV, float depthFactor) {
         float t = u_time * u_speed;
 
-        // Apply physical fluid displacement scaled by 3D ground perspective
         vec2 paintDisplacement = texture2D(u_simTexture, screenUV).xy;
         st += paintDisplacement / depthFactor;
 
@@ -1003,7 +1210,6 @@
         float fold = sin(f * (effectiveFreq * 0.45) + r.x * 2.5);
         float bands = smoothstep(0.15, 0.85, fold);
 
-        // 3D Rotated Surface Normal in Camera Space
         vec3 nBase = normalize(vec3(0.0, sin(u_plane_tilt), cos(u_plane_tilt)));
         vec3 normal = normalize(nBase + vec3(-r.x * 1.8, -r.y * 1.8 * cos(u_plane_tilt), r.y * 1.8 * sin(u_plane_tilt)));
         
@@ -1069,7 +1275,6 @@
         vec2 centerOffset = vec2(0.0, u_center_depth);
 
         if (u_kaleido_segs > 1.5) {
-          // Calculate radial parameters relative to adjustable 3D center depth
           vec2 p = st - centerOffset;
           float r = length(p);
           float a = atan(p.y, p.x) + u_kaleido_angle;
@@ -1091,7 +1296,6 @@
             float U1 = foldA * tunnelScale;
             vec2 st1 = vec2(U1, V);
             
-            // Project folded coordinate to screen space anchored at center depth
             vec2 foldedGround1 = centerOffset + vec2(cos(foldA), sin(foldA)) * r;
             vec2 foldedScreenST1 = groundToScreenST(foldedGround1, u_plane_tilt);
             vec2 screenUV1 = (foldedScreenST1 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
@@ -1471,6 +1675,58 @@
       contrast:    document.getElementById('contrast-num')
     };
 
+    // Modulation Matrix Configuration (Maps each parameter to its X/Y controls)
+    const modMatrix = {
+      planeTilt:   { chkX: document.getElementById('mod-x-planeTilt'),   scaleX: document.getElementById('scale-x-planeTilt'),   chkY: document.getElementById('mod-y-planeTilt'),   scaleY: document.getElementById('scale-y-planeTilt') },
+      centerDepth: { chkX: document.getElementById('mod-x-centerDepth'), scaleX: document.getElementById('scale-x-centerDepth'), chkY: document.getElementById('mod-y-centerDepth'), scaleY: document.getElementById('scale-y-centerDepth') },
+      persistence: { chkX: document.getElementById('mod-x-persistence'), scaleX: document.getElementById('scale-x-persistence'), chkY: document.getElementById('mod-y-persistence'), scaleY: document.getElementById('scale-y-persistence') },
+      rippleFreq:  { chkX: document.getElementById('mod-x-rippleFreq'),  scaleX: document.getElementById('scale-x-rippleFreq'),  chkY: document.getElementById('mod-y-rippleFreq'),  scaleY: document.getElementById('scale-y-rippleFreq') },
+      headForce:   { chkX: document.getElementById('mod-x-headForce'),   scaleX: document.getElementById('scale-x-headForce'),   chkY: document.getElementById('mod-y-headForce'),   scaleY: document.getElementById('scale-y-headForce') },
+      handForce:   { chkX: document.getElementById('mod-x-handForce'),   scaleX: document.getElementById('scale-x-handForce'),   chkY: document.getElementById('mod-y-handForce'),   scaleY: document.getElementById('scale-y-handForce') },
+      angle:       { chkX: document.getElementById('mod-x-angle'),       scaleX: document.getElementById('scale-x-angle'),       chkY: document.getElementById('mod-y-angle'),       scaleY: document.getElementById('scale-y-angle') },
+      rotSpeed:    { chkX: document.getElementById('mod-x-rotSpeed'),    scaleX: document.getElementById('scale-x-rotSpeed'),    chkY: document.getElementById('mod-y-rotSpeed'),    scaleY: document.getElementById('scale-y-rotSpeed') },
+      speed:       { chkX: document.getElementById('mod-x-speed'),       scaleX: document.getElementById('scale-x-speed'),       chkY: document.getElementById('mod-y-speed'),       scaleY: document.getElementById('scale-y-speed') },
+      warp:        { chkX: document.getElementById('mod-x-warp'),        scaleX: document.getElementById('scale-x-warp'),        chkY: document.getElementById('mod-y-warp'),        scaleY: document.getElementById('scale-y-warp') },
+      stretch:     { chkX: document.getElementById('mod-x-stretch'),     scaleX: document.getElementById('scale-x-stretch'),     chkY: document.getElementById('mod-y-stretch'),     scaleY: document.getElementById('scale-y-stretch') },
+      kBlur:       { chkX: document.getElementById('mod-x-kBlur'),       scaleX: document.getElementById('scale-x-kBlur'),       chkY: document.getElementById('mod-y-kBlur'),       scaleY: document.getElementById('scale-y-kBlur') },
+      kAngle:      { chkX: document.getElementById('mod-x-kAngle'),      scaleX: document.getElementById('scale-x-kAngle'),      chkY: document.getElementById('mod-y-kAngle'),      scaleY: document.getElementById('scale-y-kAngle') },
+      kZoom:       { chkX: document.getElementById('mod-x-kZoom'),       scaleX: document.getElementById('scale-x-kZoom'),       chkY: document.getElementById('mod-y-kZoom'),       scaleY: document.getElementById('scale-y-kZoom') },
+      kPinch:      { chkX: document.getElementById('mod-x-kPinch'),      scaleX: document.getElementById('scale-x-kPinch'),      chkY: document.getElementById('mod-y-kPinch'),      scaleY: document.getElementById('scale-y-kPinch') },
+      density:     { chkX: document.getElementById('mod-x-density'),     scaleX: document.getElementById('scale-x-density'),     chkY: document.getElementById('mod-y-density'),     scaleY: document.getElementById('scale-y-density') },
+      step:        { chkX: document.getElementById('mod-x-step'),        scaleX: document.getElementById('scale-x-step'),        chkY: document.getElementById('mod-y-step'),        scaleY: document.getElementById('scale-y-step') },
+      ridge:       { chkX: document.getElementById('mod-x-ridge'),       scaleX: document.getElementById('scale-x-ridge'),       chkY: document.getElementById('mod-y-ridge'),       scaleY: document.getElementById('scale-y-ridge') },
+      chroma:      { chkX: document.getElementById('mod-x-chroma'),      scaleX: document.getElementById('scale-x-chroma'),      chkY: document.getElementById('mod-y-chroma'),      scaleY: document.getElementById('scale-y-chroma') },
+      shimmer:     { chkX: document.getElementById('mod-x-shimmer'),     scaleX: document.getElementById('scale-x-shimmer'),     chkY: document.getElementById('mod-y-shimmer'),     scaleY: document.getElementById('scale-y-shimmer') },
+      rim:         { chkX: document.getElementById('mod-x-rim'),         scaleX: document.getElementById('scale-x-rim'),         chkY: document.getElementById('mod-y-rim'),         scaleY: document.getElementById('scale-y-rim') },
+      grain:       { chkX: document.getElementById('mod-x-grain'),       scaleX: document.getElementById('scale-x-grain'),       chkY: document.getElementById('mod-y-grain'),       scaleY: document.getElementById('scale-y-grain') },
+      contrast:    { chkX: document.getElementById('mod-x-contrast'),    scaleX: document.getElementById('scale-x-contrast'),    chkY: document.getElementById('mod-y-contrast'),    scaleY: document.getElementById('scale-y-contrast') }
+    };
+
+    // Store manual base slider values
+    const manualBaseVals = {};
+    for (const key in sliders) {
+      manualBaseVals[key] = parseFloat(sliders[key].value);
+    }
+
+    function formatDisplayVal(key, val) {
+      if (key === 'planeTilt') return Math.round(val) + '°';
+      if (key === 'centerDepth') return val.toFixed(2);
+      if (key === 'angle' || key === 'kAngle') return Math.round(val) + '°';
+      if (key === 'rotSpeed') return val.toFixed(2) + 'x';
+      if (key === 'kSegs') return Math.round(val) === 1 ? 'Off' : `${Math.round(val)} Petals`;
+      const stepStr = sliders[key].step;
+      const decimals = stepStr.includes('.') ? stepStr.split('.')[1].length : 1;
+      return val.toFixed(decimals);
+    }
+
+    // Stop canvas gestures while interacting with modulation inputs
+    document.querySelectorAll('.mod-bar input').forEach(el => {
+      el.addEventListener('pointerdown', (e) => e.stopPropagation());
+      el.addEventListener('pointermove', (e) => e.stopPropagation());
+      el.addEventListener('touchstart', (e) => e.stopPropagation());
+      el.addEventListener('touchmove', (e) => e.stopPropagation());
+    });
+
     const slInfluenceMode = document.getElementById('sl-influence-mode');
     const influenceModeHUD = document.getElementById('influence-mode-hud');
     const planeTiltHUD = document.getElementById('plane-tilt-hud');
@@ -1491,8 +1747,6 @@
     });
 
     let currentAngleDeg = 0.0;
-    let smoothWarpSpeed = 0.50;
-    let smoothRidge = 0.32;
     let travelDist = 0.0;
     let pingPongPhase = 0.0;
     let lastAnimTime = performance.now();
@@ -1515,25 +1769,13 @@
     for (const key in sliders) {
       const el = sliders[key];
       const updateVal = () => {
+        manualBaseVals[key] = parseFloat(el.value);
         if (key === 'planeTilt') {
-          numDisplays[key].textContent = el.value + '°';
           planeTiltHUD.textContent = el.value === '0' ? 'Flat 2D' : `Tilt ${el.value}°`;
-        } else if (key === 'centerDepth') {
-          numDisplays[key].textContent = parseFloat(el.value).toFixed(2);
-        } else if (key === 'angle') {
-          if (animModeSelect.value === 'manual' || animModeSelect.value === 'body_kaleido') {
-            currentAngleDeg = parseFloat(el.value);
-          }
-          numDisplays[key].textContent = Math.round(parseFloat(el.value)) + '°';
-        } else if (key === 'rotSpeed') {
-          numDisplays[key].textContent = parseFloat(el.value).toFixed(2) + 'x';
-        } else if (key === 'kSegs') {
-          numDisplays[key].textContent = el.value === '1' ? 'Off' : `${el.value} Petals`;
-        } else if (key === 'kAngle') {
-          numDisplays[key].textContent = el.value + '°';
-        } else {
-          numDisplays[key].textContent = parseFloat(el.value).toFixed(el.step.includes('.') ? el.step.split('.')[1].length : 1);
+        } else if (key === 'angle' && animModeSelect.value !== 'body_kaleido') {
+          currentAngleDeg = parseFloat(el.value);
         }
+        numDisplays[key].textContent = formatDisplayVal(key, manualBaseVals[key]);
       };
       el.addEventListener('input', updateVal);
       el.addEventListener('pointerdown', (e) => e.stopPropagation());
@@ -1626,16 +1868,27 @@
 
     function captureCurrentPresetState() {
       const sliderVals = {};
-      for (const k in sliders) sliderVals[k] = sliders[k].value;
+      for (const k in sliders) sliderVals[k] = manualBaseVals[k];
       const colorVals = {};
       for (const k in pickers) colorVals[k] = pickers[k].value;
+      const modStates = {};
+      for (const k in modMatrix) {
+        const m = modMatrix[k];
+        modStates[k] = {
+          x: m.chkX.checked,
+          sx: m.scaleX.value,
+          y: m.chkY.checked,
+          sy: m.scaleY.value
+        };
+      }
       return {
         engine: currentEngine,
         animMode: animModeSelect.value,
         kMode: slKMode.value,
         influenceMode: slInfluenceMode.value,
         sliders: sliderVals,
-        colors: colorVals
+        colors: colorVals,
+        mods: modStates
       };
     }
 
@@ -1658,12 +1911,25 @@
         for (const k in data.sliders) {
           if (sliders[k]) {
             sliders[k].value = data.sliders[k];
-            sliders[k].dispatchEvent(new Event('input'));
+            manualBaseVals[k] = parseFloat(data.sliders[k]);
+            numDisplays[k].textContent = formatDisplayVal(k, manualBaseVals[k]);
           }
         }
       }
       if (data.colors) {
         for (const k in data.colors) if (pickers[k]) pickers[k].value = data.colors[k];
+      }
+      if (data.mods) {
+        for (const k in data.mods) {
+          if (modMatrix[k]) {
+            const m = data.mods[k];
+            const target = modMatrix[k];
+            if (m.x !== undefined) target.chkX.checked = m.x;
+            if (m.sx !== undefined) target.scaleX.value = m.sx;
+            if (m.y !== undefined) target.chkY.checked = m.y;
+            if (m.sy !== undefined) target.scaleY.value = m.sy;
+          }
+        }
       }
     }
 
@@ -2087,6 +2353,9 @@
       ];
     }
 
+    // Active modulated values storage
+    const activeVals = {};
+
     function render(time) {
       const now = performance.now();
       let dt = (now - lastAnimTime) * 0.001;
@@ -2099,39 +2368,59 @@
 
       let isWarpMode = 0.0;
 
+      // Tracking normalization
+      const allowHands = chkHandTracking.checked;
+      const isTrackingFresh = allowHands && ((now - lastValidHandTime) < 400);
+
+      let normX = 0.0;
+      let normY = 0.0;
+
+      if (isTrackingFresh) {
+        const rawAvgY = ((leftCur.y + rightCur.y) * 0.5) / window.innerHeight;
+        const filteredY = heightFilter.filter(rawAvgY, now);
+        normY = Math.min(Math.max((filteredY - 0.18) / 0.62, 0.0), 1.0);
+
+        const rawDx = Math.abs(rightCur.x - leftCur.x) / window.innerWidth;
+        const filteredDx = spanFilter.filter(rawDx, now);
+        normX = Math.min(Math.max((filteredDx - 0.10) / 0.28, 0.0), 1.0);
+      } else {
+        spanFilter.reset();
+        heightFilter.reset();
+      }
+
+      // Compute modulated values for all parameters
+      for (const k in modMatrix) {
+        const slider = sliders[k];
+        const minVal = parseFloat(slider.min);
+        const maxVal = parseFloat(slider.max);
+        const range = maxVal - minVal;
+        const base = manualBaseVals[k];
+
+        const m = modMatrix[k];
+        const useX = m.chkX.checked && isTrackingFresh;
+        const useY = m.chkY.checked && isTrackingFresh;
+
+        const scaleX = parseFloat(m.scaleX.value) || 0.0;
+        const scaleY = parseFloat(m.scaleY.value) || 0.0;
+
+        let delta = 0.0;
+        if (useX) delta += normX * scaleX * range;
+        if (useY) delta += normY * scaleY * range;
+
+        const finalVal = Math.min(Math.max(base + delta, minVal), maxVal);
+        activeVals[k] = finalVal;
+
+        if (useX || useY) {
+          numDisplays[k].textContent = formatDisplayVal(k, finalVal);
+        } else {
+          numDisplays[k].textContent = formatDisplayVal(k, base);
+        }
+      }
+
       if (animMode === 'body_kaleido') {
         isWarpMode = 1.0;
-        currentAngleDeg = parseFloat(sliders.angle.value);
-
-        const allowHands = chkHandTracking.checked;
-        const isTrackingFresh = allowHands && ((now - lastValidHandTime) < 400);
-
-        if (isTrackingFresh) {
-          const rawAvgY = ((leftCur.y + rightCur.y) * 0.5) / window.innerHeight;
-          const filteredY = heightFilter.filter(rawAvgY, now);
-          const normY = Math.min(Math.max((filteredY - 0.18) / 0.62, 0.0), 1.0);
-          smoothWarpSpeed = 0.05 + normY * 1.45;
-
-          const rawDx = Math.abs(rightCur.x - leftCur.x) / window.innerWidth;
-          const filteredDx = spanFilter.filter(rawDx, now);
-          
-          const normSpan = Math.min(Math.max((filteredDx - 0.10) / 0.28, 0.0), 1.0);
-          smoothRidge = mix(0.00, 1.00, normSpan);
-
-          sliders.rotSpeed.value = smoothWarpSpeed.toFixed(2);
-          numDisplays.rotSpeed.textContent = smoothWarpSpeed.toFixed(2) + 'x';
-
-          sliders.ridge.value = smoothRidge.toFixed(2);
-          numDisplays.ridge.textContent = smoothRidge.toFixed(2);
-
-        } else {
-          spanFilter.reset();
-          heightFilter.reset();
-          smoothWarpSpeed = parseFloat(sliders.rotSpeed.value);
-          smoothRidge = parseFloat(sliders.ridge.value);
-        }
-
-        travelDist += smoothWarpSpeed * dt * 1.5;
+        currentAngleDeg = activeVals.angle !== undefined ? activeVals.angle : manualBaseVals.angle;
+        travelDist += activeVals.rotSpeed * dt * 1.5;
 
       } else if (animMode === 'manual') {
         currentAngleDeg = parseFloat(sliders.angle.value);
@@ -2153,6 +2442,7 @@
           if (currentAngleDeg > 180.0)  currentAngleDeg -= 360.0;
           if (currentAngleDeg < -180.0) currentAngleDeg += 360.0;
 
+          manualBaseVals.angle = currentAngleDeg;
           sliders.angle.value = currentAngleDeg;
           numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
         }
@@ -2170,23 +2460,27 @@
           if (currentAngleDeg > 180.0)  currentAngleDeg -= 360.0;
           if (currentAngleDeg < -180.0) currentAngleDeg += 360.0;
 
+          manualBaseVals.angle = currentAngleDeg;
           sliders.angle.value = currentAngleDeg;
           numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
         }
       } else if (animMode === 'continuous_cw') {
         currentAngleDeg += baseAngularSpeed * rotSpeedMult * dt;
         if (currentAngleDeg > 180.0) currentAngleDeg -= 360.0;
+        manualBaseVals.angle = currentAngleDeg;
         sliders.angle.value = currentAngleDeg;
         numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
       } else if (animMode === 'continuous_ccw') {
         currentAngleDeg -= baseAngularSpeed * rotSpeedMult * dt;
         if (currentAngleDeg < -180.0) currentAngleDeg += 360.0;
+        manualBaseVals.angle = currentAngleDeg;
         sliders.angle.value = currentAngleDeg;
         numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
       } else if (animMode === 'pingpong') {
         const omega = (baseAngularSpeed * rotSpeedMult * Math.PI) / 180.0;
         pingPongPhase += omega * dt;
         currentAngleDeg = 180.0 * Math.sin(pingPongPhase);
+        manualBaseVals.angle = currentAngleDeg;
         sliders.angle.value = currentAngleDeg;
         numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
       }
@@ -2223,10 +2517,10 @@
       prevRightCurX = rightCur.x;
       prevRightCurY = rightCur.y;
 
-      const planeTiltRad = (parseFloat(sliders.planeTilt.value) * Math.PI) / 180.0;
-      const centerDepthVal = parseFloat(sliders.centerDepth.value);
+      const planeTiltRad = (activeVals.planeTilt * Math.PI) / 180.0;
+      const centerDepthVal = activeVals.centerDepth;
 
-      // 1. Physical Simulation Pass (Ground Perspective Aware)
+      // 1. Physical Simulation Pass (Ground Perspective & Modulated Physics Aware)
       gl.bindFramebuffer(gl.FRAMEBUFFER, writeFBO.fbo);
       gl.viewport(0, 0, simWidth, simHeight);
       gl.useProgram(simProgram);
@@ -2241,11 +2535,11 @@
       gl.uniform1i(simPrevTexLoc, 0);
 
       gl.uniform2f(simResLoc, simWidth, simHeight);
-      gl.uniform1f(simPersistLoc, parseFloat(sliders.persistence.value));
-      gl.uniform1f(simHeadForceLoc, parseFloat(sliders.headForce.value));
-      gl.uniform1f(simHandForceLoc, parseFloat(sliders.handForce.value));
+      gl.uniform1f(simPersistLoc, activeVals.persistence);
+      gl.uniform1f(simHeadForceLoc, activeVals.headForce);
+      gl.uniform1f(simHandForceLoc, activeVals.handForce);
       gl.uniform1f(simInfluenceModeLoc, parseFloat(slInfluenceMode.value));
-      gl.uniform1f(simRippleFreqLoc, parseFloat(sliders.rippleFreq.value));
+      gl.uniform1f(simRippleFreqLoc, activeVals.rippleFreq);
       gl.uniform1f(simPlaneTiltLoc, planeTiltRad);
       gl.uniform1f(simTimeLoc, time * 0.001);
 
@@ -2273,7 +2567,7 @@
 
       swapFBOs();
 
-      // 2. Display Shader Pass (3D Perspective Plane & Center Point Depth Offset)
+      // 2. Display Shader Pass (3D Perspective Plane & Modulated Uniforms)
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.useProgram(displayProgram);
@@ -2297,33 +2591,33 @@
       gl.uniform1f(dispShaderTypeLoc, currentEngine);
 
       gl.uniform1f(dispKSegsLoc, parseFloat(sliders.kSegs.value));
-      gl.uniform1f(dispKAngleLoc, (parseFloat(sliders.kAngle.value) * Math.PI) / 180.0);
-      gl.uniform1f(dispKZoomLoc, parseFloat(sliders.kZoom.value));
-      gl.uniform1f(dispKPinchLoc, parseFloat(sliders.kPinch.value));
+      gl.uniform1f(dispKAngleLoc, (activeVals.kAngle * Math.PI) / 180.0);
+      gl.uniform1f(dispKZoomLoc, activeVals.kZoom);
+      gl.uniform1f(dispKPinchLoc, activeVals.kPinch);
       gl.uniform1f(dispKMirrorLoc, parseFloat(slKMode.value));
-      gl.uniform1f(dispKBlurLoc, parseFloat(sliders.kBlur.value));
+      gl.uniform1f(dispKBlurLoc, activeVals.kBlur);
       gl.uniform1f(dispTravelDistLoc, travelDist);
       gl.uniform1f(dispIsWarpLoc, isWarpMode);
 
       const angleRad = (currentAngleDeg * Math.PI) / 180.0;
       gl.uniform1f(dispAngleLoc, angleRad);
-      gl.uniform1f(dispSpeedLoc, parseFloat(sliders.speed.value));
-      gl.uniform1f(dispWarpLoc, parseFloat(sliders.warp.value));
-      gl.uniform1f(dispStretchLoc, parseFloat(sliders.stretch.value));
+      gl.uniform1f(dispSpeedLoc, activeVals.speed);
+      gl.uniform1f(dispWarpLoc, activeVals.warp);
+      gl.uniform1f(dispStretchLoc, activeVals.stretch);
       gl.uniform1f(dispPlaneTiltLoc, planeTiltRad);
       gl.uniform1f(dispCenterDepthLoc, centerDepthVal);
 
       gl.uniform2f(dispHeadLoc, hNorm[0], hNorm[1]);
       gl.uniform1f(dispHeadActLoc, headCur.active);
 
-      gl.uniform1f(dispDensityLoc, parseFloat(sliders.density.value));
-      gl.uniform1f(dispStepLoc, parseFloat(sliders.step.value));
-      gl.uniform1f(dispRidgeLoc, parseFloat(sliders.ridge.value));
-      gl.uniform1f(dispChromaLoc, parseFloat(sliders.chroma.value));
-      gl.uniform1f(dispShimmerLoc, parseFloat(sliders.shimmer.value));
-      gl.uniform1f(dispRimLoc, parseFloat(sliders.rim.value));
-      gl.uniform1f(dispGrainLoc, parseFloat(sliders.grain.value));
-      gl.uniform1f(dispContrastLoc, parseFloat(sliders.contrast.value));
+      gl.uniform1f(dispDensityLoc, activeVals.density);
+      gl.uniform1f(dispStepLoc, activeVals.step);
+      gl.uniform1f(dispRidgeLoc, activeVals.ridge);
+      gl.uniform1f(dispChromaLoc, activeVals.chroma);
+      gl.uniform1f(dispShimmerLoc, activeVals.shimmer);
+      gl.uniform1f(dispRimLoc, activeVals.rim);
+      gl.uniform1f(dispGrainLoc, activeVals.grain);
+      gl.uniform1f(dispContrastLoc, activeVals.contrast);
 
       const rgbShadow = hexToRgb(pickers.shadow.value);
       const rgbCoolA  = hexToRgb(pickers.coolA.value);
@@ -2342,10 +2636,6 @@
       gl.drawArrays(gl.TRIANGLES, 0, 6);
 
       requestAnimationFrame(render);
-    }
-
-    function mix(a, b, t) {
-      return a * (1.0 - t) + b * t;
     }
 
     requestAnimationFrame(render);
