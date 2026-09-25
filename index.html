@@ -334,10 +334,26 @@
           <button id="delPresetBtn" title="Delete custom preset" style="display:none; color:#ff6b6b;">✕</button>
         </div>
 
-        <div class="sub-heading">Pose Tracking Gating</div>
+        <div class="sub-heading">Pose Tracking Gating & Return Dynamics</div>
         <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
           <span style="font-size: 11px; color: #fff;">Enable Hand Tracking</span>
           <input type="checkbox" id="chk-hand-tracking" checked style="width: 16px; height: 16px; cursor: pointer; accent-color: #f7a844;">
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>X Return Decay Time</span>
+            <span id="decay-x-num" class="val">1.50s</span>
+          </div>
+          <input type="range" id="sl-decay-x" min="0.10" max="8.00" step="0.10" value="1.50">
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>Y Return Decay Time</span>
+            <span id="decay-y-num" class="val">1.50s</span>
+          </div>
+          <input type="range" id="sl-decay-y" min="0.10" max="8.00" step="0.10" value="1.50">
         </div>
 
         <div class="sub-heading">Physical Fluid & Ripple Dynamics</div>
@@ -506,7 +522,7 @@
             <span>Ambient Drift</span>
             <span id="speed-num" class="val">0.1</span>
           </div>
-          <input type="range" id="sl-speed" min="0.0" max="2.0" step="0.05" value="0.1">
+          <input type="range" id="sl-speed" min="0.0" max="2.00" step="0.5" value="2.00">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-speed"> X</label>
@@ -914,13 +930,13 @@
 
         float effectiveForce = active * forceMult * W_target;
 
-        if (u_influence_mode < 0.5) { // Viscous Drag
+        if (u_influence_mode < 0.5) {
           float f = exp(-dScaled * 3.2) * effectiveForce;
           impulse += vel * f * 1.4;
           vec2 v = vec2(-toTarget.y, toTarget.x) / (dScaled + 0.15 * W_target);
           impulse += v * f * 0.85;
         }
-        else if (u_influence_mode < 1.5) { // Water Wake & Ripples
+        else if (u_influence_mode < 1.5) {
           float wavePhase = (dScaled * u_ripple_freq) - u_time * 6.5;
           float wave = sin(wavePhase) * exp(-dScaled * 3.4);
           float wake = exp(-dScaled * 2.6);
@@ -929,13 +945,13 @@
           impulse += dir * (wave * (0.45 + speed * 2.8)) * effectiveForce;
           impulse += vel * (wake * (0.8 + forwardDot * 0.6)) * effectiveForce;
         }
-        else if (u_influence_mode < 2.5) { // Vortex
+        else if (u_influence_mode < 2.5) {
           float f = exp(-dScaled * 2.8) * effectiveForce;
           vec2 vortex = vec2(-toTarget.y, toTarget.x) / (dScaled + 0.09 * W_target);
           impulse += vortex * (f * (1.2 + speed * 3.0));
           impulse += vel * (f * 0.6);
         }
-        else { // Acoustic Shockwave
+        else {
           float ring = sin(dScaled * u_ripple_freq * 0.6) * exp(-dScaled * 2.4);
           impulse += dir * (ring * 1.6 + exp(-dScaled * 4.2)) * (0.5 + speed * 3.0) * effectiveForce;
         }
@@ -1101,7 +1117,6 @@
         return newUV;
       }
 
-      // Mathematical Pinhole Camera Ray Projection to 3D Ground Plane
       vec2 getGroundCoords(vec2 screenST, float tiltAngle, out float depthFactor, out float fog) {
         if (tiltAngle < 0.005) {
           depthFactor = 1.0;
@@ -1624,6 +1639,8 @@
     const sliders = {
       planeTilt:   document.getElementById('sl-plane-tilt'),
       centerDepth: document.getElementById('sl-center-depth'),
+      decayX:      document.getElementById('sl-decay-x'),
+      decayY:      document.getElementById('sl-decay-y'),
       persistence: document.getElementById('sl-persistence'),
       rippleFreq:  document.getElementById('sl-ripple-freq'),
       headForce:   document.getElementById('sl-head-force'),
@@ -1651,6 +1668,8 @@
     const numDisplays = {
       planeTilt:   document.getElementById('plane-tilt-num'),
       centerDepth: document.getElementById('center-depth-num'),
+      decayX:      document.getElementById('decay-x-num'),
+      decayY:      document.getElementById('decay-y-num'),
       persistence: document.getElementById('persist-num'),
       rippleFreq:  document.getElementById('ripple-freq-num'),
       headForce:   document.getElementById('head-force-num'),
@@ -1675,7 +1694,6 @@
       contrast:    document.getElementById('contrast-num')
     };
 
-    // Modulation Matrix Configuration (Maps each parameter to its X/Y controls)
     const modMatrix = {
       planeTilt:   { chkX: document.getElementById('mod-x-planeTilt'),   scaleX: document.getElementById('scale-x-planeTilt'),   chkY: document.getElementById('mod-y-planeTilt'),   scaleY: document.getElementById('scale-y-planeTilt') },
       centerDepth: { chkX: document.getElementById('mod-x-centerDepth'), scaleX: document.getElementById('scale-x-centerDepth'), chkY: document.getElementById('mod-y-centerDepth'), scaleY: document.getElementById('scale-y-centerDepth') },
@@ -1702,7 +1720,6 @@
       contrast:    { chkX: document.getElementById('mod-x-contrast'),    scaleX: document.getElementById('scale-x-contrast'),    chkY: document.getElementById('mod-y-contrast'),    scaleY: document.getElementById('scale-y-contrast') }
     };
 
-    // Store manual base slider values
     const manualBaseVals = {};
     for (const key in sliders) {
       manualBaseVals[key] = parseFloat(sliders[key].value);
@@ -1711,6 +1728,7 @@
     function formatDisplayVal(key, val) {
       if (key === 'planeTilt') return Math.round(val) + '°';
       if (key === 'centerDepth') return val.toFixed(2);
+      if (key === 'decayX' || key === 'decayY') return val.toFixed(2) + 's';
       if (key === 'angle' || key === 'kAngle') return Math.round(val) + '°';
       if (key === 'rotSpeed') return val.toFixed(2) + 'x';
       if (key === 'kSegs') return Math.round(val) === 1 ? 'Off' : `${Math.round(val)} Petals`;
@@ -1719,7 +1737,6 @@
       return val.toFixed(decimals);
     }
 
-    // Stop canvas gestures while interacting with modulation inputs
     document.querySelectorAll('.mod-bar input').forEach(el => {
       el.addEventListener('pointerdown', (e) => e.stopPropagation());
       el.addEventListener('pointermove', (e) => e.stopPropagation());
@@ -2353,8 +2370,9 @@
       ];
     }
 
-    // Active modulated values storage
     const activeVals = {};
+    let currentModX = 0.0;
+    let currentModY = 0.0;
 
     function render(time) {
       const now = performance.now();
@@ -2368,24 +2386,44 @@
 
       let isWarpMode = 0.0;
 
-      // Tracking normalization
       const allowHands = chkHandTracking.checked;
       const isTrackingFresh = allowHands && ((now - lastValidHandTime) < 400);
 
-      let normX = 0.0;
-      let normY = 0.0;
+      let targetTrackX = 0.0;
+      let targetTrackY = 0.0;
 
       if (isTrackingFresh) {
         const rawAvgY = ((leftCur.y + rightCur.y) * 0.5) / window.innerHeight;
         const filteredY = heightFilter.filter(rawAvgY, now);
-        normY = Math.min(Math.max((filteredY - 0.18) / 0.62, 0.0), 1.0);
+        targetTrackY = Math.min(Math.max((filteredY - 0.18) / 0.62, 0.0), 1.0);
 
         const rawDx = Math.abs(rightCur.x - leftCur.x) / window.innerWidth;
         const filteredDx = spanFilter.filter(rawDx, now);
-        normX = Math.min(Math.max((filteredDx - 0.10) / 0.28, 0.0), 1.0);
+        targetTrackX = Math.min(Math.max((filteredDx - 0.10) / 0.28, 0.0), 1.0);
+
+        // Smooth attack follow
+        currentModX += (targetTrackX - currentModX) * Math.min(1.0, dt * 14.0);
+        currentModY += (targetTrackY - currentModY) * Math.min(1.0, dt * 14.0);
       } else {
         spanFilter.reset();
         heightFilter.reset();
+
+        // Smooth exponential return decay to 0.0 governed by user sliders
+        const returnTimeX = Math.max(parseFloat(sliders.decayX.value), 0.05);
+        const returnTimeY = Math.max(parseFloat(sliders.decayY.value), 0.05);
+
+        const decayFactorX = Math.exp(-dt * (3.0 / returnTimeX));
+        const decayFactorY = Math.exp(-dt * (3.0 / returnTimeY));
+
+        currentModX *= decayFactorX;
+        currentModY *= decayFactorY;
+
+        if (currentModX < 0.0008) currentModX = 0.0;
+        if (currentModY < 0.0008) currentModY = 0.0;
+
+        if (poseActive && (currentModX > 0.005 || currentModY > 0.005)) {
+          poseStatusHUD.textContent = 'Gliding to Base...';
+        }
       }
 
       // Compute modulated values for all parameters
@@ -2397,15 +2435,15 @@
         const base = manualBaseVals[k];
 
         const m = modMatrix[k];
-        const useX = m.chkX.checked && isTrackingFresh;
-        const useY = m.chkY.checked && isTrackingFresh;
+        const useX = m.chkX.checked && currentModX > 0.0001;
+        const useY = m.chkY.checked && currentModY > 0.0001;
 
         const scaleX = parseFloat(m.scaleX.value) || 0.0;
         const scaleY = parseFloat(m.scaleY.value) || 0.0;
 
         let delta = 0.0;
-        if (useX) delta += normX * scaleX * range;
-        if (useY) delta += normY * scaleY * range;
+        if (useX) delta += currentModX * scaleX * range;
+        if (useY) delta += currentModY * scaleY * range;
 
         const finalVal = Math.min(Math.max(base + delta, minVal), maxVal);
         activeVals[k] = finalVal;
@@ -2520,7 +2558,7 @@
       const planeTiltRad = (activeVals.planeTilt * Math.PI) / 180.0;
       const centerDepthVal = activeVals.centerDepth;
 
-      // 1. Physical Simulation Pass (Ground Perspective & Modulated Physics Aware)
+      // 1. Physical Simulation Pass
       gl.bindFramebuffer(gl.FRAMEBUFFER, writeFBO.fbo);
       gl.viewport(0, 0, simWidth, simHeight);
       gl.useProgram(simProgram);
@@ -2567,7 +2605,7 @@
 
       swapFBOs();
 
-      // 2. Display Shader Pass (3D Perspective Plane & Modulated Uniforms)
+      // 2. Display Shader Pass
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.useProgram(displayProgram);
