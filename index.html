@@ -280,6 +280,12 @@
           <button id="delPresetBtn" title="Delete custom preset" style="display:none; color:#ff6b6b;">✕</button>
         </div>
 
+        <div class="sub-heading">Pose Tracking Gating</div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-top: 6px;">
+          <span style="font-size: 11px; color: #fff;">Enable Hand Tracking</span>
+          <input type="checkbox" id="chk-hand-tracking" checked style="width: 16px; height: 16px; cursor: pointer; accent-color: #f7a844;">
+        </div>
+
         <div class="sub-heading">Physical Paint Dynamics</div>
         <div class="slider-row">
           <div class="slider-header">
@@ -1620,6 +1626,7 @@
     const hudInput = document.getElementById('input-type');
     const pipCanvas = document.getElementById('camPreviewCanvas');
     const pipCtx = pipCanvas.getContext('2d');
+    const chkHandTracking = document.getElementById('chk-hand-tracking');
 
     let poseActive = false;
     let cameraInstance = null;
@@ -1653,11 +1660,17 @@
         modelComplexity: 0,
         smoothLandmarks: true,
         enableSegmentation: false,
-        minDetectionConfidence: 0.45,
-        minTrackingConfidence: 0.45
+        minDetectionConfidence: 0.5,
+        minTrackingConfidence: 0.5
       });
 
       poseInstance.onResults(onPoseResults);
+    }
+
+    // Helper: Validates genuine visibility vs hallucinated joint
+    function isJointVisible(j, minVis = 0.65) {
+      return j && (j.visibility === undefined || j.visibility >= minVis) &&
+             j.x >= 0.02 && j.x <= 0.98 && j.y >= 0.02 && j.y <= 0.98;
     }
 
     function onPoseResults(results) {
@@ -1677,9 +1690,11 @@
       }
 
       const lm = results.poseLandmarks;
+      const allowHands = chkHandTracking.checked;
       let handsFound = 0;
 
-      if (lm[0] && (lm[0].visibility === undefined || lm[0].visibility > 0.30)) {
+      // 1. Head tracking (Nose = Landmark 0)
+      if (isJointVisible(lm[0], 0.35)) {
         headTarget.x = (1.0 - lm[0].x) * window.innerWidth;
         headTarget.y = (1.0 - lm[0].y) * window.innerHeight;
         headTarget.active = 1.0;
@@ -1692,39 +1707,49 @@
         headTarget.active = 0.0;
       }
 
-      if (lm[15] && (lm[15].visibility === undefined || lm[15].visibility > 0.25)) {
-        leftTarget.x = (1.0 - lm[15].x) * window.innerWidth;
-        leftTarget.y = (1.0 - lm[15].y) * window.innerHeight;
-        leftTarget.active = 1.0;
-        handsFound++;
+      // 2. Strict Hand Tracking (Requires Elbow Parent Co-visibility)
+      if (allowHands) {
+        // Left wrist (15) requires left elbow (13)
+        if (isJointVisible(lm[15], 0.65) && isJointVisible(lm[13], 0.45)) {
+          leftTarget.x = (1.0 - lm[15].x) * window.innerWidth;
+          leftTarget.y = (1.0 - lm[15].y) * window.innerHeight;
+          leftTarget.active = 1.0;
+          handsFound++;
 
-        pipCtx.fillStyle = '#30d158';
-        pipCtx.beginPath();
-        pipCtx.arc(lm[15].x * pipCanvas.width, lm[15].y * pipCanvas.height, 5, 0, 2 * Math.PI);
-        pipCtx.fill();
+          pipCtx.fillStyle = '#30d158';
+          pipCtx.beginPath();
+          pipCtx.arc(lm[15].x * pipCanvas.width, lm[15].y * pipCanvas.height, 5, 0, 2 * Math.PI);
+          pipCtx.fill();
+        } else {
+          leftTarget.active = 0.0;
+        }
+
+        // Right wrist (16) requires right elbow (14)
+        if (isJointVisible(lm[16], 0.65) && isJointVisible(lm[14], 0.45)) {
+          rightTarget.x = (1.0 - lm[16].x) * window.innerWidth;
+          rightTarget.y = (1.0 - lm[16].y) * window.innerHeight;
+          rightTarget.active = 1.0;
+          handsFound++;
+
+          pipCtx.fillStyle = '#0a84ff';
+          pipCtx.beginPath();
+          pipCtx.arc(lm[16].x * pipCanvas.width, lm[16].y * pipCanvas.height, 5, 0, 2 * Math.PI);
+          pipCtx.fill();
+        } else {
+          rightTarget.active = 0.0;
+        }
       } else {
         leftTarget.active = 0.0;
-      }
-
-      if (lm[16] && (lm[16].visibility === undefined || lm[16].visibility > 0.25)) {
-        rightTarget.x = (1.0 - lm[16].x) * window.innerWidth;
-        rightTarget.y = (1.0 - lm[16].y) * window.innerHeight;
-        rightTarget.active = 1.0;
-        handsFound++;
-
-        pipCtx.fillStyle = '#0a84ff';
-        pipCtx.beginPath();
-        pipCtx.arc(lm[16].x * pipCanvas.width, lm[16].y * pipCanvas.height, 5, 0, 2 * Math.PI);
-        pipCtx.fill();
-      } else {
         rightTarget.active = 0.0;
       }
 
       if (handsFound === 2) {
         lastValidHandTime = performance.now();
         poseStatusHUD.textContent = 'Piloting Warp Corridor';
+      } else if (!allowHands) {
+        poseStatusHUD.textContent = 'Head Tracking Active';
       } else {
-        poseStatusHUD.textContent = 'Keep both hands in frame';
+        poseStatusHUD.textContent = 'Both hands must be in frame';
       }
     }
 
@@ -1874,40 +1899,38 @@
       if (animMode === 'body_kaleido') {
         isWarpMode = 1.0;
 
-        // Flow angle is directly linked to the user's Flow Direction slider
         currentAngleDeg = parseFloat(sliders.angle.value);
 
-        // 400ms grace period buffer against momentary tracking drops
-        const isTrackingFresh = (now - lastValidHandTime) < 400;
+        const allowHands = chkHandTracking.checked;
+        const isTrackingFresh = allowHands && ((now - lastValidHandTime) < 400);
 
         if (isTrackingFresh) {
-          // 1. Hand Height (Y) -> Warp Throttle (0.05x to 1.50x) via 1€ filter
+          // Hand Height (Y) -> Warp Throttle (0.05x to 1.50x)
           const rawAvgY = ((leftCur.y + rightCur.y) * 0.5) / window.innerHeight;
           const filteredY = heightFilter.filter(rawAvgY, now);
           const normY = Math.min(Math.max((filteredY - 0.18) / 0.62, 0.0), 1.0);
           smoothWarpSpeed = 0.05 + normY * 1.45;
 
-          // 2. Hand X Distance -> Ridge Brightness (0.00 to 1.00) via 1€ filter
+          // Hand X Distance -> Ridge Brightness (0.00 to 1.00)
           const rawDx = Math.abs(rightCur.x - leftCur.x) / window.innerWidth;
           const filteredDx = spanFilter.filter(rawDx, now);
           
-          // Lower deadband at 0.10 guarantees bringing hands close smoothly reaches 0.00
+          // Lower deadband at 0.10 guarantees smooth 0.00 when hands meet
           const normSpan = Math.min(Math.max((filteredDx - 0.10) / 0.28, 0.0), 1.0);
           smoothRidge = mix(0.00, 1.00, normSpan);
 
+          sliders.rotSpeed.value = smoothWarpSpeed.toFixed(2);
+          numDisplays.rotSpeed.textContent = smoothWarpSpeed.toFixed(2) + 'x';
+
+          sliders.ridge.value = smoothRidge.toFixed(2);
+          numDisplays.ridge.textContent = smoothRidge.toFixed(2);
+
         } else {
-          // Graceful decay back to neutral cruise settings when body exits frame
           spanFilter.reset();
           heightFilter.reset();
-          smoothWarpSpeed += (0.35 - smoothWarpSpeed) * 0.04;
-          smoothRidge += (0.32 - smoothRidge) * 0.04;
+          smoothWarpSpeed = parseFloat(sliders.rotSpeed.value);
+          smoothRidge = parseFloat(sliders.ridge.value);
         }
-
-        sliders.rotSpeed.value = smoothWarpSpeed.toFixed(2);
-        numDisplays.rotSpeed.textContent = smoothWarpSpeed.toFixed(2) + 'x';
-
-        sliders.ridge.value = smoothRidge.toFixed(2);
-        numDisplays.ridge.textContent = smoothRidge.toFixed(2);
 
         travelDist += smoothWarpSpeed * dt * 1.5;
 
