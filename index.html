@@ -335,7 +335,7 @@
         
         <div class="slider-row">
           <div class="slider-header">
-            <span>Flow / Bank Angle</span>
+            <span>Bank Roll Angle</span>
             <span id="angle-num" class="val">0°</span>
           </div>
           <input type="range" id="sl-angle" min="-180" max="180" step="1" value="0">
@@ -343,10 +343,10 @@
 
         <div class="slider-row">
           <div class="slider-header">
-            <span>Warp Throttle (Speed)</span>
+            <span>Warp Throttle</span>
             <span id="rot-speed-num" class="val">0.65x</span>
           </div>
-          <input type="range" id="sl-rot-speed" min="0.00" max="2.0" step="0.02" value="0.65">
+          <input type="range" id="sl-rot-speed" min="0.00" max="4.0" step="0.05" value="0.65">
         </div>
 
         <div class="slider-row">
@@ -590,7 +590,6 @@
 
         vec2 totalImpulse = vec2(0.0);
 
-        // 1. Stylus Drag & Vortex
         if (u_pressure > 0.01) {
           vec2 toMouse = st - u_mouse;
           float dMouse = length(toMouse);
@@ -599,7 +598,6 @@
           totalImpulse += vec2(-toMouse.y, toMouse.x) / (dMouse + 0.15) * force * 0.5;
         }
 
-        // 2. Head Gravitational Lens & Wave Displacement
         if (u_head_active > 0.05) {
           vec2 toHead = st - u_head;
           float dHead = length(toHead);
@@ -610,7 +608,6 @@
           totalImpulse += vHead * (fHead * 0.4);
         }
 
-        // 3. Left Hand CCW Vortex Paddle
         if (u_left_active > 0.05) {
           vec2 toL = st - u_left_wrist;
           float dL = length(toL);
@@ -620,7 +617,6 @@
           totalImpulse += vL * fL * 0.85;
         }
 
-        // 4. Right Hand CW Vortex Paddle
         if (u_right_active > 0.05) {
           vec2 toR = st - u_right_wrist;
           float dR = length(toR);
@@ -630,14 +626,9 @@
           totalImpulse += vR * fR * 0.85;
         }
 
-        // Isotropic UV advection step
         vec2 uvDelta = vec2(totalImpulse.x * (u_resolution.y / u_resolution.x), totalImpulse.y) * 0.007;
         vec2 advectedUV = clamp(uv - uvDelta, 0.001, 0.999);
-
-        // Read previous signed float displacement directly
         vec2 prevDisp = texture2D(u_prevBuffer, advectedUV).xy;
-
-        // Accumulate displacement with exact zero-drift persistence
         vec2 finalDisp = (prevDisp + totalImpulse * 0.25) * u_persistence;
 
         gl_FragColor = vec4(finalDisp, 0.0, 1.0);
@@ -777,15 +768,12 @@
       vec3 evaluateScene(vec2 st, vec2 screenUV) {
         float t = u_time * u_speed;
 
-        // Physical floating-point displacement from hand/head tracking
         vec2 paintDisplacement = texture2D(u_simTexture, screenUV).xy;
         st += paintDisplacement;
 
-        // Steerable Directional Flow Alignment
         float rad = u_flow_angle;
         mat2 alignFlow = mat2(cos(rad), sin(rad), -sin(rad), cos(rad));
 
-        // In Warp Mode, use balanced aspect scaling (1.0, 0.75) so Z-axis ribbons stay relaxed and wide
         vec2 aspectScale = u_is_warp_mode > 0.5 ? vec2(1.0, 0.75) : vec2(0.55, u_flow_stretch);
         vec2 p = alignFlow * st * aspectScale;
 
@@ -833,7 +821,6 @@
           basePattern = mix(f, stepped, u_step_quant);
         }
 
-        // Slightly relaxed contour frequency in Warp Mode preserves broad, silky ribbon legibility
         float effectiveFreq = u_is_warp_mode > 0.5 ? (u_contour_freq * 0.65) : u_contour_freq;
         float chromaOffset = u_chroma_aberration * 0.22;
         
@@ -913,9 +900,7 @@
           if (modA < 0.0) modA += segAngle;
 
           if (u_is_warp_mode > 0.5) {
-            // --- CONFORMAL CYLINDRICAL TUNNEL MAPPING ---
-            // Metric ratio (dU / dPhysical) == (dV / dPhysical) = tunnelScale / r everywhere.
-            // Aspect ratio is locked 1:1, permanently eliminating Z-axis compression over time.
+            // Conformal Cylindrical Tunnel Mapping (Locks radial aspect ratio invariant across travel distance)
             float tunnelScale = 1.9 * u_kaleido_zoom;
             float V = log(max(r, 0.003)) * tunnelScale - u_travel_dist;
 
@@ -953,7 +938,6 @@
             finalColor += u_col_crest * coreGlow;
 
           } else {
-            // --- CLASSIC POLAR KALEIDOSCOPE FOLD (Standard Modes) ---
             float rP = pow(max(r, 0.0001), u_kaleido_pinch) * u_kaleido_zoom;
 
             if (u_kaleido_mirror > 0.5) {
@@ -1658,7 +1642,6 @@
       poseStatusHUD.textContent = 'Piloting Warp Corridor';
       const lm = results.poseLandmarks;
 
-      // 1. Head tracking (Nose)
       if (lm[0] && (lm[0].visibility === undefined || lm[0].visibility > 0.35)) {
         headTarget.x = (1.0 - lm[0].x) * window.innerWidth;
         headTarget.y = (1.0 - lm[0].y) * window.innerHeight;
@@ -1672,7 +1655,6 @@
         headTarget.active = 0.0;
       }
 
-      // 2. Left Wrist / Arm
       if (lm[15] && (lm[15].visibility === undefined || lm[15].visibility > 0.35)) {
         leftTarget.x = (1.0 - lm[15].x) * window.innerWidth;
         leftTarget.y = (1.0 - lm[15].y) * window.innerHeight;
@@ -1686,7 +1668,6 @@
         leftTarget.active = 0.0;
       }
 
-      // 3. Right Wrist / Arm
       if (lm[16] && (lm[16].visibility === undefined || lm[16].visibility > 0.35)) {
         rightTarget.x = (1.0 - lm[16].x) * window.innerWidth;
         rightTarget.y = (1.0 - lm[16].y) * window.innerHeight;
@@ -1854,34 +1835,38 @@
         slKMode.value = '1';
 
         if (leftCur.active > 0.5 && rightCur.active > 0.5) {
-          // 2. Smoothly Bank with the Angle Between Hands (0° = level horizontal)
+          // 2. Smooth Aircraft Bank from arm tilt (decoupled, clamped & inertial)
           const dx = rightCur.x - leftCur.x;
           const dy = rightCur.y - leftCur.y;
-          const targetBank = (Math.atan2(dy, dx) * 180.0) / Math.PI;
+          const safeDx = Math.max(Math.abs(dx), 35.0);
+          const rawBank = (Math.atan2(dy, safeDx) * 180.0) / Math.PI;
+          
+          // Clamp banking angle to [-65°, +65°] so it feels like piloting a craft rather than flipping
+          const targetBank = Math.max(-65.0, Math.min(65.0, rawBank));
+          smoothBankDeg += (targetBank - smoothBankDeg) * 0.05;
 
-          let diff = (targetBank - smoothBankDeg) % 360.0;
-          if (diff > 180.0) diff -= 360.0;
-          if (diff < -180.0) diff += 360.0;
-          smoothBankDeg += diff * 0.14;
-
-          // 3. Hand Height (Y) Controls Forward Warp Speed (0.0 to 1.5)
+          // 3. Hand Height (Y) Controls Warp Throttle (high = hyperspace, low = gentle drift)
           const avgY = ((leftCur.y + rightCur.y) * 0.5) / window.innerHeight;
-          const normY = Math.min(Math.max((avgY - 0.15) / 0.70, 0.0), 1.0);
-          const targetSpeed = normY * 1.5;
-          smoothWarpSpeed += (targetSpeed - smoothWarpSpeed) * 0.12;
+          const normY = Math.min(Math.max((avgY - 0.18) / 0.62, 0.0), 1.0);
+          // Throttle ranges from 0.08 (idle) to 3.8 (hyperspace rush)
+          const targetSpeed = 0.08 + normY * 3.72;
+          smoothWarpSpeed += (targetSpeed - smoothWarpSpeed) * 0.08;
 
-          // 4. Hand X Distance Uncompresses & Expands Tunnel Aperture / Ribbon Scale
-          const spanX = Math.abs(rightCur.x - leftCur.x) / window.innerWidth;
-          const normSpan = Math.min(Math.max((spanX - 0.15) / 0.55, 0.0), 1.0);
-          const targetZoom = mix(1.35, 0.65, normSpan);
-          smoothZoom += (targetZoom - smoothZoom) * 0.12;
+          // 4. Hand X Distance Expands Tunnel Aperture (re-scaled for close camera reach)
+          const spanX = Math.abs(dx) / window.innerWidth;
+          // Full sweep achieved between 8% and 36% of screen width
+          const normSpan = Math.min(Math.max((spanX - 0.08) / 0.28, 0.0), 1.0);
+          // Dynamic aperture from 1.65 (tight focal tunnel) down to 0.40 (wide, majestic open corridor)
+          const targetZoom = mix(1.65, 0.40, normSpan);
+          smoothZoom += (targetZoom - smoothZoom) * 0.10;
         } else {
-          smoothBankDeg += (0.0 - smoothBankDeg) * 0.05;
-          smoothWarpSpeed += (0.50 - smoothWarpSpeed) * 0.05;
-          smoothZoom += (1.0 - smoothZoom) * 0.05;
+          // Smoothly auto-center to 0 roll and gentle cruise speed when no hands / tracking lost
+          smoothBankDeg += (0.0 - smoothBankDeg) * 0.04;
+          smoothWarpSpeed += (0.25 - smoothWarpSpeed) * 0.04;
+          smoothZoom += (1.0 - smoothZoom) * 0.04;
         }
 
-        // Apply Corner Seam Orientation (45° neutral) + Smooth Aircraft Banking
+        // Apply Corner Seam Orientation (45° base) + Smoothed Bank Angle
         const finalChamberAngle = 45.0 + smoothBankDeg;
         sliders.kAngle.value = Math.round(finalChamberAngle);
         numDisplays.kAngle.textContent = `${Math.round(smoothBankDeg)}° Bank`;
@@ -1892,8 +1877,8 @@
         sliders.kZoom.value = smoothZoom.toFixed(2);
         numDisplays.kZoom.textContent = smoothZoom.toFixed(2);
 
-        // Continuous Warp Flight Integration
-        travelDist += smoothWarpSpeed * dt * 1.6;
+        // Fast Warp Travel Integration: multiplier increased to 7.2 for true hyperspace speed illusion
+        travelDist += smoothWarpSpeed * dt * 7.2;
 
       } else if (animMode === 'manual') {
         currentAngleDeg = parseFloat(sliders.angle.value);
