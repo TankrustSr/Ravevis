@@ -320,16 +320,17 @@
         </div>
 
         <div class="sub-heading">Kinematics & Vector Flow</div>
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
-          <span class="slider-header" style="margin:0;">Rotation Mode</span>
-          <select id="sl-angle-anim">
-            <option value="manual">Manual (Slider)</option>
-            <option value="body_arms">Track Arm Angle (Pose)</option>
-            <option value="continuous_cw">Continuous (Clockwise)</option>
-            <option value="continuous_ccw">Continuous (Counter-CW)</option>
-            <option value="pingpong">Smooth Reversal (0° ⇄ 360°)</option>
-          </select>
-        </div>
+       <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
+  <span class="slider-header" style="margin:0;">Rotation Mode</span>
+  <select id="sl-angle-anim">
+    <option value="manual">Manual (Slider)</option>
+    <option value="body_arms">Track Arm Angle (Pose)</option>
+    <option value="pour_hands" selected>💧 Pour Between Hands (Gravity Cascade)</option>
+    <option value="continuous_cw">Continuous (Clockwise)</option>
+    <option value="continuous_ccw">Continuous (Counter-CW)</option>
+    <option value="pingpong">Smooth Reversal (0° ⇄ 360°)</option>
+  </select>
+</div>
         
        <div class="slider-row">
   		<div class="slider-header">
@@ -566,6 +567,11 @@
       uniform float u_persistence;
       uniform float u_head_force;
       uniform float u_hand_force;
+      
+      uniform vec2 u_high_hand;
+      uniform vec2 u_low_hand;
+      uniform float u_pour_mode;
+      uniform float u_pour_strength;
 
       uniform vec2 u_mouse;
       uniform vec2 u_mouse_vel;
@@ -627,6 +633,32 @@
           totalImpulse += u_right_vel * fR * 1.4;
           vec2 vR = vec2(toR.y, -toR.x) / (dR + 0.15);
           totalImpulse += vR * fR * 0.85;
+        }
+        
+        // --- 5. GRAVITY CASCADE POUR STREAM (Higher Hand -> Lower Hand) ---
+        if (u_pour_mode > 0.5 && u_pour_strength > 0.01) {
+          vec2 seg = u_low_hand - u_high_hand;
+          float segLen = length(seg);
+          if (segLen > 0.08) {
+            vec2 dir = seg / segLen;
+            vec2 toPt = st - u_high_hand;
+            float tProj = clamp(dot(toPt, dir) / segLen, 0.0, 1.0);
+            vec2 proj = u_high_hand + dir * (tProj * segLen);
+            float distToStream = length(st - proj);
+
+            // Cohesive fluid column between hands
+            float streamForce = exp(-distToStream * 7.5) * u_pour_strength;
+            totalImpulse += dir * streamForce * 3.2;
+
+            // Basin splash vortex where the stream lands at the lower hand
+            if (tProj > 0.65) {
+              float splashWeight = smoothstep(0.65, 1.0, tProj);
+              vec2 toLow = st - u_low_hand;
+              float dLow = length(toLow);
+              vec2 splashVortex = vec2(-toLow.y, toLow.x) / (dLow + 0.12);
+              totalImpulse += splashVortex * (splashWeight * streamForce * 1.4);
+            }
+          }
         }
 
         // Isotropic UV advection step
@@ -1034,6 +1066,10 @@
     const simRightVelLoc  = gl.getUniformLocation(simProgram, 'u_right_vel');
     const simRightActLoc  = gl.getUniformLocation(simProgram, 'u_right_active');
 
+    const simHighHandLoc     = gl.getUniformLocation(simProgram, 'u_high_hand');
+    const simLowHandLoc      = gl.getUniformLocation(simProgram, 'u_low_hand');
+    const simPourModeLoc     = gl.getUniformLocation(simProgram, 'u_pour_mode');
+    const simPourStrengthLoc = gl.getUniformLocation(simProgram, 'u_pour_strength');
     // Uniform Locations (Display)
     const dispResLoc       = gl.getUniformLocation(displayProgram, 'u_resolution');
     const dispImgResLoc    = gl.getUniformLocation(displayProgram, 'u_image_resolution');
@@ -1261,10 +1297,11 @@
     const flowModeHUD = document.getElementById('flow-mode-val');
 
     animModeSelect.addEventListener('pointerdown', (e) => e.stopPropagation());
-    animModeSelect.addEventListener('change', () => {
+   animModeSelect.addEventListener('change', () => {
       const mode = animModeSelect.value;
       if (mode === 'manual') flowModeHUD.textContent = 'Manual';
       else if (mode === 'body_arms') flowModeHUD.textContent = 'Arm Angle (Pose)';
+      else if (mode === 'pour_hands') flowModeHUD.textContent = 'Cascade Pour';
       else if (mode === 'continuous_cw') flowModeHUD.textContent = 'CW Loop';
       else if (mode === 'continuous_ccw') flowModeHUD.textContent = 'CCW Loop';
       else if (mode === 'pingpong') {
@@ -1833,25 +1870,59 @@
       const rotSpeedMult = parseFloat(sliders.rotSpeed.value);
       const baseAngularSpeed = 32.0;
 
+    // State variables for pour mode
+      let isPourActive = 0.0;
+      let pourStrength = 0.0;
+      let highHand = leftCur;
+      let lowHand = rightCur;
+
       if (animMode === 'manual') {
         currentAngleDeg = parseFloat(sliders.angle.value);
-      } else if (animMode === 'body_arms') {
-        // Smooth 60fps arm tilt tracking centered at 0° (horizontal)
+      } else if (animMode === 'pour_hands') {
+        // Evaluate higher hand vs lower hand
         if (leftCur.active > 0.5 && rightCur.active > 0.5) {
-          const dx = rightCur.x - leftCur.x;
-          const dy = rightCur.y - leftCur.y;
+          isPourActive = 1.0;
+          if (leftCur.y >= rightCur.y) {
+            highHand = leftCur;
+            lowHand = rightCur;
+          } else {
+            highHand = rightCur;
+            lowHand = leftCur;
+          }
 
-          // Math.atan2 returns [-180°, +180°] with 0° perfectly horizontal
+          // Vector from higher hand down to lower hand
+          const dx = lowHand.x - highHand.x;
+          const dy = lowHand.y - highHand.y; // Negative because lower hand has smaller Y
+
+          // Align the global flow direction down the stream
           const targetAngle = (Math.atan2(dy, dx) * 180.0) / Math.PI;
 
-          // Shortest-arc delta calculation across circular domain
           let diff = (targetAngle - currentAngleDeg) % 360.0;
           if (diff > 180.0)  diff -= 360.0;
           if (diff < -180.0) diff += 360.0;
+          currentAngleDeg += diff * 0.18;
 
+          if (currentAngleDeg > 180.0)  currentAngleDeg -= 360.0;
+          if (currentAngleDeg < -180.0) currentAngleDeg += 360.0;
+
+          sliders.angle.value = currentAngleDeg;
+          numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
+
+          // Pour intensity scales with physical elevation difference
+          const elevationDelta = Math.max((highHand.y - lowHand.y) / window.innerHeight, 0.0);
+          pourStrength = Math.min(elevationDelta * 3.5, 2.5) * parseFloat(sliders.handForce.value);
+        }
+      } else if (animMode === 'body_arms') {
+        if (leftCur.active > 0.5 && rightCur.active > 0.5) {
+          const dx = rightCur.x - leftCur.x;
+          const dy = rightCur.y - leftCur.y;
+          const targetAngle = (Math.atan2(dy, dx) * 180.0) / Math.PI;
+
+          let diff = (targetAngle - currentAngleDeg) % 360.0;
+          if (diff > 180.0)  diff -= 360.0;
+          if (diff < -180.0) diff += 360.0;
           currentAngleDeg += diff * 0.15;
 
-          // Keep strictly within [-180°, +180°]
           if (currentAngleDeg > 180.0)  currentAngleDeg -= 360.0;
           if (currentAngleDeg < -180.0) currentAngleDeg += 360.0;
 
@@ -1925,7 +1996,15 @@
       gl.activeTexture(gl.TEXTURE0);
       gl.bindTexture(gl.TEXTURE_2D, readFBO.tex);
       gl.uniform1i(simPrevTexLoc, 0);
-
+      
+      // Pass Pour Cascade Uniforms to Simulation Program
+      const highNorm = toNormCoord(highHand.x, highHand.y);
+      const lowNorm  = toNormCoord(lowHand.x, lowHand.y);
+      gl.uniform2f(simHighHandLoc, highNorm[0], highNorm[1]);
+      gl.uniform2f(simLowHandLoc,  lowNorm[0],  lowNorm[1]);
+      gl.uniform1f(simPourModeLoc, isPourActive);
+      gl.uniform1f(simPourStrengthLoc, pourStrength);
+      
       // Pass true Retina resolution matching the FBO viewport
       gl.uniform2f(simResLoc, simWidth, simHeight);
       gl.uniform1f(simPersistLoc, parseFloat(sliders.persistence.value));
