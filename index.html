@@ -323,7 +323,7 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
           <span class="slider-header" style="margin:0;">Rotation Mode</span>
           <select id="sl-angle-anim">
-            <option value="body_kaleido" selected>🚀 Warp Tunnel (Body Speed & Scale)</option>
+            <option value="body_kaleido" selected>🚀 Warp Tunnel (Body Speed & Ridge Glow)</option>
             <option value="manual">Manual (Slider)</option>
             <option value="body_arms">Track Arm Angle (Pose)</option>
             <option value="pour_hands">💧 Pour Between Hands (Gravity Cascade)</option>
@@ -893,8 +893,6 @@
           if (modA < 0.0) modA += segAngle;
 
           if (u_is_warp_mode > 0.5) {
-            // Conformal Cylindrical Tunnel Mapping
-            // Anchored at r0 = 0.32: eliminates radial phase shudder when zoom changes
             float tunnelScale = 1.9 * u_kaleido_zoom;
             float V = (log(max(r, 0.003)) - (-1.1394)) * tunnelScale - u_travel_dist;
 
@@ -1266,7 +1264,7 @@
 
     let currentAngleDeg = 0.0;
     let smoothWarpSpeed = 0.50;
-    let smoothZoom = 1.0;
+    let smoothRidge = 0.32;
     let filteredSpan = 0.15;
     let travelDist = 0.0;
     let pingPongPhase = 0.0;
@@ -1820,6 +1818,10 @@
         sliders.kAngle.value = 45;
         numDisplays.kAngle.textContent = '45° (Corners)';
 
+        // Lock tunnel aperture completely rock-solid so coordinate geometry never jumps
+        sliders.kZoom.value = 1.00;
+        numDisplays.kZoom.textContent = '1.00 (Fixed)';
+
         if (leftCur.active > 0.5 && rightCur.active > 0.5) {
           // Hand Height (Y) Controls Forward Warp Speed (0.05x to 0.50x)
           const avgY = ((leftCur.y + rightCur.y) * 0.5) / window.innerHeight;
@@ -1827,29 +1829,28 @@
           const targetSpeed = 0.05 + normY * 0.45;
           smoothWarpSpeed += (targetSpeed - smoothWarpSpeed) * 0.035;
 
-          // Hand X Distance Expands Tunnel Aperture / Scale
-          // Low-pass filter the span distance to eliminate landmark flutter
+          // Hand X Distance Smoothly Modulates Ridge Brightness
           const dx = Math.abs(rightCur.x - leftCur.x);
           const rawSpan = dx / window.innerWidth;
-          filteredSpan += (rawSpan - filteredSpan) * 0.04;
+          filteredSpan += (rawSpan - filteredSpan) * 0.035;
 
-          // Re-scaled for close webcam proximity: full sweep between 5% and 22% of screen width
-          const normSpan = Math.min(Math.max((filteredSpan - 0.05) / 0.17, 0.0), 1.0);
-          // 1.50 = narrow focal aperture down to 0.35 = wide, magnificent open corridor
-          const targetZoom = mix(1.50, 0.35, normSpan);
-          smoothZoom += (targetZoom - smoothZoom) * 0.035;
+          // Full transition between close hands (6% width) and open arms (28% width)
+          const normSpan = Math.min(Math.max((filteredSpan - 0.06) / 0.22, 0.0), 1.0);
+          // 0.05 = subtle soft silk folds up to 0.90 = radiant, electric topographical contours
+          const targetRidge = mix(0.05, 0.90, normSpan);
+          smoothRidge += (targetRidge - smoothRidge) * 0.035;
         } else {
           smoothWarpSpeed += (0.25 - smoothWarpSpeed) * 0.02;
-          smoothZoom += (0.95 - smoothZoom) * 0.02;
+          smoothRidge += (0.32 - smoothRidge) * 0.02;
         }
 
         sliders.rotSpeed.value = smoothWarpSpeed.toFixed(2);
         numDisplays.rotSpeed.textContent = smoothWarpSpeed.toFixed(2) + 'x';
 
-        sliders.kZoom.value = smoothZoom.toFixed(2);
-        numDisplays.kZoom.textContent = smoothZoom.toFixed(2);
+        sliders.ridge.value = smoothRidge.toFixed(2);
+        numDisplays.ridge.textContent = smoothRidge.toFixed(2);
 
-        // Calibrated Warp Travel Integration (steady, non-blurring speed)
+        // Calibrated Warp Travel Integration (steady, smooth flow)
         travelDist += smoothWarpSpeed * dt * 1.5;
 
       } else if (animMode === 'manual') {
