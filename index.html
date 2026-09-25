@@ -3,9 +3,9 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Volumetric Contours - High Performance Studio</title>
+  <title>Volumetric Contours - Water Ripples & Fluid Dynamics</title>
   
-  <!-- MediaPipe Pose Core Library (No camera_utils dependency) -->
+  <!-- MediaPipe Pose Core Library -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
 
   <style>
@@ -252,7 +252,7 @@
     <div id="hud" class="panel">
       Input: <span id="input-type">Apple Pencil / Touch</span><br>
       Body: <span id="pose-status-val">Waiting...</span><br>
-      Engine: <span id="engine-val">Laminar Silk</span> | Mode: <span id="flow-mode-val">Warp Tunnel</span>
+      Physics: <span id="influence-mode-hud">Water Ripples</span> | Engine: <span id="engine-val">Laminar Silk</span>
     </div>
 
     <div class="panel">
@@ -285,7 +285,27 @@
           <input type="checkbox" id="chk-hand-tracking" checked style="width: 16px; height: 16px; cursor: pointer; accent-color: #f7a844;">
         </div>
 
-        <div class="sub-heading">Physical Paint Dynamics</div>
+        <div class="sub-heading">Physical Fluid & Ripple Dynamics</div>
+        
+        <!-- Influence Modes Selector -->
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
+          <span class="slider-header" style="margin:0;">Influence Dynamic</span>
+          <select id="sl-influence-mode">
+            <option value="1" selected>🌊 Water Wake & Ripples</option>
+            <option value="0">🍯 Viscous Fluid Drag</option>
+            <option value="2">🌀 Vortex Whirlpools</option>
+            <option value="3">💥 Acoustic Shockwave</option>
+          </select>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>Ripple Frequency / Scale</span>
+            <span id="ripple-freq-num" class="val">28.0</span>
+          </div>
+          <input type="range" id="sl-ripple-freq" min="10.0" max="64.0" step="1.0" value="28.0">
+        </div>
+
         <div class="slider-row">
           <div class="slider-header">
             <span>Paint Persistence</span>
@@ -296,7 +316,7 @@
 
         <div class="slider-row">
           <div class="slider-header">
-            <span>Head Influence</span>
+            <span>Head Wave Influence</span>
             <span id="head-force-num" class="val">1.60</span>
           </div>
           <input type="range" id="sl-head-force" min="0.0" max="3.5" step="0.05" value="1.60">
@@ -304,7 +324,7 @@
 
         <div class="slider-row">
           <div class="slider-header">
-            <span>Hands Influence</span>
+            <span>Hand Wave Influence</span>
             <span id="hand-force-num" class="val">1.30</span>
           </div>
           <input type="range" id="sl-hand-force" min="0.0" max="3.5" step="0.05" value="1.30">
@@ -357,9 +377,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Ambient Drift</span>
-            <span id="speed-num" class="val">0.1</span>
+            <span id="speed-num" class="val">0.035</span>
           </div>
-          <input type="range" id="sl-speed" min="0.0" max="2.0" step="0.1" value="0.035">
+          <input type="range" id="sl-speed" min="0.0" max="0.12" step="0.002" value="0.035">
         </div>
 
         <div class="slider-row">
@@ -613,6 +633,7 @@
       }
     `;
 
+    // Multi-Physics Simulation Shader (Water Ripples, Viscous Drag, Whirlpools, Shockwaves)
     const simFS = `
       precision highp float;
       varying vec2 v_uv;
@@ -622,6 +643,9 @@
       uniform float u_persistence;
       uniform float u_head_force;
       uniform float u_hand_force;
+      uniform float u_influence_mode; // 0: Viscous Drag, 1: Water Wake & Ripples, 2: Vortex Whirlpools, 3: Acoustic Shockwave
+      uniform float u_ripple_freq;
+      uniform float u_time;
 
       uniform vec2 u_mouse;
       uniform vec2 u_mouse_vel;
@@ -639,46 +663,77 @@
       uniform vec2 u_right_vel;
       uniform float u_right_active;
 
+      // Computes physical displacement impulses based on selected influence dynamic
+      vec2 calcImpulse(vec2 st, vec2 targetPos, vec2 vel, float active, float forceMult) {
+        if (active < 0.01) return vec2(0.0);
+        vec2 toTarget = st - targetPos;
+        float d = length(toTarget);
+        vec2 dir = toTarget / (d + 0.001);
+        float speed = length(vel);
+        vec2 impulse = vec2(0.0);
+
+        // Mode 0: Viscous Fluid Drag (Classic Ink/Syrup)
+        if (u_influence_mode < 0.5) {
+          float f = exp(-d * 3.2) * active * forceMult;
+          impulse += vel * f * 1.4;
+          vec2 v = vec2(-toTarget.y, toTarget.x) / (d + 0.15);
+          impulse += v * f * 0.85;
+        }
+        // Mode 1: Water Wake & Ripples (Wave Equation Dispersion)
+        else if (u_influence_mode < 1.5) {
+          // Radiating capillary ripples propagating outward from the hand position
+          float wavePhase = d * u_ripple_freq - u_time * 6.5;
+          float wave = sin(wavePhase) * exp(-d * 3.4);
+          
+          // Directional bow-wave wake push along velocity vector
+          float wake = exp(-d * 2.6);
+          float forwardDot = max(dot(dir, vel / (speed + 0.001)), -0.3);
+          
+          // Radial push/pull creates water troughs and crests
+          impulse += dir * (wave * (0.45 + speed * 2.8)) * active * forceMult;
+          // Directional displacement wake
+          impulse += vel * (wake * (0.8 + forwardDot * 0.6)) * active * forceMult;
+        }
+        // Mode 2: Vortex Whirlpools (Rotational Shear & Eddies)
+        else if (u_influence_mode < 2.5) {
+          float f = exp(-d * 2.8) * active * forceMult;
+          vec2 vortex = vec2(-toTarget.y, toTarget.x) / (d + 0.09);
+          impulse += vortex * (f * (1.2 + speed * 3.0));
+          impulse += vel * (f * 0.6);
+        }
+        // Mode 3: Acoustic Shockwave / Pulse (Radial Expansion)
+        else {
+          float ring = sin(d * u_ripple_freq * 0.6) * exp(-d * 2.4);
+          impulse += dir * (ring * 1.6 + exp(-d * 4.2)) * (0.5 + speed * 3.0) * active * forceMult;
+        }
+
+        return impulse;
+      }
+
       void main() {
         vec2 st = (gl_FragCoord.xy * 2.0 - u_resolution) / min(u_resolution.x, u_resolution.y);
         vec2 uv = v_uv;
 
         vec2 totalImpulse = vec2(0.0);
 
+        // Apple Pencil / Touch interaction
         if (u_pressure > 0.01) {
-          vec2 toMouse = st - u_mouse;
-          float dMouse = length(toMouse);
-          float force = exp(-dMouse * 4.5) * u_pressure;
-          totalImpulse += u_mouse_vel * force * 2.2;
-          totalImpulse += vec2(-toMouse.y, toMouse.x) / (dMouse + 0.15) * force * 0.5;
+          totalImpulse += calcImpulse(st, u_mouse, u_mouse_vel, u_pressure, 1.2);
         }
 
+        // Head tracking interaction
         if (u_head_active > 0.05) {
-          vec2 toHead = st - u_head;
-          float dHead = length(toHead);
-          float fHead = exp(-dHead * 1.5) * u_head_active * u_head_force;
-          totalImpulse -= toHead * (fHead * 0.55);
-          totalImpulse += u_head_vel * (fHead * 0.85);
-          vec2 vHead = vec2(-toHead.y, toHead.x) / (dHead + 0.2);
-          totalImpulse += vHead * (fHead * 0.4);
+          totalImpulse += calcImpulse(st, u_head, u_head_vel, u_head_active, u_head_force * 0.85);
         }
 
+        // Left wrist interaction
         if (u_left_active > 0.05) {
-          vec2 toL = st - u_left_wrist;
-          float dL = length(toL);
-          float fL = exp(-dL * 3.2) * u_left_active * u_hand_force;
-          totalImpulse += u_left_vel * fL * 1.4;
-          vec2 vL = vec2(-toL.y, toL.x) / (dL + 0.15);
-          totalImpulse += vL * fL * 0.85;
+          totalImpulse += calcImpulse(st, u_left_wrist, u_left_vel, u_left_active, u_hand_force);
         }
 
+        // Right wrist interaction
         if (u_right_active > 0.05) {
-          vec2 toR = st - u_right_wrist;
-          float dR = length(toR);
-          float fR = exp(-dR * 3.2) * u_right_active * u_hand_force;
-          totalImpulse += u_right_vel * fR * 1.4;
-          vec2 vR = vec2(toR.y, -toR.x) / (dR + 0.15);
-          totalImpulse += vR * fR * 0.85;
+          totalImpulse += calcImpulse(st, u_right_wrist, u_right_vel, u_right_active, u_hand_force);
         }
 
         vec2 uvDelta = vec2(totalImpulse.x * (u_resolution.y / u_resolution.x), totalImpulse.y) * 0.007;
@@ -1078,28 +1133,33 @@
       -1.0,  1.0,  1.0, -1.0,  1.0,  1.0,
     ]), gl.STATIC_DRAW);
 
-    const simResLoc       = gl.getUniformLocation(simProgram, 'u_resolution');
-    const simPrevTexLoc   = gl.getUniformLocation(simProgram, 'u_prevBuffer');
-    const simPersistLoc   = gl.getUniformLocation(simProgram, 'u_persistence');
-    const simHeadForceLoc = gl.getUniformLocation(simProgram, 'u_head_force');
-    const simHandForceLoc = gl.getUniformLocation(simProgram, 'u_hand_force');
+    // Simulation Uniform Locations
+    const simResLoc          = gl.getUniformLocation(simProgram, 'u_resolution');
+    const simPrevTexLoc      = gl.getUniformLocation(simProgram, 'u_prevBuffer');
+    const simPersistLoc      = gl.getUniformLocation(simProgram, 'u_persistence');
+    const simHeadForceLoc    = gl.getUniformLocation(simProgram, 'u_head_force');
+    const simHandForceLoc    = gl.getUniformLocation(simProgram, 'u_hand_force');
+    const simInfluenceModeLoc= gl.getUniformLocation(simProgram, 'u_influence_mode');
+    const simRippleFreqLoc   = gl.getUniformLocation(simProgram, 'u_ripple_freq');
+    const simTimeLoc         = gl.getUniformLocation(simProgram, 'u_time');
 
-    const simMouseLoc     = gl.getUniformLocation(simProgram, 'u_mouse');
-    const simMouseVelLoc  = gl.getUniformLocation(simProgram, 'u_mouse_vel');
-    const simPressureLoc  = gl.getUniformLocation(simProgram, 'u_pressure');
+    const simMouseLoc        = gl.getUniformLocation(simProgram, 'u_mouse');
+    const simMouseVelLoc     = gl.getUniformLocation(simProgram, 'u_mouse_vel');
+    const simPressureLoc     = gl.getUniformLocation(simProgram, 'u_pressure');
 
-    const simHeadLoc      = gl.getUniformLocation(simProgram, 'u_head');
-    const simHeadVelLoc   = gl.getUniformLocation(simProgram, 'u_head_vel');
-    const simHeadActLoc   = gl.getUniformLocation(simProgram, 'u_head_active');
+    const simHeadLoc         = gl.getUniformLocation(simProgram, 'u_head');
+    const simHeadVelLoc      = gl.getUniformLocation(simProgram, 'u_head_vel');
+    const simHeadActLoc      = gl.getUniformLocation(simProgram, 'u_head_active');
 
-    const simLeftLoc      = gl.getUniformLocation(simProgram, 'u_left_wrist');
-    const simLeftVelLoc   = gl.getUniformLocation(simProgram, 'u_left_vel');
-    const simLeftActLoc   = gl.getUniformLocation(simProgram, 'u_left_active');
+    const simLeftLoc         = gl.getUniformLocation(simProgram, 'u_left_wrist');
+    const simLeftVelLoc      = gl.getUniformLocation(simProgram, 'u_left_vel');
+    const simLeftActLoc      = gl.getUniformLocation(simProgram, 'u_left_active');
 
-    const simRightLoc     = gl.getUniformLocation(simProgram, 'u_right_wrist');
-    const simRightVelLoc  = gl.getUniformLocation(simProgram, 'u_right_vel');
-    const simRightActLoc  = gl.getUniformLocation(simProgram, 'u_right_active');
+    const simRightLoc        = gl.getUniformLocation(simProgram, 'u_right_wrist');
+    const simRightVelLoc     = gl.getUniformLocation(simProgram, 'u_right_vel');
+    const simRightActLoc     = gl.getUniformLocation(simProgram, 'u_right_active');
 
+    // Display Uniform Locations
     const dispResLoc       = gl.getUniformLocation(displayProgram, 'u_resolution');
     const dispImgResLoc    = gl.getUniformLocation(displayProgram, 'u_image_resolution');
     const dispTimeLoc      = gl.getUniformLocation(displayProgram, 'u_time');
@@ -1261,6 +1321,7 @@
 
     const sliders = {
       persistence: document.getElementById('sl-persistence'),
+      rippleFreq:  document.getElementById('sl-ripple-freq'),
       headForce:   document.getElementById('sl-head-force'),
       handForce:   document.getElementById('sl-hand-force'),
       angle:       document.getElementById('sl-angle'),
@@ -1285,6 +1346,7 @@
 
     const numDisplays = {
       persistence: document.getElementById('persist-num'),
+      rippleFreq:  document.getElementById('ripple-freq-num'),
       headForce:   document.getElementById('head-force-num'),
       handForce:   document.getElementById('hand-force-num'),
       angle:       document.getElementById('angle-num'),
@@ -1306,6 +1368,15 @@
       grain:       document.getElementById('grain-num'),
       contrast:    document.getElementById('contrast-num')
     };
+
+    const slInfluenceMode = document.getElementById('sl-influence-mode');
+    const influenceModeHUD = document.getElementById('influence-mode-hud');
+    const modeNames = ['Viscous Drag', 'Water Ripples', 'Whirlpools', 'Shockwave'];
+
+    slInfluenceMode.addEventListener('pointerdown', (e) => e.stopPropagation());
+    slInfluenceMode.addEventListener('change', (e) => {
+      influenceModeHUD.textContent = modeNames[parseInt(e.target.value, 10)];
+    });
 
     let currentEngine = 0.0;
     const engineSelect = document.getElementById('engineSelect');
@@ -1464,6 +1535,7 @@
         engine: currentEngine,
         animMode: animModeSelect.value,
         kMode: slKMode.value,
+        influenceMode: slInfluenceMode.value,
         sliders: sliderVals,
         colors: colorVals
       };
@@ -1481,6 +1553,10 @@
         animModeSelect.dispatchEvent(new Event('change'));
       }
       if (data.kMode) slKMode.value = data.kMode;
+      if (data.influenceMode) {
+        slInfluenceMode.value = data.influenceMode;
+        slInfluenceMode.dispatchEvent(new Event('change'));
+      }
       if (data.sliders) {
         for (const k in data.sliders) {
           if (sliders[k]) {
@@ -1624,8 +1700,6 @@
     const poseStatusHUD = document.getElementById('pose-status-val');
     const hudInput = document.getElementById('input-type');
     const pipCanvas = document.getElementById('camPreviewCanvas');
-    
-    // Explicit fixed PIP resolution - prevents macOS IOSurface reallocation on every frame
     pipCanvas.width = 160;
     pipCanvas.height = 120;
     const pipCtx = pipCanvas.getContext('2d');
@@ -1637,7 +1711,6 @@
     let poseTimerId = null;
     let isProcessingPose = false;
 
-    // Dedicated low-resolution offscreen canvas for ingestion into MediaPipe
     const captureCanvas = document.createElement('canvas');
     captureCanvas.width = 192;
     captureCanvas.height = 144;
@@ -1669,7 +1742,7 @@
 
       poseInstance.setOptions({
         modelComplexity: 0,
-        smoothLandmarks: false, // Disabled: our custom 1€ filter handles smoothing without duplicate CPU cost
+        smoothLandmarks: false,
         enableSegmentation: false,
         minDetectionConfidence: 0.5,
         minTrackingConfidence: 0.5
@@ -1686,7 +1759,6 @@
     function onPoseResults(results) {
       if (!poseActive) return;
 
-      // Draw camera preview onto pre-sized PIP canvas
       pipCtx.drawImage(captureCanvas, 0, 0, 160, 120);
 
       if (!results.poseLandmarks) {
@@ -1757,7 +1829,6 @@
       }
     }
 
-    // Decoupled ~20 FPS inference loop (50ms interval) allows WebGL to render without jitter
     async function poseLoop() {
       if (!poseActive) return;
 
@@ -1889,7 +1960,6 @@
     canvas.addEventListener('pointercancel', releasePointer);
 
     function resize() {
-      // 1.0x desktop scale prevents GPU fill-rate saturation on MacBook Retina screens
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       const dpr = isMobile ? Math.min(window.devicePixelRatio || 1, 1.5) : 1.0;
 
@@ -1934,7 +2004,6 @@
 
       if (animMode === 'body_kaleido') {
         isWarpMode = 1.0;
-
         currentAngleDeg = parseFloat(sliders.angle.value);
 
         const allowHands = chkHandTracking.checked;
@@ -2057,6 +2126,7 @@
       prevRightCurX = rightCur.x;
       prevRightCurY = rightCur.y;
 
+      // Pass state to Simulation Pass
       gl.bindFramebuffer(gl.FRAMEBUFFER, writeFBO.fbo);
       gl.viewport(0, 0, simWidth, simHeight);
       gl.useProgram(simProgram);
@@ -2074,6 +2144,9 @@
       gl.uniform1f(simPersistLoc, parseFloat(sliders.persistence.value));
       gl.uniform1f(simHeadForceLoc, parseFloat(sliders.headForce.value));
       gl.uniform1f(simHandForceLoc, parseFloat(sliders.handForce.value));
+      gl.uniform1f(simInfluenceModeLoc, parseFloat(slInfluenceMode.value));
+      gl.uniform1f(simRippleFreqLoc, parseFloat(sliders.rippleFreq.value));
+      gl.uniform1f(simTimeLoc, time * 0.001);
 
       const mNorm = toNormCoord(pointerCurX, pointerCurY);
       gl.uniform2f(simMouseLoc, mNorm[0], mNorm[1]);
@@ -2099,6 +2172,7 @@
 
       swapFBOs();
 
+      // Display Shader Pass
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.useProgram(displayProgram);
