@@ -232,7 +232,6 @@
       -webkit-user-select: auto;
       user-select: auto;
     }
-    /* Small live selfie preview PIP */
     #camPreviewCanvas {
       position: absolute;
       bottom: 16px;
@@ -244,7 +243,7 @@
       box-shadow: 0 4px 16px rgba(0, 0, 0, 0.6);
       z-index: 20;
       display: none;
-      transform: scaleX(-1); /* Mirror camera preview */
+      transform: scaleX(-1);
       background: #000;
     }
   </style>
@@ -264,7 +263,6 @@
       </div>
 
       <div id="drawer">
-        <!-- Preset Manager Section -->
         <div class="sub-heading" style="margin-top:4px;">Preset Manager</div>
         <div style="display:flex; gap:6px; margin-top:4px;">
           <select id="presetSelect" style="flex:1;">
@@ -282,7 +280,6 @@
           <button id="delPresetBtn" title="Delete custom preset" style="display:none; color:#ff6b6b;">✕</button>
         </div>
 
-        <!-- 1. Engine Archetype -->
         <div class="sub-heading">Engine Archetype</div>
         <div style="margin-top: 4px;">
           <select id="engineSelect" style="width: 100%;">
@@ -293,7 +290,6 @@
           </select>
         </div>
 
-        <!-- 2. Kinematics & Vector Flow -->
         <div class="sub-heading">Kinematics & Vector Flow</div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
           <span class="slider-header" style="margin:0;">Rotation Mode</span>
@@ -346,7 +342,6 @@
           <input type="range" id="sl-stretch" min="0.3" max="4.0" step="0.05" value="1.40">
         </div>
 
-        <!-- 3. Kaleidoscope Symmetry Suite -->
         <div class="sub-heading">Kaleidoscope Symmetry</div>
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
           <span class="slider-header" style="margin:0;">Symmetry Mode</span>
@@ -396,7 +391,6 @@
           <input type="range" id="sl-k-pinch" min="0.4" max="2.5" step="0.05" value="1.00">
         </div>
 
-        <!-- 4. Strata & Ridges -->
         <div class="sub-heading">Topographical Strata</div>
         <div class="slider-row">
           <div class="slider-header">
@@ -422,8 +416,7 @@
           <input type="range" id="sl-ridge" min="0.0" max="1.0" step="0.02" value="0.32">
         </div>
 
-        <!-- 5. Optics & Lighting -->
-        <div class="sub-heading">Optics & Volumetric Shading</div>
+        <div class="sub-heading">Optics & Lighting</div>
         <div class="slider-row">
           <div class="slider-header">
             <span>Iridescence (Prism)</span>
@@ -456,8 +449,7 @@
           <input type="range" id="sl-grain" min="0.0" max="0.25" step="0.01" value="0.04">
         </div>
 
-        <!-- 6. Dynamics & Force -->
-        <div class="sub-heading">Contrast & Body Vortex Force</div>
+        <div class="sub-heading">Dynamics & Force</div>
         <div class="slider-row">
           <div class="slider-header">
             <span>Depth Contrast</span>
@@ -474,7 +466,6 @@
           <input type="range" id="sl-vortex" min="0.0" max="3.0" step="0.05" value="1.20">
         </div>
 
-        <!-- 7. Palette Swatches -->
         <div class="sub-heading">Palette Swatches</div>
         <div class="swatch-row">
           <input type="color" id="colShadow" value="#0d0a12" title="Shadow Base">
@@ -487,7 +478,6 @@
       </div>
     </div>
 
-    <!-- Action Bar -->
     <div class="btn-group">
       <label class="btn" for="imageLoader">📷 Load Image</label>
       <input type="file" id="imageLoader" accept="image/*">
@@ -498,7 +488,6 @@
     </div>
   </div>
 
-  <!-- Custom Preset Save Dialog -->
   <div id="presetModal">
     <div style="background:#181920; border:1px solid rgba(255,255,255,0.18); border-radius:14px; padding:18px; width:290px; box-shadow:0 12px 40px rgba(0,0,0,0.6); pointer-events:auto;">
       <div style="font-size:13px; font-weight:700; color:#fff; margin-bottom:6px;">Save Preset</div>
@@ -511,7 +500,6 @@
     </div>
   </div>
 
-  <!-- Export Modal -->
   <div id="saveModal">
     <div id="modalMsg" style="color: #fff; font-family: -apple-system, sans-serif; font-size: 14px; margin-bottom: 12px; text-align: center;">
       Touch and hold below to tap <b>"Save to Photos"</b>
@@ -520,7 +508,6 @@
     <button id="closeModalBtn" style="margin-top: 16px; background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.3); padding: 9px 24px; border-radius: 8px; font-size: 13px; font-weight: 600;">Done</button>
   </div>
 
-  <!-- Canvas elements -->
   <canvas id="camPreviewCanvas"></canvas>
   <canvas id="glcanvas"></canvas>
 
@@ -542,7 +529,6 @@
       }
     `;
 
-    // Multi-Point Anatomical Shader
     const fsSource = `
       precision highp float;
 
@@ -556,7 +542,6 @@
 
       uniform float u_shader_type;
 
-      // Kaleidoscope Uniforms
       uniform float u_kaleido_segs;
       uniform float u_kaleido_angle;
       uniform float u_kaleido_zoom;
@@ -564,18 +549,15 @@
       uniform float u_kaleido_mirror;
       uniform float u_kaleido_blur;
 
-      // Kinematics & Flow Uniforms
       uniform float u_flow_angle;
       uniform float u_speed;
       uniform float u_warp_scale;
       uniform float u_flow_stretch;
       uniform float u_vortex_scale;
 
-      // Stylus / Single-Pointer Uniforms
       uniform vec2 u_mouse;
       uniform float u_pressure;
 
-      // Multi-Point Body Pose Uniforms
       uniform vec2 u_head;
       uniform float u_head_active;
       uniform vec2 u_left_wrist;
@@ -583,7 +565,6 @@
       uniform vec2 u_right_wrist;
       uniform float u_right_active;
 
-      // Topographical & Optics Uniforms
       uniform float u_contour_freq;
       uniform float u_step_quant;
       uniform float u_ridge_weight;
@@ -593,7 +574,6 @@
       uniform float u_grain_level;
       uniform float u_contrast;
 
-      // Dynamic Color Uniforms
       uniform vec3 u_col_shadow;
       uniform vec3 u_col_cool_a;
       uniform vec3 u_col_cool_b;
@@ -695,11 +675,15 @@
         return newUV;
       }
 
-      // Evaluates entire scene with multi-point body advection
       vec3 evaluateScene(vec2 st, vec2 mouse, vec2 headPos, vec2 leftPos, vec2 rightPos) {
         float t = u_time * u_speed;
 
-        // --- 1. APPLE PENCIL / TOUCH VORTEX ---
+        // 1. HEAD PERSPECTIVE PARALLAX
+        if (u_head_active > 0.05) {
+          st -= headPos * 0.28 * u_head_active;
+        }
+
+        // 2. STYLUS / TOUCH VORTEX
         if (u_pressure > 0.01) {
           vec2 toMouse = st - mouse;
           float distToMouse = length(toMouse);
@@ -709,16 +693,25 @@
           st -= toMouse * penForce * 0.2;
         }
 
-        // --- 2. MULTI-POINT BODY POSE ADVECTION ---
-        // HEAD: Gentle outward radial pulse / expansion well
+        // 3. AMPLIFIED HEAD INFLUENCE
+        float headGlow = 0.0;
         if (u_head_active > 0.05) {
           vec2 toHead = st - headPos;
           float dHead = length(toHead);
-          float fHead = exp(-dHead * 2.8) * u_head_active * u_vortex_scale;
-          st -= toHead * fHead * 0.35;
+          
+          float fHead = exp(-dHead * 1.4) * u_head_active * u_vortex_scale;
+          st -= toHead * (fHead * 0.85);
+
+          float ripple = sin(dHead * 11.0 - t * 3.5) * exp(-dHead * 2.0) * (0.22 * u_head_active * u_vortex_scale);
+          st += normalize(toHead + 0.001) * ripple;
+
+          vec2 vHead = vec2(-toHead.y, toHead.x) / (dHead + 0.18);
+          st += vHead * (fHead * 0.55);
+
+          headGlow = exp(-dHead * 2.0) * u_head_active;
         }
 
-        // LEFT HAND: Counter-Clockwise Fluid Paddle
+        // 4. HAND FLUID PADDLES
         if (u_left_active > 0.05) {
           vec2 toL = st - leftPos;
           float dL = length(toL);
@@ -728,7 +721,6 @@
           st -= toL * fL * 0.25;
         }
 
-        // RIGHT HAND: Clockwise Fluid Paddle (Counter-rotating)
         if (u_right_active > 0.05) {
           vec2 toR = st - rightPos;
           float dR = length(toR);
@@ -738,7 +730,6 @@
           st -= toR * fR * 0.25;
         }
 
-        // Steerable Flow Alignment Matrix
         float rad = u_flow_angle;
         mat2 alignFlow = mat2(cos(rad), sin(rad), -sin(rad), cos(rad));
         vec2 p = alignFlow * st * vec2(0.55, u_flow_stretch);
@@ -836,6 +827,7 @@
           float luma = dot(imgColor, vec3(0.299, 0.587, 0.114));
           vec3 crestLight = u_col_crest * (bands * 0.22 + ridges * u_ridge_weight) * (0.4 + 0.6 * luma);
           finalColor = imgColor + crestLight + (u_col_crest * (spec + fresnel) * luma);
+          finalColor += u_col_crest * (headGlow * 0.5);
           finalColor *= (0.8 + 0.35 * f * u_contrast);
         } else {
           vec3 col = mix(u_col_shadow, u_col_cool_a, clamp((f * f) * (3.2 * u_contrast), 0.0, 1.0));
@@ -846,6 +838,7 @@
           col += (u_col_crest * bands * 0.18) + (ridges * u_col_crest * u_ridge_weight);
           col += u_col_crest * spec * 0.65;
           col += mix(u_col_cool_b, u_col_crest, 0.5) * fresnel;
+          col += u_col_crest * (headGlow * 0.5);
           col *= (0.75 + 0.45 * f * u_contrast);
           finalColor = col;
         }
@@ -966,7 +959,6 @@
     const timeLoc = gl.getUniformLocation(program, 'u_time');
     const useImageLoc = gl.getUniformLocation(program, 'u_use_image');
     const textureLoc = gl.getUniformLocation(program, 'u_texture');
-
     const shaderTypeLoc = gl.getUniformLocation(program, 'u_shader_type');
 
     // Pointer Uniforms
@@ -1519,7 +1511,6 @@
     let cameraInstance = null;
     let poseInstance = null;
 
-    // Body effectors target coordinates & active weights
     let headTarget = { x: window.innerWidth * 0.5, y: window.innerHeight * 0.5, active: 0.0 };
     let leftTarget = { x: window.innerWidth * 0.25, y: window.innerHeight * 0.5, active: 0.0 };
     let rightTarget = { x: window.innerWidth * 0.75, y: window.innerHeight * 0.5, active: 0.0 };
@@ -1528,7 +1519,6 @@
     let leftCur = { ...leftTarget };
     let rightCur = { ...rightTarget };
 
-    // Offscreen tracking video element
     const trackingVideo = document.createElement('video');
     trackingVideo.playsInline = true;
     trackingVideo.autoplay = true;
@@ -1542,7 +1532,7 @@
       });
 
       poseInstance.setOptions({
-        modelComplexity: 0, // Lite model for smooth iPad 60fps performance
+        modelComplexity: 0,
         smoothLandmarks: true,
         enableSegmentation: false,
         minDetectionConfidence: 0.5,
@@ -1555,7 +1545,6 @@
     function onPoseResults(results) {
       if (!poseActive || !results.image) return;
 
-      // Draw PIP camera preview with skeletal landmarks
       pipCanvas.width = 160;
       pipCanvas.height = 120;
       pipCtx.clearRect(0, 0, pipCanvas.width, pipCanvas.height);
@@ -1573,15 +1562,14 @@
       const lm = results.poseLandmarks;
 
       // 1. Head tracking (Nose = Landmark 0)
-      if (lm[0] && (lm[0].visibility === undefined || lm[0].visibility > 0.4)) {
-        // Mirrored X for front selfie camera
+      if (lm[0] && (lm[0].visibility === undefined || lm[0].visibility > 0.35)) {
         headTarget.x = (1.0 - lm[0].x) * window.innerWidth;
-        headTarget.y = (1.0 - lm[0].y) * window.innerHeight; // Inverted Y for WebGL
+        headTarget.y = (1.0 - lm[0].y) * window.innerHeight;
         headTarget.active = 1.0;
 
         pipCtx.fillStyle = '#f7a844';
         pipCtx.beginPath();
-        pipCtx.arc(lm[0].x * pipCanvas.width, lm[0].y * pipCanvas.height, 4, 0, 2 * Math.PI);
+        pipCtx.arc(lm[0].x * pipCanvas.width, lm[0].y * pipCanvas.height, 5, 0, 2 * Math.PI);
         pipCtx.fill();
       } else {
         headTarget.active = 0.0;
@@ -1617,14 +1605,12 @@
 
       // 4. Steer Flow Direction from Arm Angle if selected
       if (animModeSelect.value === 'body_arms') {
-        // Compute vector from left wrist to right wrist
         if (leftTarget.active > 0.5 && rightTarget.active > 0.5) {
           const dx = rightTarget.x - leftTarget.x;
           const dy = rightTarget.y - leftTarget.y;
           let armAngle = (Math.atan2(dy, dx) * 180.0 / Math.PI);
           if (armAngle < 0.0) armAngle += 360.0;
 
-          // Smoothly interpolate angle slider
           currentAngleDeg += (armAngle - currentAngleDeg) * 0.15;
           sliders.angle.value = currentAngleDeg;
           numDisplays.angle.textContent = Math.round(currentAngleDeg) + '°';
@@ -1670,7 +1656,7 @@
         poseToggleBtn.classList.add('active-toggle');
         poseToggleBtn.textContent = '⏹️ Stop Body Tracking';
         hudInput.textContent = 'AI Body Pose Active';
-        poseStatusHUD.textContent = 'Searching for body...';
+        poseStatusHUD.textContent = 'Tracking Head & Arms';
       } catch (err) {
         alert('Could not start selfie camera: ' + err.message + '\nNote: Requires HTTPS or localhost.');
         poseStatusHUD.textContent = 'Camera Error';
