@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Volumetric Contours - Inception & Retrowave Edition</title>
+  <title>Volumetric Contours - Shirt Color Harmonizer Edition</title>
   
   <!-- MediaPipe Pose Core Library -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
@@ -306,7 +306,7 @@
     <div id="hud" class="panel">
       Input: <span id="input-type">Apple Pencil / Touch</span><br>
       Body: <span id="pose-status-val">Waiting...</span><br>
-      Engine: <span id="engine-hud">Laminar Silk</span> | Space: <span id="space-fold-hud">Inception Overhang</span>
+      Engine: <span id="engine-hud">Synthgrid</span> | Space: <span id="space-fold-hud">Inception Overhang</span>
     </div>
 
     <div class="panel">
@@ -336,6 +336,18 @@
           </select>
           <button id="savePresetBtn" title="Save current setup">💾 Save</button>
           <button id="delPresetBtn" title="Delete custom preset" style="display:none; color:#ff6b6b;">✕</button>
+        </div>
+
+        <!-- Camera Shirt Color Sampler Section -->
+        <div class="sub-heading">Shirt Color Harmonizer</div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px; gap:8px;">
+          <button id="sampleShirtBtn" style="flex:1; background:rgba(0, 240, 255, 0.2); border-color:#00f0ff; color:#fff;">
+            👔 Sample Shirt
+          </button>
+          <div style="display:flex; align-items:center; gap:6px;">
+            <span id="shirtColorPreview" title="Detected Shirt Color" style="display:inline-block; width:22px; height:22px; border-radius:50%; border:2px solid #fff; background:#222; box-shadow:0 1px 4px rgba(0,0,0,0.5);"></span>
+            <label class="mod-label" style="font-size:10px;"><input type="checkbox" id="chk-auto-shirt"> Live</label>
+          </div>
         </div>
 
         <div class="sub-heading">Pose Tracking Gating & Return Dynamics</div>
@@ -436,7 +448,6 @@
           <button id="clearPaintBtn" style="width:100%; background:rgba(247,168,68,0.2); border-color:#f7a844;">✨ Clear Paint Canvas</button>
         </div>
 
-        <!-- Engine Archetype Selector -->
         <div class="sub-heading">Engine Archetype</div>
         <div style="margin-top: 4px;">
           <select id="engineSelect" style="width: 100%;">
@@ -451,7 +462,6 @@
           </select>
         </div>
 
-        <!-- Inception Space Warping & Perspective -->
         <div class="sub-heading">Inception Space-Fold & 3D Flight</div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
@@ -557,9 +567,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Ambient Drift</span>
-            <span id="speed-num" class="val">0.1</span>
+            <span id="speed-num" class="val">0.035</span>
           </div>
-          <input type="range" id="sl-speed" min="0.0" max="2.0" step="0.05" value="2.0">
+          <input type="range" id="sl-speed" min="0.0" max="0.12" step="0.002" value="0.035">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-speed"> X</label>
@@ -858,6 +868,86 @@
       alert('WebGL not supported.');
     }
 
+    // Color Space Helpers (RGB <-> HSL)
+    function rgbToHsl(r, g, b) {
+      r /= 255; g /= 255; b /= 255;
+      const max = Math.max(r, g, b), min = Math.min(r, g, b);
+      let h, s, l = (max + min) / 2;
+      if (max === min) {
+        h = s = 0;
+      } else {
+        const d = max - min;
+        s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+        switch (max) {
+          case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+          case g: h = (b - r) / d + 2; break;
+          case b: h = (r - g) / d + 4; break;
+        }
+        h /= 6;
+      }
+      return [h * 360, s, l];
+    }
+
+    function hslToRgb(h, s, l) {
+      h = (h % 360 + 360) % 360 / 360;
+      let r, g, b;
+      if (s === 0) {
+        r = g = b = l;
+      } else {
+        const hue2rgb = (p, q, t) => {
+          if (t < 0) t += 1;
+          if (t > 1) t -= 1;
+          if (t < 1/6) return p + (q - p) * 6 * t;
+          if (t < 1/2) return q;
+          if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+          return p;
+        };
+        const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+        const p = 2 * l - q;
+        r = hue2rgb(p, q, h + 1/3);
+        g = hue2rgb(p, q, h);
+        b = hue2rgb(p, q, h - 1/3);
+      }
+      return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+    }
+
+    function rgbToHex(r, g, b) {
+      return "#" + [r, g, b].map(x => {
+        const hex = Math.max(0, Math.min(255, Math.round(x))).toString(16);
+        return hex.length === 1 ? "0" + hex : hex;
+      }).join("");
+    }
+
+    function hslToHex(h, s, l) {
+      const [r, g, b] = hslToRgb(h, s, l);
+      return rgbToHex(r, g, b);
+    }
+
+    // Synthesize Harmonized 6-Color Palette from Sampled Shirt Color
+    function generatePaletteFromShirt(r, g, b) {
+      const [h, s, l] = rgbToHsl(r, g, b);
+      let pal = {};
+
+      if (s < 0.14) {
+        // Neutral/monochrome shirt: Obsidian, Platinum, Liquid Chrome, and Gold filament
+        pal.shadow = hslToHex(h, 0.05, 0.03);
+        pal.coolA  = hslToHex(210, 0.22, 0.25);
+        pal.coolB  = hslToHex(205, 0.18, 0.72);
+        pal.warmA  = hslToHex(38, 0.85, 0.56);
+        pal.warmB  = hslToHex(18, 0.65, 0.30);
+        pal.crest  = hslToHex(0, 0.00, 0.98);
+      } else {
+        // Saturated colorful shirt: Dynamic chromatic split-complementary harmony
+        pal.warmA  = hslToHex(h, Math.max(s, 0.75), Math.min(Math.max(l, 0.45), 0.62));
+        pal.warmB  = hslToHex((h - 22 + 360) % 360, Math.min(s + 0.15, 1.0), 0.32);
+        pal.coolA  = hslToHex((h + 180) % 360, Math.max(s * 0.75, 0.45), 0.30);
+        pal.coolB  = hslToHex((h + 160) % 360, 0.60, 0.68);
+        pal.shadow = hslToHex((h + 180) % 360, 0.35, 0.04);
+        pal.crest  = hslToHex((h + 10) % 360, 0.35, 0.94);
+      }
+      return pal;
+    }
+
     class OneEuroFilter {
       constructor(minCutoff = 0.7, beta = 3.5, dcutoff = 1.0) {
         this.minCutoff = minCutoff;
@@ -917,7 +1007,6 @@
       }
     `;
 
-    // Perspective Ground Plane Physics Simulation
     const simFS = `
       precision highp float;
       varying vec2 v_uv;
@@ -1170,7 +1259,6 @@
         return newUV;
       }
 
-      // Mathematical Pinhole & Inception Non-Euclidean Fold Engine
       vec2 getFoldedSpaceCoords(vec2 screenST, float tiltAngle, float foldMode, float foldStrength, float centerDepth, out float depthFactor, out float fog) {
         depthFactor = 1.0;
         fog = 0.0;
@@ -1179,7 +1267,6 @@
         float cosT = cos(tiltAngle);
         float sinT = sin(tiltAngle);
 
-        // 0. Standard 3D Ground Plane
         if (foldMode < 0.5) {
           if (tiltAngle < 0.005) return screenST;
           float k = tan(tiltAngle) / FL;
@@ -1194,8 +1281,6 @@
           fog = smoothstep(0.32, 0.04, W);
           return ground;
         }
-
-        // 1. Inception Overhang (Folded City)
         else if (foldMode < 1.5) {
           vec3 ray = normalize(vec3(screenST.x, screenST.y * cosT - sinT, FL + screenST.y * sinT));
           float bend = screenST.y * foldStrength * 0.85;
@@ -1211,8 +1296,6 @@
           fog = smoothstep(0.08, 0.0, abs(ry)) * 0.4;
           return coords;
         }
-
-        // 2. O'Neill Cylinder (Rolling World)
         else if (foldMode < 2.5) {
           vec3 ray = normalize(vec3(screenST.x * (1.0 + foldStrength * 0.3), screenST.y * cosT - sinT, FL));
           float rCross = length(ray.xy);
@@ -1227,8 +1310,6 @@
           fog = smoothstep(12.0, 20.0, zDist);
           return coords;
         }
-
-        // 3. Möbius Spacetime Twist
         else if (foldMode < 3.5) {
           float k = tan(tiltAngle) / FL;
           float W = 1.0 - k * screenST.y;
@@ -1246,8 +1327,6 @@
           ground = rotTwist * ground;
           return ground;
         }
-
-        // 4. Gravitational Lens (Wormhole)
         else if (foldMode < 4.5) {
           vec2 center = vec2(0.0, centerDepth * 0.35);
           vec2 delta = screenST - center;
@@ -1265,8 +1344,6 @@
           fog = smoothstep(0.18 * foldStrength, 0.04 * foldStrength, r);
           return ground;
         }
-
-        // 5. Hyperbolic Escher Wrap
         else {
           vec2 p = screenST * (1.0 + foldStrength * 0.6);
           float r2 = dot(p, p);
@@ -1459,7 +1536,6 @@
           col += u_col_crest * spec * 0.65;
           col += mix(u_col_cool_b, u_col_crest, 0.65) * fresnel;
 
-          // Retrowave Glowing Synthgrid Boost
           if (u_shader_type >= 6.5) {
             col += u_col_cool_b * f * 1.4;
             col += u_col_warm_a * spec * 1.5;
@@ -1847,7 +1923,7 @@
       kBlur:        document.getElementById('sl-k-blur'),
       kAngle:       document.getElementById('sl-k-angle'),
       kZoom:        document.getElementById('sl-k-zoom'),
-      kPinch:       document.getElementById('sl-k-pinch'),
+      kPinch:      document.getElementById('sl-k-pinch'),
       speed:        document.getElementById('sl-speed'),
       warp:         document.getElementById('sl-warp'),
       stretch:      document.getElementById('sl-stretch'),
@@ -1877,7 +1953,7 @@
       kBlur:        document.getElementById('k-blur-num'),
       kAngle:       document.getElementById('k-angle-num'),
       kZoom:        document.getElementById('k-zoom-num'),
-      kPinch:       document.getElementById('k-pinch-num'),
+      kPinch:      document.getElementById('k-pinch-num'),
       speed:        document.getElementById('speed-num'),
       warp:         document.getElementById('warp-num'),
       stretch:      document.getElementById('stretch-num'),
@@ -1896,26 +1972,26 @@
       centerDepth:  { chkX: document.getElementById('mod-x-centerDepth'),  scaleX: document.getElementById('scale-x-centerDepth'),  chkY: document.getElementById('mod-y-centerDepth'),  scaleY: document.getElementById('scale-y-centerDepth') },
       foldStrength: { chkX: document.getElementById('mod-x-foldStrength'), scaleX: document.getElementById('scale-x-foldStrength'), chkY: document.getElementById('mod-y-foldStrength'), scaleY: document.getElementById('scale-y-foldStrength') },
       persistence:  { chkX: document.getElementById('mod-x-persistence'),  scaleX: document.getElementById('scale-x-persistence'),  chkY: document.getElementById('mod-y-persistence'),  scaleY: document.getElementById('scale-y-persistence') },
-      rippleFreq:   { chkX: document.getElementById('mod-x-rippleFreq'),   scaleX: document.getElementById('scale-x-rippleFreq'),   chkY: document.getElementById('mod-y-rippleFreq'),   scaleY: document.getElementById('scale-y-rippleFreq') },
+      rippleFreq:   { chkX: document.getElementById('mod-x-rippleFreq'),   scaleX: document.getElementById('scale-x-rippleFreq'),   chkY: document.getElementById('mod-y-rippleFreq'),  scaleY: document.getElementById('scale-y-rippleFreq') },
       headForce:    { chkX: document.getElementById('mod-x-headForce'),    scaleX: document.getElementById('scale-x-headForce'),    chkY: document.getElementById('mod-y-headForce'),    scaleY: document.getElementById('scale-y-headForce') },
       handForce:    { chkX: document.getElementById('mod-x-handForce'),    scaleX: document.getElementById('scale-x-handForce'),    chkY: document.getElementById('mod-y-handForce'),    scaleY: document.getElementById('scale-y-handForce') },
       angle:        { chkX: document.getElementById('mod-x-angle'),        scaleX: document.getElementById('scale-x-angle'),        chkY: document.getElementById('mod-y-angle'),        scaleY: document.getElementById('scale-y-angle') },
       rotSpeed:     { chkX: document.getElementById('mod-x-rotSpeed'),     scaleX: document.getElementById('scale-x-rotSpeed'),     chkY: document.getElementById('mod-y-rotSpeed'),     scaleY: document.getElementById('scale-y-rotSpeed') },
       speed:        { chkX: document.getElementById('mod-x-speed'),        scaleX: document.getElementById('scale-x-speed'),        chkY: document.getElementById('mod-y-speed'),        scaleY: document.getElementById('scale-y-speed') },
-      warp:         { chkX: document.getElementById('mod-x-warp'),         scaleX: document.getElementById('scale-x-warp'),         chkY: document.getElementById('mod-y-warp'),         scaleY: document.getElementById('scale-y-warp') },
+      warp:         { chkX: document.getElementById('mod-x-warp'),         scaleX: document.getElementById('scale-x-warp'),        chkY: document.getElementById('mod-y-warp'),        scaleY: document.getElementById('scale-y-warp') },
       stretch:      { chkX: document.getElementById('mod-x-stretch'),      scaleX: document.getElementById('scale-x-stretch'),      chkY: document.getElementById('mod-y-stretch'),      scaleY: document.getElementById('scale-y-stretch') },
-      kBlur:        { chkX: document.getElementById('mod-x-kBlur'),        scaleX: document.getElementById('scale-x-kBlur'),        chkY: document.getElementById('mod-y-kBlur'),        scaleY: document.getElementById('scale-y-kBlur') },
-      kAngle:       { chkX: document.getElementById('mod-x-kAngle'),       scaleX: document.getElementById('scale-x-kAngle'),       chkY: document.getElementById('mod-y-kAngle'),       scaleY: document.getElementById('scale-y-kAngle') },
-      kZoom:        { chkX: document.getElementById('mod-x-kZoom'),        scaleX: document.getElementById('scale-x-kZoom'),        chkY: document.getElementById('mod-y-kZoom'),        scaleY: document.getElementById('scale-y-kZoom') },
-      kPinch:       { chkX: document.getElementById('mod-x-kPinch'),       scaleX: document.getElementById('scale-x-kPinch'),       chkY: document.getElementById('mod-y-kPinch'),       scaleY: document.getElementById('scale-y-kPinch') },
-      density:      { chkX: document.getElementById('mod-x-density'),      scaleX: document.getElementById('scale-x-density'),      chkY: document.getElementById('mod-y-density'),      scaleY: document.getElementById('scale-y-density') },
-      step:         { chkX: document.getElementById('mod-x-step'),         scaleX: document.getElementById('scale-x-step'),         chkY: document.getElementById('mod-y-step'),         scaleY: document.getElementById('scale-y-step') },
-      ridge:        { chkX: document.getElementById('mod-x-ridge'),        scaleX: document.getElementById('scale-x-ridge'),        chkY: document.getElementById('mod-y-ridge'),        scaleY: document.getElementById('scale-y-ridge') },
-      chroma:       { chkX: document.getElementById('mod-x-chroma'),       scaleX: document.getElementById('scale-x-chroma'),       chkY: document.getElementById('mod-y-chroma'),       scaleY: document.getElementById('scale-y-chroma') },
-      shimmer:      { chkX: document.getElementById('mod-x-shimmer'),      scaleX: document.getElementById('scale-x-shimmer'),      chkY: document.getElementById('mod-y-shimmer'),      scaleY: document.getElementById('scale-y-shimmer') },
-      rim:          { chkX: document.getElementById('mod-x-rim'),          scaleX: document.getElementById('scale-x-rim'),          chkY: document.getElementById('mod-y-rim'),          scaleY: document.getElementById('scale-y-rim') },
-      grain:        { chkX: document.getElementById('mod-x-grain'),        scaleX: document.getElementById('scale-x-grain'),        chkY: document.getElementById('mod-y-grain'),        scaleY: document.getElementById('scale-y-grain') },
-      contrast:     { chkX: document.getElementById('mod-x-contrast'),     scaleX: document.getElementById('scale-x-contrast'),     chkY: document.getElementById('mod-y-contrast'),     scaleY: document.getElementById('scale-y-contrast') }
+      kBlur:       { chkX: document.getElementById('mod-x-kBlur'),       scaleX: document.getElementById('scale-x-kBlur'),       chkY: document.getElementById('mod-y-kBlur'),       scaleY: document.getElementById('scale-y-kBlur') },
+      kAngle:      { chkX: document.getElementById('mod-x-kAngle'),      scaleX: document.getElementById('scale-x-kAngle'),      chkY: document.getElementById('mod-y-kAngle'),      scaleY: document.getElementById('scale-y-kAngle') },
+      kZoom:       { chkX: document.getElementById('mod-x-kZoom'),       scaleX: document.getElementById('scale-x-kZoom'),       chkY: document.getElementById('mod-y-kZoom'),       scaleY: document.getElementById('scale-y-kZoom') },
+      kPinch:      { chkX: document.getElementById('mod-x-kPinch'),      scaleX: document.getElementById('scale-x-kPinch'),      chkY: document.getElementById('mod-y-kPinch'),      scaleY: document.getElementById('scale-y-kPinch') },
+      density:     { chkX: document.getElementById('mod-x-density'),     scaleX: document.getElementById('scale-x-density'),     chkY: document.getElementById('mod-y-density'),     scaleY: document.getElementById('scale-y-density') },
+      step:        { chkX: document.getElementById('mod-x-step'),        scaleX: document.getElementById('scale-x-step'),        chkY: document.getElementById('mod-y-step'),        scaleY: document.getElementById('scale-y-step') },
+      ridge:       { chkX: document.getElementById('mod-x-ridge'),       scaleX: document.getElementById('scale-x-ridge'),       chkY: document.getElementById('mod-y-ridge'),       scaleY: document.getElementById('scale-y-ridge') },
+      chroma:      { chkX: document.getElementById('mod-x-chroma'),      scaleX: document.getElementById('scale-x-chroma'),      chkY: document.getElementById('mod-y-chroma'),      scaleY: document.getElementById('scale-y-chroma') },
+      shimmer:     { chkX: document.getElementById('mod-x-shimmer'),     scaleX: document.getElementById('scale-x-shimmer'),     chkY: document.getElementById('mod-y-shimmer'),     scaleY: document.getElementById('scale-y-shimmer') },
+      rim:         { chkX: document.getElementById('mod-x-rim'),         scaleX: document.getElementById('scale-x-rim'),         chkY: document.getElementById('mod-y-rim'),         scaleY: document.getElementById('scale-y-rim') },
+      grain:       { chkX: document.getElementById('mod-x-grain'),       scaleX: document.getElementById('scale-x-grain'),       chkY: document.getElementById('mod-y-grain'),       scaleY: document.getElementById('scale-y-grain') },
+      contrast:    { chkX: document.getElementById('mod-x-contrast'),    scaleX: document.getElementById('scale-x-contrast'),    chkY: document.getElementById('mod-y-contrast'),    scaleY: document.getElementById('scale-y-contrast') }
     };
 
     const manualBaseVals = {};
@@ -1953,7 +2029,7 @@
       influenceModeHUD.textContent = modeNames[parseInt(e.target.value, 10)];
     });
 
-    let currentEngine = 7.0; // Default to Retrowave Synthgrid
+    let currentEngine = 7.0;
     const engineSelect = document.getElementById('engineSelect');
     const engineNames = [
       'Laminar Silk', 'Agate Geode', 'Curl Nebula', 'Gyroid Cymatics',
@@ -2305,11 +2381,19 @@
     const pipCtx = pipCanvas.getContext('2d');
     const chkHandTracking = document.getElementById('chk-hand-tracking');
 
+    const sampleShirtBtn = document.getElementById('sampleShirtBtn');
+    const shirtColorPreview = document.getElementById('shirtColorPreview');
+    const chkAutoShirt = document.getElementById('chk-auto-shirt');
+
     let poseActive = false;
     let poseInstance = null;
     let mediaStream = null;
     let poseTimerId = null;
     let isProcessingPose = false;
+
+    let detectedShirtRGB = [128, 128, 128];
+    let smoothedShirtRGB = [128, 128, 128];
+    let shirtFound = false;
 
     const captureCanvas = document.createElement('canvas');
     captureCanvas.width = 192;
@@ -2356,6 +2440,29 @@
              j.x >= 0.02 && j.x <= 0.98 && j.y >= 0.02 && j.y <= 0.98;
     }
 
+    function applySampledShirtPalette(r, g, b) {
+      const pal = generatePaletteFromShirt(r, g, b);
+      pickers.shadow.value = pal.shadow;
+      pickers.coolA.value  = pal.coolA;
+      pickers.coolB.value  = pal.coolB;
+      pickers.warmA.value  = pal.warmA;
+      pickers.warmB.value  = pal.warmB;
+      pickers.crest.value  = pal.crest;
+    }
+
+    sampleShirtBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      if (!poseActive) {
+        await togglePoseTracking();
+      }
+      if (shirtFound) {
+        applySampledShirtPalette(detectedShirtRGB[0], detectedShirtRGB[1], detectedShirtRGB[2]);
+        poseStatusHUD.textContent = 'Shirt Palette Matched!';
+      } else {
+        alert('Make sure your torso and shoulders are visible in the camera frame.');
+      }
+    });
+
     function onPoseResults(results) {
       if (!poseActive) return;
 
@@ -2366,6 +2473,7 @@
         headTarget.active = 0.0;
         leftTarget.active = 0.0;
         rightTarget.active = 0.0;
+        shirtFound = false;
         return;
       }
 
@@ -2373,6 +2481,7 @@
       const allowHands = chkHandTracking.checked;
       let handsFound = 0;
 
+      // 1. Head Tracking
       if (isJointVisible(lm[0], 0.35)) {
         headTarget.x = (1.0 - lm[0].x) * window.innerWidth;
         headTarget.y = (1.0 - lm[0].y) * window.innerHeight;
@@ -2386,6 +2495,68 @@
         headTarget.active = 0.0;
       }
 
+      // 2. Torso / Shirt Color Region Sampling
+      if (lm[11] && lm[12] && (lm[11].visibility > 0.4 || lm[12].visibility > 0.4)) {
+        const msX = (lm[11].x + lm[12].x) * 0.5;
+        const msY = (lm[11].y + lm[12].y) * 0.5;
+        
+        let chestY;
+        if (lm[23] && lm[24] && (lm[23].visibility > 0.3 || lm[24].visibility > 0.3)) {
+          const midHipY = (lm[23].y + lm[24].y) * 0.5;
+          chestY = msY + (midHipY - msY) * 0.35;
+        } else {
+          const shoulderSpan = Math.abs(lm[12].x - lm[11].x);
+          chestY = msY + Math.max(shoulderSpan * 0.65, 0.12);
+        }
+
+        const chestX = Math.min(Math.max(msX, 0.08), 0.92);
+        chestY = Math.min(Math.max(chestY, 0.08), 0.92);
+
+        // Draw targeted sampling reticle on PIP preview
+        pipCtx.strokeStyle = '#00f0ff';
+        pipCtx.lineWidth = 2;
+        pipCtx.strokeRect(chestX * 160 - 8, chestY * 120 - 8, 16, 16);
+        pipCtx.fillStyle = '#00f0ff';
+        pipCtx.font = '8px sans-serif';
+        pipCtx.fillText('SHIRT', chestX * 160 - 12, chestY * 120 - 10);
+
+        // Sample RGB pixels from capture canvas
+        const capX = Math.floor(chestX * captureCanvas.width);
+        const capY = Math.floor(chestY * captureCanvas.height);
+        const rHalf = 5;
+        const startX = Math.max(0, capX - rHalf);
+        const startY = Math.max(0, capY - rHalf);
+        const w = Math.min(captureCanvas.width - startX, rHalf * 2);
+        const h = Math.min(captureCanvas.height - startY, rHalf * 2);
+
+        if (w > 0 && h > 0) {
+          const imgData = captureCtx.getImageData(startX, startY, w, h).data;
+          let rTotal = 0, gTotal = 0, bTotal = 0, count = 0;
+          for (let i = 0; i < imgData.length; i += 4) {
+            rTotal += imgData[i];
+            gTotal += imgData[i+1];
+            bTotal += imgData[i+2];
+            count++;
+          }
+          if (count > 0) {
+            detectedShirtRGB = [rTotal / count, gTotal / count, bTotal / count];
+            shirtFound = true;
+            shirtColorPreview.style.background = `rgb(${Math.round(detectedShirtRGB[0])}, ${Math.round(detectedShirtRGB[1])}, ${Math.round(detectedShirtRGB[2])})`;
+
+            // Live Auto-Track Palette Mode
+            if (chkAutoShirt.checked) {
+              smoothedShirtRGB[0] += (detectedShirtRGB[0] - smoothedShirtRGB[0]) * 0.08;
+              smoothedShirtRGB[1] += (detectedShirtRGB[1] - smoothedShirtRGB[1]) * 0.08;
+              smoothedShirtRGB[2] += (detectedShirtRGB[2] - smoothedShirtRGB[2]) * 0.08;
+              applySampledShirtPalette(smoothedShirtRGB[0], smoothedShirtRGB[1], smoothedShirtRGB[2]);
+            }
+          }
+        }
+      } else {
+        shirtFound = false;
+      }
+
+      // 3. Hands Tracking
       if (allowHands) {
         if (isJointVisible(lm[15], 0.65) && isJointVisible(lm[13], 0.45)) {
           leftTarget.x = (1.0 - lm[15].x) * window.innerWidth;
