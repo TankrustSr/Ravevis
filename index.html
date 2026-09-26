@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Volumetric Contours - Geometric & Retrowave Edition</title>
+  <title>Volumetric Contours - Inception & Retrowave Edition</title>
   
   <!-- MediaPipe Pose Core Library -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
@@ -306,7 +306,7 @@
     <div id="hud" class="panel">
       Input: <span id="input-type">Apple Pencil / Touch</span><br>
       Body: <span id="pose-status-val">Waiting...</span><br>
-      Physics: <span id="influence-mode-hud">Water Ripples</span> | Engine: <span id="engine-hud">Laminar Silk</span>
+      Engine: <span id="engine-hud">Laminar Silk</span> | Space: <span id="space-fold-hud">Inception Overhang</span>
     </div>
 
     <div class="panel">
@@ -320,9 +320,9 @@
         <div style="display:flex; gap:6px; margin-top:4px;">
           <select id="presetSelect" style="flex:1;">
             <optgroup label="Retrowave & Cyberpunk">
-              <option value="synthwave80s">🌆 Synthwave '84 (Neon Magenta & Cyan)</option>
-              <option value="cyberpunk88">🤖 Cyberpunk '88 (Acid & Matrix)</option>
-              <option value="retroArcade">🕹️ Retro Arcade (High-Contrast Neon)</option>
+              <option value="synthwave80s" selected>🌆 Synthwave '84 (Neon Grid & Overhang)</option>
+              <option value="cyberpunk88">🤖 Cyberpunk '88 (Acid Hive & Twist)</option>
+              <option value="retroArcade">🕹️ Retro Arcade (Matrix Lattice)</option>
             </optgroup>
             <optgroup label="Natural & Mineral Stock">
               <option value="amberSlate">Amber & Slate</option>
@@ -436,7 +436,7 @@
           <button id="clearPaintBtn" style="width:100%; background:rgba(247,168,68,0.2); border-color:#f7a844;">✨ Clear Paint Canvas</button>
         </div>
 
-        <!-- Engine Archetype Selector with New Geometrics and Retrowave -->
+        <!-- Engine Archetype Selector -->
         <div class="sub-heading">Engine Archetype</div>
         <div style="margin-top: 4px;">
           <select id="engineSelect" style="width: 100%;">
@@ -444,14 +444,42 @@
             <option value="1">2. Agate Geode (Cellular Voronoi)</option>
             <option value="2">3. Curl Nebula (Vortex Filament)</option>
             <option value="3">4. Gyroid Cymatics (Resonance Wave)</option>
-            <option value="4">5. Hexagonal Hive (Honeycomb Mesh)</option>
-            <option value="5">6. Hypercube Matrix (Square Lattice)</option>
-            <option value="6">7. Concentric Orbits (Target Rings & Moiré)</option>
-            <option value="7">8. Retrowave Synthgrid (80s Neon Vector)</option>
+            <option value="4">⬡ 5. Hexagonal Hive (Honeycomb Mesh)</option>
+            <option value="5">⊞ 6. Hypercube Matrix (Square Lattice)</option>
+            <option value="6">◎ 7. Concentric Orbits (Target Rings & Moiré)</option>
+            <option value="7" selected>⚡ 8. Retrowave Synthgrid (80s Neon Vector)</option>
           </select>
         </div>
 
-        <div class="sub-heading">Kinematics & 3D Perspective Flight</div>
+        <!-- Inception Space Warping & Perspective -->
+        <div class="sub-heading">Inception Space-Fold & 3D Flight</div>
+
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
+          <span class="slider-header" style="margin:0;">Space Distortion</span>
+          <select id="sl-space-fold">
+            <option value="0">0. Standard 3D Ground Plane</option>
+            <option value="1" selected>1. Inception Overhang (Folded City)</option>
+            <option value="2">2. O'Neill Cylinder (Rolling World)</option>
+            <option value="3">3. Möbius Spacetime Twist</option>
+            <option value="4">4. Gravitational Lens (Wormhole)</option>
+            <option value="5">5. Hyperbolic Escher Wrap</option>
+          </select>
+        </div>
+
+        <div class="slider-row">
+          <div class="slider-header">
+            <span>Fold Curvature / Severity</span>
+            <span id="fold-strength-num" class="val">1.00</span>
+          </div>
+          <input type="range" id="sl-fold-strength" min="0.00" max="3.00" step="0.05" value="1.00">
+          <div class="mod-bar">
+            <span class="mod-tag">Track</span>
+            <label class="mod-label"><input type="checkbox" id="mod-x-foldStrength"> X</label>
+            <input type="number" id="scale-x-foldStrength" value="1.0" step="0.1" class="scale-input">
+            <label class="mod-label"><input type="checkbox" id="mod-y-foldStrength"> Y</label>
+            <input type="number" id="scale-y-foldStrength" value="1.0" step="0.1" class="scale-input">
+          </div>
+        </div>
 
         <div class="slider-row">
           <div class="slider-header">
@@ -773,12 +801,12 @@
 
         <div class="sub-heading">Palette Swatches</div>
         <div class="swatch-row">
-          <input type="color" id="colShadow" value="#0d0a12" title="Shadow Base">
-          <input type="color" id="colCoolA"  value="#2e5c70" title="Cool Stream A">
-          <input type="color" id="colCoolB"  value="#8cb0ba" title="Cool Stream B">
-          <input type="color" id="colWarmA"  value="#f59e3d" title="Warm Filament">
-          <input type="color" id="colWarmB"  value="#e04717" title="Deep Warmth">
-          <input type="color" id="colCrest"  value="#fff0e0" title="Contour Crests">
+          <input type="color" id="colShadow" value="#0c021a" title="Shadow Base">
+          <input type="color" id="colCoolA"  value="#00f0ff" title="Cool Stream A">
+          <input type="color" id="colCoolB"  value="#bd00ff" title="Cool Stream B">
+          <input type="color" id="colWarmA"  value="#ff007f" title="Warm Filament">
+          <input type="color" id="colWarmB"  value="#ff8800" title="Deep Warmth">
+          <input type="color" id="colCrest"  value="#fff68f" title="Contour Crests">
         </div>
       </div>
     </div>
@@ -797,7 +825,7 @@
     <div style="background:#181920; border:1px solid rgba(255,255,255,0.18); border-radius:14px; padding:18px; width:290px; box-shadow:0 12px 40px rgba(0,0,0,0.6); pointer-events:auto;">
       <div style="font-size:13px; font-weight:700; color:#fff; margin-bottom:6px;">Save Preset</div>
       <div style="font-size:11px; color:rgba(255,255,255,0.6); margin-bottom:12px;">Name your current setup:</div>
-      <input type="text" id="presetNameInput" placeholder="e.g. Amber Geode" style="width:100%; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25); border-radius:8px; color:#fff; padding:10px 12px; font-size:13px; outline:none; margin-bottom:14px;">
+      <input type="text" id="presetNameInput" placeholder="e.g. Neon Horizon" style="width:100%; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25); border-radius:8px; color:#fff; padding:10px 12px; font-size:13px; outline:none; margin-bottom:14px;">
       <div style="display:flex; justify-content:flex-end; gap:8px;">
         <button id="cancelPresetBtn" style="background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2); padding:7px 14px; border-radius:7px; font-size:12px;">Cancel</button>
         <button id="confirmPresetBtn" style="background:#f7a844; color:#050508; font-weight:700; border:none; padding:7px 16px; border-radius:7px; font-size:12px;">Save</button>
@@ -999,7 +1027,7 @@
       }
     `;
 
-    // 3D Perspective Ray-Plane Display Shader (Expanded with Geometrics & Retrowave)
+    // 3D Inception Ray-Plane & Geometric Display Shader
     const displayFS = `
       precision highp float;
       varying vec2 v_uv;
@@ -1027,6 +1055,9 @@
       uniform float u_flow_stretch;
       uniform float u_plane_tilt;
       uniform float u_center_depth;
+
+      uniform float u_space_fold;
+      uniform float u_fold_strength;
 
       uniform vec2 u_head;
       uniform float u_head_active;
@@ -1112,7 +1143,6 @@
         return vec2((n1 - n2) / (2.0 * eps), -(n3 - n4) / (2.0 * eps));
       }
 
-      // Hexagonal Tiling Helper
       float hexDist(vec2 p) {
         const vec2 s = vec2(1.0, 1.7320508);
         p = abs(p);
@@ -1140,30 +1170,112 @@
         return newUV;
       }
 
-      vec2 getGroundCoords(vec2 screenST, float tiltAngle, out float depthFactor, out float fog) {
-        if (tiltAngle < 0.005) {
-          depthFactor = 1.0;
-          fog = 0.0;
-          return screenST;
-        }
+      // Mathematical Pinhole & Inception Non-Euclidean Fold Engine
+      vec2 getFoldedSpaceCoords(vec2 screenST, float tiltAngle, float foldMode, float foldStrength, float centerDepth, out float depthFactor, out float fog) {
+        depthFactor = 1.0;
+        fog = 0.0;
 
         float FL = 1.7;
-        float k = tan(tiltAngle) / FL;
-        float W = 1.0 - k * screenST.y;
+        float cosT = cos(tiltAngle);
+        float sinT = sin(tiltAngle);
 
-        if (W <= 0.04) {
-          fog = 1.0;
-          depthFactor = 0.04;
-          return vec2(screenST.x * 20.0, 100.0);
+        // 0. Standard 3D Ground Plane
+        if (foldMode < 0.5) {
+          if (tiltAngle < 0.005) return screenST;
+          float k = tan(tiltAngle) / FL;
+          float W = 1.0 - k * screenST.y;
+          if (W <= 0.04) {
+            fog = 1.0;
+            depthFactor = 0.04;
+            return vec2(screenST.x * 20.0, 100.0);
+          }
+          depthFactor = clamp(W, 0.08, 1.85);
+          vec2 ground = vec2(screenST.x / W, screenST.y / (W * cosT));
+          fog = smoothstep(0.32, 0.04, W);
+          return ground;
         }
 
-        depthFactor = clamp(W, 0.08, 1.85);
-        float cosT = cos(tiltAngle);
+        // 1. Inception Overhang (Folded City)
+        else if (foldMode < 1.5) {
+          vec3 ray = normalize(vec3(screenST.x, screenST.y * cosT - sinT, FL + screenST.y * sinT));
+          float bend = screenST.y * foldStrength * 0.85;
+          float ry = ray.y + sin(bend) * 0.75;
+          
+          float h = 1.25;
+          float t = h / max(abs(ry), 0.04);
+          depthFactor = clamp(1.0 / (t * 0.45), 0.08, 2.0);
+          
+          vec3 hitPos = ray * t;
+          float side = sign(ry);
+          vec2 coords = vec2(hitPos.x, hitPos.z * side);
+          fog = smoothstep(0.08, 0.0, abs(ry)) * 0.4;
+          return coords;
+        }
 
-        vec2 ground = vec2(screenST.x / W, screenST.y / (W * cosT));
-        fog = smoothstep(0.32, 0.04, W);
+        // 2. O'Neill Cylinder (Rolling World)
+        else if (foldMode < 2.5) {
+          vec3 ray = normalize(vec3(screenST.x * (1.0 + foldStrength * 0.3), screenST.y * cosT - sinT, FL));
+          float rCross = length(ray.xy);
+          float radius = 1.35;
+          float t = radius / max(rCross, 0.05);
+          
+          depthFactor = clamp(1.0 / (t * 0.45), 0.08, 2.0);
+          float angle = atan(ray.y, ray.x);
+          float zDist = t * ray.z;
+          
+          vec2 coords = vec2(angle * radius * 1.6, zDist * 0.7);
+          fog = smoothstep(12.0, 20.0, zDist);
+          return coords;
+        }
 
-        return ground;
+        // 3. Möbius Spacetime Twist
+        else if (foldMode < 3.5) {
+          float k = tan(tiltAngle) / FL;
+          float W = 1.0 - k * screenST.y;
+          if (W <= 0.04) {
+            fog = 1.0;
+            depthFactor = 0.04;
+            return vec2(screenST.x * 20.0, 100.0);
+          }
+          depthFactor = clamp(W, 0.08, 1.85);
+          vec2 ground = vec2(screenST.x / W, screenST.y / (W * cosT));
+          fog = smoothstep(0.32, 0.04, W);
+
+          float twist = ground.y * (foldStrength * 0.75);
+          mat2 rotTwist = mat2(cos(twist), sin(twist), -sin(twist), cos(twist));
+          ground = rotTwist * ground;
+          return ground;
+        }
+
+        // 4. Gravitational Lens (Wormhole)
+        else if (foldMode < 4.5) {
+          vec2 center = vec2(0.0, centerDepth * 0.35);
+          vec2 delta = screenST - center;
+          float r = length(delta);
+          
+          float mass = foldStrength * 0.32;
+          float deflection = mass / (r * r + 0.02);
+          vec2 warpedST = screenST - delta * deflection;
+          
+          float k = tan(tiltAngle) / FL;
+          float W = clamp(1.0 - k * warpedST.y, 0.08, 2.0);
+          depthFactor = W;
+          
+          vec2 ground = vec2(warpedST.x / W, warpedST.y / (W * cosT));
+          fog = smoothstep(0.18 * foldStrength, 0.04 * foldStrength, r);
+          return ground;
+        }
+
+        // 5. Hyperbolic Escher Wrap
+        else {
+          vec2 p = screenST * (1.0 + foldStrength * 0.6);
+          float r2 = dot(p, p);
+          vec2 invP = p / max(r2, 0.08);
+          vec2 ground = mix(p * 2.0, invP * 1.8, clamp(foldStrength, 0.0, 1.0));
+          depthFactor = clamp(1.0 / (length(ground) + 0.1), 0.1, 1.8);
+          fog = smoothstep(2.5, 0.8, r2) * 0.15;
+          return ground;
+        }
       }
 
       vec2 groundToScreenST(vec2 groundPos, float tiltAngle) {
@@ -1192,7 +1304,7 @@
         vec2 r = vec2(0.0);
         float f = 0.0;
 
-        // 1. Laminar Silk (Domain Warped fBm)
+        // 1. Laminar Silk (fBm)
         if (u_shader_type < 0.5) {
           q = vec2(fbm(p + vec2(0.0, t * 0.2)), fbm(p + vec2(4.3, -t * 0.18)));
           r = vec2(
@@ -1263,7 +1375,7 @@
         // 8. Retrowave Synthgrid (80s Neon Vector)
         else {
           vec2 retroP = p * 4.5;
-          retroP.y += t * 3.5; // Grid streaming forward
+          retroP.y += t * 3.5;
           vec2 grid = abs(fract(retroP) - 0.5);
           float wireX = 1.0 - smoothstep(0.0, 0.08, grid.x);
           float wireY = 1.0 - smoothstep(0.0, 0.08, grid.y);
@@ -1347,7 +1459,7 @@
           col += u_col_crest * spec * 0.65;
           col += mix(u_col_cool_b, u_col_crest, 0.65) * fresnel;
 
-          // Special Retrowave Grid Emission Boost
+          // Retrowave Glowing Synthgrid Boost
           if (u_shader_type >= 6.5) {
             col += u_col_cool_b * f * 1.4;
             col += u_col_warm_a * spec * 1.5;
@@ -1366,7 +1478,7 @@
 
         float depthFactor = 1.0;
         float fog = 0.0;
-        vec2 st = getGroundCoords(raw_st, u_plane_tilt, depthFactor, fog);
+        vec2 st = getFoldedSpaceCoords(raw_st, u_plane_tilt, u_space_fold, u_fold_strength, u_center_depth, depthFactor, fog);
         vec2 centerOffset = vec2(0.0, u_center_depth);
 
         if (u_kaleido_segs > 1.5) {
@@ -1579,6 +1691,9 @@
     const dispPlaneTiltLoc   = gl.getUniformLocation(displayProgram, 'u_plane_tilt');
     const dispCenterDepthLoc = gl.getUniformLocation(displayProgram, 'u_center_depth');
 
+    const dispSpaceFoldLoc   = gl.getUniformLocation(displayProgram, 'u_space_fold');
+    const dispFoldStrengthLoc= gl.getUniformLocation(displayProgram, 'u_fold_strength');
+
     const dispHeadLoc        = gl.getUniformLocation(displayProgram, 'u_head');
     const dispHeadActLoc     = gl.getUniformLocation(displayProgram, 'u_head_active');
 
@@ -1717,87 +1832,90 @@
     });
 
     const sliders = {
-      planeTilt:   document.getElementById('sl-plane-tilt'),
-      centerDepth: document.getElementById('sl-center-depth'),
-      decayX:      document.getElementById('sl-decay-x'),
-      decayY:      document.getElementById('sl-decay-y'),
-      persistence: document.getElementById('sl-persistence'),
-      rippleFreq:  document.getElementById('sl-ripple-freq'),
-      headForce:   document.getElementById('sl-head-force'),
-      handForce:   document.getElementById('sl-hand-force'),
-      angle:       document.getElementById('sl-angle'),
-      rotSpeed:    document.getElementById('sl-rot-speed'),
-      kSegs:       document.getElementById('sl-k-segs'),
-      kBlur:       document.getElementById('sl-k-blur'),
-      kAngle:      document.getElementById('sl-k-angle'),
-      kZoom:       document.getElementById('sl-k-zoom'),
-      kPinch:      document.getElementById('sl-k-pinch'),
-      speed:       document.getElementById('sl-speed'),
-      warp:        document.getElementById('sl-warp'),
-      stretch:     document.getElementById('sl-stretch'),
-      density:     document.getElementById('sl-density'),
-      step:        document.getElementById('sl-step'),
-      ridge:       document.getElementById('sl-ridge'),
-      chroma:      document.getElementById('sl-chroma'),
-      shimmer:     document.getElementById('sl-shimmer'),
-      rim:         document.getElementById('sl-rim'),
-      grain:       document.getElementById('sl-grain'),
-      contrast:    document.getElementById('sl-contrast')
+      planeTilt:    document.getElementById('sl-plane-tilt'),
+      centerDepth:  document.getElementById('sl-center-depth'),
+      foldStrength: document.getElementById('sl-fold-strength'),
+      decayX:       document.getElementById('sl-decay-x'),
+      decayY:       document.getElementById('sl-decay-y'),
+      persistence:  document.getElementById('sl-persistence'),
+      rippleFreq:   document.getElementById('sl-ripple-freq'),
+      headForce:    document.getElementById('sl-head-force'),
+      handForce:    document.getElementById('sl-hand-force'),
+      angle:        document.getElementById('sl-angle'),
+      rotSpeed:     document.getElementById('sl-rot-speed'),
+      kSegs:        document.getElementById('sl-k-segs'),
+      kBlur:        document.getElementById('sl-k-blur'),
+      kAngle:       document.getElementById('sl-k-angle'),
+      kZoom:        document.getElementById('sl-k-zoom'),
+      kPinch:       document.getElementById('sl-k-pinch'),
+      speed:        document.getElementById('sl-speed'),
+      warp:         document.getElementById('sl-warp'),
+      stretch:      document.getElementById('sl-stretch'),
+      density:      document.getElementById('sl-density'),
+      step:         document.getElementById('sl-step'),
+      ridge:        document.getElementById('sl-ridge'),
+      chroma:       document.getElementById('sl-chroma'),
+      shimmer:      document.getElementById('sl-shimmer'),
+      rim:          document.getElementById('sl-rim'),
+      grain:        document.getElementById('sl-grain'),
+      contrast:     document.getElementById('sl-contrast')
     };
 
     const numDisplays = {
-      planeTilt:   document.getElementById('plane-tilt-num'),
-      centerDepth: document.getElementById('center-depth-num'),
-      decayX:      document.getElementById('decay-x-num'),
-      decayY:      document.getElementById('decay-y-num'),
-      persistence: document.getElementById('persist-num'),
-      rippleFreq:  document.getElementById('ripple-freq-num'),
-      headForce:   document.getElementById('head-force-num'),
-      handForce:   document.getElementById('hand-force-num'),
-      angle:       document.getElementById('angle-num'),
-      rotSpeed:    document.getElementById('rot-speed-num'),
-      kSegs:       document.getElementById('k-segs-num'),
-      kBlur:       document.getElementById('k-blur-num'),
-      kAngle:      document.getElementById('k-angle-num'),
-      kZoom:       document.getElementById('k-zoom-num'),
-      kPinch:      document.getElementById('k-pinch-num'),
-      speed:       document.getElementById('speed-num'),
-      warp:        document.getElementById('warp-num'),
-      stretch:     document.getElementById('stretch-num'),
-      density:     document.getElementById('density-num'),
-      step:        document.getElementById('step-num'),
-      ridge:       document.getElementById('ridge-num'),
-      chroma:      document.getElementById('chroma-num'),
-      shimmer:     document.getElementById('shimmer-num'),
-      rim:         document.getElementById('rim-num'),
-      grain:       document.getElementById('grain-num'),
-      contrast:    document.getElementById('contrast-num')
+      planeTilt:    document.getElementById('plane-tilt-num'),
+      centerDepth:  document.getElementById('center-depth-num'),
+      foldStrength: document.getElementById('fold-strength-num'),
+      decayX:       document.getElementById('decay-x-num'),
+      decayY:       document.getElementById('decay-y-num'),
+      persistence:  document.getElementById('persist-num'),
+      rippleFreq:   document.getElementById('ripple-freq-num'),
+      headForce:    document.getElementById('head-force-num'),
+      handForce:    document.getElementById('hand-force-num'),
+      angle:        document.getElementById('angle-num'),
+      rotSpeed:     document.getElementById('rot-speed-num'),
+      kSegs:        document.getElementById('k-segs-num'),
+      kBlur:        document.getElementById('k-blur-num'),
+      kAngle:       document.getElementById('k-angle-num'),
+      kZoom:        document.getElementById('k-zoom-num'),
+      kPinch:       document.getElementById('k-pinch-num'),
+      speed:        document.getElementById('speed-num'),
+      warp:         document.getElementById('warp-num'),
+      stretch:      document.getElementById('stretch-num'),
+      density:      document.getElementById('density-num'),
+      step:         document.getElementById('step-num'),
+      ridge:        document.getElementById('ridge-num'),
+      chroma:       document.getElementById('chroma-num'),
+      shimmer:      document.getElementById('shimmer-num'),
+      rim:          document.getElementById('rim-num'),
+      grain:        document.getElementById('grain-num'),
+      contrast:     document.getElementById('contrast-num')
     };
 
     const modMatrix = {
-      planeTilt:   { chkX: document.getElementById('mod-x-planeTilt'),   scaleX: document.getElementById('scale-x-planeTilt'),   chkY: document.getElementById('mod-y-planeTilt'),   scaleY: document.getElementById('scale-y-planeTilt') },
-      centerDepth: { chkX: document.getElementById('mod-x-centerDepth'), scaleX: document.getElementById('scale-x-centerDepth'), chkY: document.getElementById('mod-y-centerDepth'), scaleY: document.getElementById('scale-y-centerDepth') },
-      persistence: { chkX: document.getElementById('mod-x-persistence'), scaleX: document.getElementById('scale-x-persistence'), chkY: document.getElementById('mod-y-persistence'), scaleY: document.getElementById('scale-y-persistence') },
-      rippleFreq:  { chkX: document.getElementById('mod-x-rippleFreq'),  scaleX: document.getElementById('scale-x-rippleFreq'),  chkY: document.getElementById('mod-y-rippleFreq'),  scaleY: document.getElementById('scale-y-rippleFreq') },
-      headForce:   { chkX: document.getElementById('mod-x-headForce'),   scaleX: document.getElementById('scale-x-headForce'),   chkY: document.getElementById('mod-y-headForce'),   scaleY: document.getElementById('scale-y-headForce') },
-      handForce:   { chkX: document.getElementById('mod-x-handForce'),   scaleX: document.getElementById('scale-x-handForce'),   chkY: document.getElementById('mod-y-handForce'),   scaleY: document.getElementById('scale-y-handForce') },
-      angle:       { chkX: document.getElementById('mod-x-angle'),       scaleX: document.getElementById('scale-x-angle'),       chkY: document.getElementById('mod-y-angle'),       scaleY: document.getElementById('scale-y-angle') },
-      rotSpeed:    { chkX: document.getElementById('mod-x-rotSpeed'),    scaleX: document.getElementById('scale-x-rotSpeed'),    chkY: document.getElementById('mod-y-rotSpeed'),    scaleY: document.getElementById('scale-y-rotSpeed') },
-      speed:       { chkX: document.getElementById('mod-x-speed'),       scaleX: document.getElementById('scale-x-speed'),       chkY: document.getElementById('mod-y-speed'),       scaleY: document.getElementById('scale-y-speed') },
-      warp:        { chkX: document.getElementById('mod-x-warp'),        scaleX: document.getElementById('scale-x-warp'),        chkY: document.getElementById('mod-y-warp'),        scaleY: document.getElementById('scale-y-warp') },
-      stretch:     { chkX: document.getElementById('mod-x-stretch'),     scaleX: document.getElementById('scale-x-stretch'),     chkY: document.getElementById('mod-y-stretch'),     scaleY: document.getElementById('scale-y-stretch') },
-      kBlur:       { chkX: document.getElementById('mod-x-kBlur'),       scaleX: document.getElementById('scale-x-kBlur'),       chkY: document.getElementById('mod-y-kBlur'),       scaleY: document.getElementById('scale-y-kBlur') },
-      kAngle:      { chkX: document.getElementById('mod-x-kAngle'),      scaleX: document.getElementById('scale-x-kAngle'),      chkY: document.getElementById('mod-y-kAngle'),      scaleY: document.getElementById('scale-y-kAngle') },
-      kZoom:       { chkX: document.getElementById('mod-x-kZoom'),       scaleX: document.getElementById('scale-x-kZoom'),       chkY: document.getElementById('mod-y-kZoom'),       scaleY: document.getElementById('scale-y-kZoom') },
-      kPinch:      { chkX: document.getElementById('mod-x-kPinch'),      scaleX: document.getElementById('scale-x-kPinch'),      chkY: document.getElementById('mod-y-kPinch'),      scaleY: document.getElementById('scale-y-kPinch') },
-      density:     { chkX: document.getElementById('mod-x-density'),     scaleX: document.getElementById('scale-x-density'),     chkY: document.getElementById('mod-y-density'),     scaleY: document.getElementById('scale-y-density') },
-      step:        { chkX: document.getElementById('mod-x-step'),        scaleX: document.getElementById('scale-x-step'),        chkY: document.getElementById('mod-y-step'),        scaleY: document.getElementById('scale-y-step') },
-      ridge:       { chkX: document.getElementById('mod-x-ridge'),       scaleX: document.getElementById('scale-x-ridge'),       chkY: document.getElementById('mod-y-ridge'),       scaleY: document.getElementById('scale-y-ridge') },
-      chroma:      { chkX: document.getElementById('mod-x-chroma'),      scaleX: document.getElementById('scale-x-chroma'),      chkY: document.getElementById('mod-y-chroma'),      scaleY: document.getElementById('scale-y-chroma') },
-      shimmer:     { chkX: document.getElementById('mod-x-shimmer'),     scaleX: document.getElementById('scale-x-shimmer'),     chkY: document.getElementById('mod-y-shimmer'),     scaleY: document.getElementById('scale-y-shimmer') },
-      rim:         { chkX: document.getElementById('mod-x-rim'),         scaleX: document.getElementById('scale-x-rim'),         chkY: document.getElementById('mod-y-rim'),         scaleY: document.getElementById('scale-y-rim') },
-      grain:       { chkX: document.getElementById('mod-x-grain'),       scaleX: document.getElementById('scale-x-grain'),       chkY: document.getElementById('mod-y-grain'),       scaleY: document.getElementById('scale-y-grain') },
-      contrast:    { chkX: document.getElementById('mod-x-contrast'),    scaleX: document.getElementById('scale-x-contrast'),    chkY: document.getElementById('mod-y-contrast'),    scaleY: document.getElementById('scale-y-contrast') }
+      planeTilt:    { chkX: document.getElementById('mod-x-planeTilt'),    scaleX: document.getElementById('scale-x-planeTilt'),    chkY: document.getElementById('mod-y-planeTilt'),    scaleY: document.getElementById('scale-y-planeTilt') },
+      centerDepth:  { chkX: document.getElementById('mod-x-centerDepth'),  scaleX: document.getElementById('scale-x-centerDepth'),  chkY: document.getElementById('mod-y-centerDepth'),  scaleY: document.getElementById('scale-y-centerDepth') },
+      foldStrength: { chkX: document.getElementById('mod-x-foldStrength'), scaleX: document.getElementById('scale-x-foldStrength'), chkY: document.getElementById('mod-y-foldStrength'), scaleY: document.getElementById('scale-y-foldStrength') },
+      persistence:  { chkX: document.getElementById('mod-x-persistence'),  scaleX: document.getElementById('scale-x-persistence'),  chkY: document.getElementById('mod-y-persistence'),  scaleY: document.getElementById('scale-y-persistence') },
+      rippleFreq:   { chkX: document.getElementById('mod-x-rippleFreq'),   scaleX: document.getElementById('scale-x-rippleFreq'),   chkY: document.getElementById('mod-y-rippleFreq'),   scaleY: document.getElementById('scale-y-rippleFreq') },
+      headForce:    { chkX: document.getElementById('mod-x-headForce'),    scaleX: document.getElementById('scale-x-headForce'),    chkY: document.getElementById('mod-y-headForce'),    scaleY: document.getElementById('scale-y-headForce') },
+      handForce:    { chkX: document.getElementById('mod-x-handForce'),    scaleX: document.getElementById('scale-x-handForce'),    chkY: document.getElementById('mod-y-handForce'),    scaleY: document.getElementById('scale-y-handForce') },
+      angle:        { chkX: document.getElementById('mod-x-angle'),        scaleX: document.getElementById('scale-x-angle'),        chkY: document.getElementById('mod-y-angle'),        scaleY: document.getElementById('scale-y-angle') },
+      rotSpeed:     { chkX: document.getElementById('mod-x-rotSpeed'),     scaleX: document.getElementById('scale-x-rotSpeed'),     chkY: document.getElementById('mod-y-rotSpeed'),     scaleY: document.getElementById('scale-y-rotSpeed') },
+      speed:        { chkX: document.getElementById('mod-x-speed'),        scaleX: document.getElementById('scale-x-speed'),        chkY: document.getElementById('mod-y-speed'),        scaleY: document.getElementById('scale-y-speed') },
+      warp:         { chkX: document.getElementById('mod-x-warp'),         scaleX: document.getElementById('scale-x-warp'),         chkY: document.getElementById('mod-y-warp'),         scaleY: document.getElementById('scale-y-warp') },
+      stretch:      { chkX: document.getElementById('mod-x-stretch'),      scaleX: document.getElementById('scale-x-stretch'),      chkY: document.getElementById('mod-y-stretch'),      scaleY: document.getElementById('scale-y-stretch') },
+      kBlur:        { chkX: document.getElementById('mod-x-kBlur'),        scaleX: document.getElementById('scale-x-kBlur'),        chkY: document.getElementById('mod-y-kBlur'),        scaleY: document.getElementById('scale-y-kBlur') },
+      kAngle:       { chkX: document.getElementById('mod-x-kAngle'),       scaleX: document.getElementById('scale-x-kAngle'),       chkY: document.getElementById('mod-y-kAngle'),       scaleY: document.getElementById('scale-y-kAngle') },
+      kZoom:        { chkX: document.getElementById('mod-x-kZoom'),        scaleX: document.getElementById('scale-x-kZoom'),        chkY: document.getElementById('mod-y-kZoom'),        scaleY: document.getElementById('scale-y-kZoom') },
+      kPinch:       { chkX: document.getElementById('mod-x-kPinch'),       scaleX: document.getElementById('scale-x-kPinch'),       chkY: document.getElementById('mod-y-kPinch'),       scaleY: document.getElementById('scale-y-kPinch') },
+      density:      { chkX: document.getElementById('mod-x-density'),      scaleX: document.getElementById('scale-x-density'),      chkY: document.getElementById('mod-y-density'),      scaleY: document.getElementById('scale-y-density') },
+      step:         { chkX: document.getElementById('mod-x-step'),         scaleX: document.getElementById('scale-x-step'),         chkY: document.getElementById('mod-y-step'),         scaleY: document.getElementById('scale-y-step') },
+      ridge:        { chkX: document.getElementById('mod-x-ridge'),        scaleX: document.getElementById('scale-x-ridge'),        chkY: document.getElementById('mod-y-ridge'),        scaleY: document.getElementById('scale-y-ridge') },
+      chroma:       { chkX: document.getElementById('mod-x-chroma'),       scaleX: document.getElementById('scale-x-chroma'),       chkY: document.getElementById('mod-y-chroma'),       scaleY: document.getElementById('scale-y-chroma') },
+      shimmer:      { chkX: document.getElementById('mod-x-shimmer'),      scaleX: document.getElementById('scale-x-shimmer'),      chkY: document.getElementById('mod-y-shimmer'),      scaleY: document.getElementById('scale-y-shimmer') },
+      rim:          { chkX: document.getElementById('mod-x-rim'),          scaleX: document.getElementById('scale-x-rim'),          chkY: document.getElementById('mod-y-rim'),          scaleY: document.getElementById('scale-y-rim') },
+      grain:        { chkX: document.getElementById('mod-x-grain'),        scaleX: document.getElementById('scale-x-grain'),        chkY: document.getElementById('mod-y-grain'),        scaleY: document.getElementById('scale-y-grain') },
+      contrast:     { chkX: document.getElementById('mod-x-contrast'),     scaleX: document.getElementById('scale-x-contrast'),     chkY: document.getElementById('mod-y-contrast'),     scaleY: document.getElementById('scale-y-contrast') }
     };
 
     const manualBaseVals = {};
@@ -1807,7 +1925,7 @@
 
     function formatDisplayVal(key, val) {
       if (key === 'planeTilt') return Math.round(val) + '°';
-      if (key === 'centerDepth') return val.toFixed(2);
+      if (key === 'centerDepth' || key === 'foldStrength') return val.toFixed(2);
       if (key === 'decayX' || key === 'decayY') return val.toFixed(2) + 's';
       if (key === 'angle' || key === 'kAngle') return Math.round(val) + '°';
       if (key === 'rotSpeed') return val.toFixed(2) + 'x';
@@ -1827,7 +1945,7 @@
     const slInfluenceMode = document.getElementById('sl-influence-mode');
     const influenceModeHUD = document.getElementById('influence-mode-hud');
     const engineHUD = document.getElementById('engine-hud');
-    const planeTiltHUD = document.getElementById('plane-tilt-hud');
+    const spaceFoldHUD = document.getElementById('space-fold-hud');
     const modeNames = ['Viscous Drag', 'Water Ripples', 'Whirlpools', 'Shockwave'];
 
     slInfluenceMode.addEventListener('pointerdown', (e) => e.stopPropagation());
@@ -1835,17 +1953,27 @@
       influenceModeHUD.textContent = modeNames[parseInt(e.target.value, 10)];
     });
 
-    let currentEngine = 0.0;
+    let currentEngine = 7.0; // Default to Retrowave Synthgrid
     const engineSelect = document.getElementById('engineSelect');
     const engineNames = [
       'Laminar Silk', 'Agate Geode', 'Curl Nebula', 'Gyroid Cymatics',
-      'Hexagonal Hive', 'Hypercube Matrix', 'Concentric Orbits', 'Retrowave Synthgrid'
+      'Hex Hive', 'Hypercube Matrix', 'Concentric Orbits', 'Synthgrid'
     ];
 
     engineSelect.addEventListener('pointerdown', (e) => e.stopPropagation());
     engineSelect.addEventListener('change', (e) => {
       currentEngine = parseFloat(e.target.value);
-      engineHUD.textContent = engineNames[currentEngine];
+      engineHUD.textContent = engineNames[Math.floor(currentEngine)];
+    });
+
+    const slSpaceFold = document.getElementById('sl-space-fold');
+    const spaceFoldNames = [
+      'Standard 3D', 'Inception Overhang', 'O\'Neill Cylinder', 'Möbius Twist', 'Grav Lens', 'Hyperbolic Escher'
+    ];
+
+    slSpaceFold.addEventListener('pointerdown', (e) => e.stopPropagation());
+    slSpaceFold.addEventListener('change', (e) => {
+      spaceFoldHUD.textContent = spaceFoldNames[parseInt(e.target.value, 10)];
     });
 
     let currentAngleDeg = 0.0;
@@ -1872,9 +2000,7 @@
       const el = sliders[key];
       const updateVal = () => {
         manualBaseVals[key] = parseFloat(el.value);
-        if (key === 'planeTilt') {
-          planeTiltHUD.textContent = el.value === '0' ? 'Flat 2D' : `Tilt ${el.value}°`;
-        } else if (key === 'angle' && animModeSelect.value !== 'body_kaleido') {
+        if (key === 'angle' && animModeSelect.value !== 'body_kaleido') {
           currentAngleDeg = parseFloat(el.value);
         }
         numDisplays[key].textContent = formatDisplayVal(key, manualBaseVals[key]);
@@ -1920,15 +2046,15 @@
     }
 
     const stockPresets = {
-      synthwave80s: { shadow: '#0c021a', coolA: '#00f0ff', coolB: '#bd00ff', warmA: '#ff007f', warmB: '#ff8800', crest: '#fff68f' },
-      cyberpunk88:  { shadow: '#02080a', coolA: '#052f38', coolB: '#00ffcc', warmA: '#ffe600', warmB: '#ff0055', crest: '#ffffff' },
-      retroArcade:  { shadow: '#000000', coolA: '#001133', coolB: '#00ffff', warmA: '#ff3300', warmB: '#cc00ff', crest: '#ffff00' },
-      amberSlate:   { shadow: '#0d0a12', coolA: '#2e5c70', coolB: '#8cb0ba', warmA: '#f59e3d', warmB: '#e04717', crest: '#fff0e0' },
-      emeraldGold:  { shadow: '#050d0a', coolA: '#0f3d32', coolB: '#3da688', warmA: '#e6b543', warmB: '#b37517', crest: '#fbf5db' },
-      velvetOrchid: { shadow: '#0c0514', coolA: '#39154a', coolB: '#8739a8', warmA: '#f28e2b', warmB: '#c7385a', crest: '#ffe8f6' },
-      pearlOpal:    { shadow: '#0c1014', coolA: '#384852', coolB: '#7fa1b3', warmA: '#d6b0a1', warmB: '#997369', crest: '#ffffff' },
-      crimsonDusk:  { shadow: '#0d0305', coolA: '#3b1118', coolB: '#6b2230', warmA: '#f75c40', warmB: '#ab1326', crest: '#ffede6' },
-      deepAbyss:    { shadow: '#02060d', coolA: '#08203e', coolB: '#197278', warmA: '#28e8a6', warmB: '#044343', crest: '#d6fff6' }
+      synthwave80s: { shadow: '#0c021a', coolA: '#00f0ff', coolB: '#bd00ff', warmA: '#ff007f', warmB: '#ff8800', crest: '#fff68f', engine: 7, spaceFold: 1 },
+      cyberpunk88:  { shadow: '#02080a', coolA: '#052f38', coolB: '#00ffcc', warmA: '#ffe600', warmB: '#ff0055', crest: '#ffffff', engine: 4, spaceFold: 3 },
+      retroArcade:  { shadow: '#000000', coolA: '#001133', coolB: '#00ffff', warmA: '#ff3300', warmB: '#cc00ff', crest: '#ffff00', engine: 5, spaceFold: 4 },
+      amberSlate:   { shadow: '#0d0a12', coolA: '#2e5c70', coolB: '#8cb0ba', warmA: '#f59e3d', warmB: '#e04717', crest: '#fff0e0', engine: 0, spaceFold: 0 },
+      emeraldGold:  { shadow: '#050d0a', coolA: '#0f3d32', coolB: '#3da688', warmA: '#e6b543', warmB: '#b37517', crest: '#fbf5db', engine: 0, spaceFold: 0 },
+      velvetOrchid: { shadow: '#0c0514', coolA: '#39154a', coolB: '#8739a8', warmA: '#f28e2b', warmB: '#c7385a', crest: '#ffe8f6', engine: 1, spaceFold: 0 },
+      pearlOpal:    { shadow: '#0c1014', coolA: '#384852', coolB: '#7fa1b3', warmA: '#d6b0a1', warmB: '#997369', crest: '#ffffff', engine: 3, spaceFold: 2 },
+      crimsonDusk:  { shadow: '#0d0305', coolA: '#3b1118', coolB: '#6b2230', warmA: '#f75c40', warmB: '#ab1326', crest: '#ffede6', engine: 2, spaceFold: 1 },
+      deepAbyss:    { shadow: '#02060d', coolA: '#08203e', coolB: '#197278', warmA: '#28e8a6', warmB: '#044343', crest: '#d6fff6', engine: 2, spaceFold: 4 }
     };
 
     const presetSelect = document.getElementById('presetSelect');
@@ -1988,6 +2114,7 @@
       }
       return {
         engine: currentEngine,
+        spaceFold: slSpaceFold.value,
         animMode: animModeSelect.value,
         kMode: slKMode.value,
         influenceMode: slInfluenceMode.value,
@@ -2002,7 +2129,11 @@
       if (data.engine !== undefined) {
         currentEngine = parseFloat(data.engine);
         engineSelect.value = data.engine;
-        engineHUD.textContent = engineNames[currentEngine];
+        engineHUD.textContent = engineNames[Math.floor(currentEngine)];
+      }
+      if (data.spaceFold !== undefined) {
+        slSpaceFold.value = data.spaceFold;
+        spaceFoldHUD.textContent = spaceFoldNames[parseInt(data.spaceFold, 10)];
       }
       if (data.animMode) {
         animModeSelect.value = data.animMode;
@@ -2071,7 +2202,7 @@
       commitPresets(saved);
       refreshUserPresetsMenu();
       presetSelect.value = 'synthwave80s';
-      applyFullPreset({ colors: stockPresets.synthwave80s });
+      applyFullPreset(stockPresets.synthwave80s);
       delPresetBtn.style.display = 'none';
     });
 
@@ -2086,7 +2217,7 @@
       } else {
         delPresetBtn.style.display = 'none';
         const p = stockPresets[val];
-        if (p) for (const k in p) if (pickers[k]) pickers[k].value = p[k];
+        if (p) applyFullPreset(p);
       }
     });
 
@@ -2105,11 +2236,11 @@
       e.stopPropagation();
       canvas.toBlob(async (blob) => {
         if (!blob) return;
-        const fileName = `perspective-contour-${Date.now()}.png`;
+        const fileName = `inception-retrowave-${Date.now()}.png`;
         const file = new File([blob], fileName, { type: 'image/png' });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try { await navigator.share({ files: [file], title: '3D Perspective Artwork' }); return; } catch (err) { if (err.name === 'AbortError') return; }
+          try { await navigator.share({ files: [file], title: 'Inception Artwork' }); return; } catch (err) { if (err.name === 'AbortError') return; }
         }
         mediaContainer.innerHTML = `<img src="${URL.createObjectURL(blob)}" alt="Snapshot">`;
         modalMsg.innerHTML = 'Touch and hold image to tap <b>"Save to Photos"</b>';
@@ -2146,11 +2277,11 @@
 
         const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
         const blob = new Blob(recordedChunks, { type: mimeType });
-        const fileName = `perspective-contour-60fps-${Date.now()}.${ext}`;
+        const fileName = `inception-contour-60fps-${Date.now()}.${ext}`;
         const file = new File([blob], fileName, { type: mimeType });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try { await navigator.share({ files: [file], title: '3D Perspective Video' }); return; } catch (err) { if (err.name === 'AbortError') return; }
+          try { await navigator.share({ files: [file], title: 'Inception Video' }); return; } catch (err) { if (err.name === 'AbortError') return; }
         }
         const videoUrl = URL.createObjectURL(blob);
         mediaContainer.innerHTML = `<video src="${videoUrl}" controls autoplay loop playsinline></video>`;
@@ -2290,7 +2421,7 @@
 
       if (handsFound === 2) {
         lastValidHandTime = performance.now();
-        poseStatusHUD.textContent = 'Piloting Matrix';
+        poseStatusHUD.textContent = 'Folding Space';
       } else if (!allowHands) {
         poseStatusHUD.textContent = 'Head Tracking Active';
       } else {
@@ -2644,6 +2775,8 @@
 
       const planeTiltRad = (activeVals.planeTilt * Math.PI) / 180.0;
       const centerDepthVal = activeVals.centerDepth;
+      const spaceFoldVal = parseFloat(slSpaceFold.value);
+      const foldStrengthVal = activeVals.foldStrength;
 
       // 1. Physical Simulation Pass
       gl.bindFramebuffer(gl.FRAMEBUFFER, writeFBO.fbo);
@@ -2731,6 +2864,9 @@
       gl.uniform1f(dispStretchLoc, activeVals.stretch);
       gl.uniform1f(dispPlaneTiltLoc, planeTiltRad);
       gl.uniform1f(dispCenterDepthLoc, centerDepthVal);
+
+      gl.uniform1f(dispSpaceFoldLoc, spaceFoldVal);
+      gl.uniform1f(dispFoldStrengthLoc, foldStrengthVal);
 
       gl.uniform2f(dispHeadLoc, hNorm[0], hNorm[1]);
       gl.uniform1f(dispHeadActLoc, headCur.active);
