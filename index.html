@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Volumetric Contours - 3D Perspective Plane Edition</title>
+  <title>Volumetric Contours - Geometric & Retrowave Edition</title>
   
   <!-- MediaPipe Pose Core Library -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
@@ -165,7 +165,6 @@
       cursor: pointer;
     }
     
-    /* Per-field modulation matrix bar */
     .mod-bar {
       display: flex;
       align-items: center;
@@ -307,7 +306,7 @@
     <div id="hud" class="panel">
       Input: <span id="input-type">Apple Pencil / Touch</span><br>
       Body: <span id="pose-status-val">Waiting...</span><br>
-      Physics: <span id="influence-mode-hud">Water Ripples</span> | Plane: <span id="plane-tilt-hud">Tilt 38°</span>
+      Physics: <span id="influence-mode-hud">Water Ripples</span> | Engine: <span id="engine-hud">Laminar Silk</span>
     </div>
 
     <div class="panel">
@@ -320,7 +319,12 @@
         <div class="sub-heading" style="margin-top:4px;">Preset Manager</div>
         <div style="display:flex; gap:6px; margin-top:4px;">
           <select id="presetSelect" style="flex:1;">
-            <optgroup label="Stock Presets">
+            <optgroup label="Retrowave & Cyberpunk">
+              <option value="synthwave80s">🌆 Synthwave '84 (Neon Magenta & Cyan)</option>
+              <option value="cyberpunk88">🤖 Cyberpunk '88 (Acid & Matrix)</option>
+              <option value="retroArcade">🕹️ Retro Arcade (High-Contrast Neon)</option>
+            </optgroup>
+            <optgroup label="Natural & Mineral Stock">
               <option value="amberSlate">Amber & Slate</option>
               <option value="emeraldGold">Emerald & Brass</option>
               <option value="velvetOrchid">Velvet Orchid</option>
@@ -432,6 +436,7 @@
           <button id="clearPaintBtn" style="width:100%; background:rgba(247,168,68,0.2); border-color:#f7a844;">✨ Clear Paint Canvas</button>
         </div>
 
+        <!-- Engine Archetype Selector with New Geometrics and Retrowave -->
         <div class="sub-heading">Engine Archetype</div>
         <div style="margin-top: 4px;">
           <select id="engineSelect" style="width: 100%;">
@@ -439,6 +444,10 @@
             <option value="1">2. Agate Geode (Cellular Voronoi)</option>
             <option value="2">3. Curl Nebula (Vortex Filament)</option>
             <option value="3">4. Gyroid Cymatics (Resonance Wave)</option>
+            <option value="4">5. Hexagonal Hive (Honeycomb Mesh)</option>
+            <option value="5">6. Hypercube Matrix (Square Lattice)</option>
+            <option value="6">7. Concentric Orbits (Target Rings & Moiré)</option>
+            <option value="7">8. Retrowave Synthgrid (80s Neon Vector)</option>
           </select>
         </div>
 
@@ -522,7 +531,7 @@
             <span>Ambient Drift</span>
             <span id="speed-num" class="val">0.1</span>
           </div>
-          <input type="range" id="sl-speed" min="0.0" max="2.00" step="0.1" value="2.00">
+          <input type="range" id="sl-speed" min="0.0" max="2.0" step="0.05" value="2.0">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-speed"> X</label>
@@ -990,7 +999,7 @@
       }
     `;
 
-    // 3D Perspective Ray-Plane Display Shader
+    // 3D Perspective Ray-Plane Display Shader (Expanded with Geometrics & Retrowave)
     const displayFS = `
       precision highp float;
       varying vec2 v_uv;
@@ -1103,6 +1112,20 @@
         return vec2((n1 - n2) / (2.0 * eps), -(n3 - n4) / (2.0 * eps));
       }
 
+      // Hexagonal Tiling Helper
+      float hexDist(vec2 p) {
+        const vec2 s = vec2(1.0, 1.7320508);
+        p = abs(p);
+        return max(dot(p, s * 0.5), p.x);
+      }
+
+      vec4 hexCoords(vec2 uv) {
+        const vec2 s = vec2(1.0, 1.7320508);
+        vec4 hC = floor(vec4(uv, uv - vec2(0.5, 1.0)) / vec4(s, s)) + 0.5;
+        vec4 h = vec4(uv - hC.xy * s, uv - (hC.zw + 0.5) * s);
+        return dot(h.xy, h.xy) < dot(h.zw, h.zw) ? vec4(h.xy, hC.xy) : vec4(h.zw, hC.zw + 9.73);
+      }
+
       vec2 getCoverUV(vec2 uv, vec2 screenRes, vec2 imgRes) {
         float screenAspect = screenRes.x / screenRes.y;
         float imgAspect = imgRes.x / imgRes.y;
@@ -1169,6 +1192,7 @@
         vec2 r = vec2(0.0);
         float f = 0.0;
 
+        // 1. Laminar Silk (Domain Warped fBm)
         if (u_shader_type < 0.5) {
           q = vec2(fbm(p + vec2(0.0, t * 0.2)), fbm(p + vec2(4.3, -t * 0.18)));
           r = vec2(
@@ -1177,6 +1201,7 @@
           );
           f = fbm(p + (u_warp_scale * 1.15) * r);
         }
+        // 2. Agate Geode (Cellular Voronoi)
         else if (u_shader_type < 1.5) {
           vec2 warpCoord = vec2(fbm(p * 0.8 + t * 0.1), fbm(p * 0.8 - t * 0.08)) * u_warp_scale * 1.5;
           vec2 v = voronoi(p * 2.2 + warpCoord);
@@ -1184,6 +1209,7 @@
           r = vec2(v.y - v.x, v.x);
           f = v.x + 0.35 * fbm(p * 3.0 + r);
         }
+        // 3. Curl Nebula (Vortex Filament)
         else if (u_shader_type < 2.5) {
           vec2 c1 = curl(p * 1.2 + vec2(0.0, t * 0.15));
           vec2 c2 = curl(p * 1.6 + u_warp_scale * c1 - vec2(t * 0.1, 0.0));
@@ -1191,7 +1217,8 @@
           r = c2;
           f = fbm(p + (u_warp_scale * 1.3) * c2 + vec2(0.0, t * 0.05));
         }
-        else {
+        // 4. Gyroid Cymatics (Resonance Wave)
+        else if (u_shader_type < 3.5) {
           vec2 drift = vec2(t * 0.15, -t * 0.12);
           vec2 gp = p * 3.0 + drift;
           vec2 gWarp = vec2(sin(gp.y * 1.2 + t), cos(gp.x * 1.2 - t)) * (u_warp_scale * 0.6);
@@ -1200,6 +1227,52 @@
           q = gWarp;
           r = vec2(sin(gp.x + gVal), cos(gp.y - gVal));
           f = 0.5 + 0.5 * gVal + 0.25 * fbm(p * 2.0 + r);
+        }
+        // 5. Hexagonal Hive (Honeycomb Mesh)
+        else if (u_shader_type < 4.5) {
+          vec2 hWarp = vec2(fbm(p * 1.5 + t * 0.2), fbm(p * 1.5 - t * 0.15)) * (u_warp_scale * 0.45);
+          vec2 hp = p * 4.0 + hWarp;
+          vec4 hc = hexCoords(hp);
+          float dEdge = 0.5 - hexDist(hc.xy);
+          q = hWarp;
+          r = hc.xy;
+          f = clamp(dEdge * 2.8, 0.0, 1.0) + 0.3 * fbm(p * 2.5 + hc.zw);
+        }
+        // 6. Hypercube Matrix (Square Lattice)
+        else if (u_shader_type < 5.5) {
+          vec2 sWarp = vec2(sin(p.y * 2.5 + t), cos(p.x * 2.5 - t)) * (u_warp_scale * 0.35);
+          vec2 sp = p * 3.8 + sWarp;
+          vec2 grid = abs(fract(sp) - 0.5);
+          float boxEdge = max(grid.x, grid.y);
+          float isoStep = floor(sp.x) + floor(sp.y);
+          q = sWarp;
+          r = grid;
+          f = boxEdge * 1.2 + fract(isoStep * 0.16) * 0.4 + 0.25 * fbm(p * 2.0);
+        }
+        // 7. Concentric Orbits (Target Rings & Moiré)
+        else if (u_shader_type < 6.5) {
+          float radDist = length(p);
+          float polarAngle = atan(p.y, p.x);
+          vec2 oWarp = vec2(fbm(p * 2.0 + t * 0.1), fbm(p * 2.0 - t * 0.12)) * (u_warp_scale * 0.5);
+          float rings = abs(sin((radDist + length(oWarp)) * 14.0 - t * 1.5));
+          float spokes = abs(sin(polarAngle * 10.0 + radDist * 3.0));
+          q = oWarp;
+          r = vec2(cos(polarAngle), sin(polarAngle)) * rings;
+          f = rings * 0.65 + spokes * 0.35 + 0.15 * fbm(p * 3.0);
+        }
+        // 8. Retrowave Synthgrid (80s Neon Vector)
+        else {
+          vec2 retroP = p * 4.5;
+          retroP.y += t * 3.5; // Grid streaming forward
+          vec2 grid = abs(fract(retroP) - 0.5);
+          float wireX = 1.0 - smoothstep(0.0, 0.08, grid.x);
+          float wireY = 1.0 - smoothstep(0.0, 0.08, grid.y);
+          float wire = max(wireX, wireY);
+          
+          vec2 rWarp = vec2(sin(p.y * 3.0), cos(p.x * 3.0)) * (u_warp_scale * 0.25);
+          q = rWarp;
+          r = grid;
+          f = wire * 0.85 + 0.15 * fbm(p * 1.5);
         }
 
         float basePattern = f;
@@ -1273,6 +1346,13 @@
           col += (u_col_crest * bands * 0.18) + (ridges * u_col_crest * u_ridge_weight);
           col += u_col_crest * spec * 0.65;
           col += mix(u_col_cool_b, u_col_crest, 0.65) * fresnel;
+
+          // Special Retrowave Grid Emission Boost
+          if (u_shader_type >= 6.5) {
+            col += u_col_cool_b * f * 1.4;
+            col += u_col_warm_a * spec * 1.5;
+          }
+
           col *= (0.75 + 0.45 * f * u_contrast);
           finalColor = col;
         }
@@ -1746,6 +1826,7 @@
 
     const slInfluenceMode = document.getElementById('sl-influence-mode');
     const influenceModeHUD = document.getElementById('influence-mode-hud');
+    const engineHUD = document.getElementById('engine-hud');
     const planeTiltHUD = document.getElementById('plane-tilt-hud');
     const modeNames = ['Viscous Drag', 'Water Ripples', 'Whirlpools', 'Shockwave'];
 
@@ -1756,11 +1837,15 @@
 
     let currentEngine = 0.0;
     const engineSelect = document.getElementById('engineSelect');
-    const engineNames = ['Laminar Silk', 'Agate Geode', 'Curl Nebula', 'Gyroid Cymatics'];
+    const engineNames = [
+      'Laminar Silk', 'Agate Geode', 'Curl Nebula', 'Gyroid Cymatics',
+      'Hexagonal Hive', 'Hypercube Matrix', 'Concentric Orbits', 'Retrowave Synthgrid'
+    ];
 
     engineSelect.addEventListener('pointerdown', (e) => e.stopPropagation());
     engineSelect.addEventListener('change', (e) => {
       currentEngine = parseFloat(e.target.value);
+      engineHUD.textContent = engineNames[currentEngine];
     });
 
     let currentAngleDeg = 0.0;
@@ -1835,12 +1920,15 @@
     }
 
     const stockPresets = {
-      amberSlate: { shadow: '#0d0a12', coolA: '#2e5c70', coolB: '#8cb0ba', warmA: '#f59e3d', warmB: '#e04717', crest: '#fff0e0' },
-      emeraldGold: { shadow: '#050d0a', coolA: '#0f3d32', coolB: '#3da688', warmA: '#e6b543', warmB: '#b37517', crest: '#fbf5db' },
+      synthwave80s: { shadow: '#0c021a', coolA: '#00f0ff', coolB: '#bd00ff', warmA: '#ff007f', warmB: '#ff8800', crest: '#fff68f' },
+      cyberpunk88:  { shadow: '#02080a', coolA: '#052f38', coolB: '#00ffcc', warmA: '#ffe600', warmB: '#ff0055', crest: '#ffffff' },
+      retroArcade:  { shadow: '#000000', coolA: '#001133', coolB: '#00ffff', warmA: '#ff3300', warmB: '#cc00ff', crest: '#ffff00' },
+      amberSlate:   { shadow: '#0d0a12', coolA: '#2e5c70', coolB: '#8cb0ba', warmA: '#f59e3d', warmB: '#e04717', crest: '#fff0e0' },
+      emeraldGold:  { shadow: '#050d0a', coolA: '#0f3d32', coolB: '#3da688', warmA: '#e6b543', warmB: '#b37517', crest: '#fbf5db' },
       velvetOrchid: { shadow: '#0c0514', coolA: '#39154a', coolB: '#8739a8', warmA: '#f28e2b', warmB: '#c7385a', crest: '#ffe8f6' },
-      pearlOpal: { shadow: '#0c1014', coolA: '#384852', coolB: '#7fa1b3', warmA: '#d6b0a1', warmB: '#997369', crest: '#ffffff' },
-      crimsonDusk: { shadow: '#0d0305', coolA: '#3b1118', coolB: '#6b2230', warmA: '#f75c40', warmB: '#ab1326', crest: '#ffede6' },
-      deepAbyss: { shadow: '#02060d', coolA: '#08203e', coolB: '#197278', warmA: '#28e8a6', warmB: '#044343', crest: '#d6fff6' }
+      pearlOpal:    { shadow: '#0c1014', coolA: '#384852', coolB: '#7fa1b3', warmA: '#d6b0a1', warmB: '#997369', crest: '#ffffff' },
+      crimsonDusk:  { shadow: '#0d0305', coolA: '#3b1118', coolB: '#6b2230', warmA: '#f75c40', warmB: '#ab1326', crest: '#ffede6' },
+      deepAbyss:    { shadow: '#02060d', coolA: '#08203e', coolB: '#197278', warmA: '#28e8a6', warmB: '#044343', crest: '#d6fff6' }
     };
 
     const presetSelect = document.getElementById('presetSelect');
@@ -1914,6 +2002,7 @@
       if (data.engine !== undefined) {
         currentEngine = parseFloat(data.engine);
         engineSelect.value = data.engine;
+        engineHUD.textContent = engineNames[currentEngine];
       }
       if (data.animMode) {
         animModeSelect.value = data.animMode;
@@ -1981,8 +2070,8 @@
       delete saved[key];
       commitPresets(saved);
       refreshUserPresetsMenu();
-      presetSelect.value = 'amberSlate';
-      applyFullPreset({ colors: stockPresets.amberSlate });
+      presetSelect.value = 'synthwave80s';
+      applyFullPreset({ colors: stockPresets.synthwave80s });
       delPresetBtn.style.display = 'none';
     });
 
@@ -2201,7 +2290,7 @@
 
       if (handsFound === 2) {
         lastValidHandTime = performance.now();
-        poseStatusHUD.textContent = 'Piloting Plane';
+        poseStatusHUD.textContent = 'Piloting Matrix';
       } else if (!allowHands) {
         poseStatusHUD.textContent = 'Head Tracking Active';
       } else {
@@ -2401,14 +2490,12 @@
         const filteredDx = spanFilter.filter(rawDx, now);
         targetTrackX = Math.min(Math.max((filteredDx - 0.10) / 0.28, 0.0), 1.0);
 
-        // Smooth attack follow
         currentModX += (targetTrackX - currentModX) * Math.min(1.0, dt * 14.0);
         currentModY += (targetTrackY - currentModY) * Math.min(1.0, dt * 14.0);
       } else {
         spanFilter.reset();
         heightFilter.reset();
 
-        // Smooth exponential return decay to 0.0 governed by user sliders
         const returnTimeX = Math.max(parseFloat(sliders.decayX.value), 0.05);
         const returnTimeY = Math.max(parseFloat(sliders.decayY.value), 0.05);
 
