@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Volumetric Contours - Shirt Color Harmonizer Edition</title>
+  <title>Volumetric Contours - Sacred Kaleidochamber Edition</title>
   
   <!-- MediaPipe Pose Core Library -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
@@ -306,7 +306,7 @@
     <div id="hud" class="panel">
       Input: <span id="input-type">Apple Pencil / Touch</span><br>
       Body: <span id="pose-status-val">Waiting...</span><br>
-      Engine: <span id="engine-hud">Synthgrid</span> | Space: <span id="space-fold-hud">Inception Overhang</span>
+      Engine: <span id="engine-hud">Sacred Chamber</span> | Space: <span id="space-fold-hud">Inception Overhang</span>
     </div>
 
     <div class="panel">
@@ -319,8 +319,11 @@
         <div class="sub-heading" style="margin-top:4px;">Preset Manager</div>
         <div style="display:flex; gap:6px; margin-top:4px;">
           <select id="presetSelect" style="flex:1;">
+            <optgroup label="Sacred Geometry & Mirrors">
+              <option value="sacredChamber" selected>💎 Sacred Chamber (Celadon, Azure & Brass)</option>
+            </optgroup>
             <optgroup label="Retrowave & Cyberpunk">
-              <option value="synthwave80s" selected>🌆 Synthwave '84 (Neon Grid & Overhang)</option>
+              <option value="synthwave80s">🌆 Synthwave '84 (Neon Grid & Overhang)</option>
               <option value="cyberpunk88">🤖 Cyberpunk '88 (Acid Hive & Twist)</option>
               <option value="retroArcade">🕹️ Retro Arcade (Matrix Lattice)</option>
             </optgroup>
@@ -448,9 +451,11 @@
           <button id="clearPaintBtn" style="width:100%; background:rgba(247,168,68,0.2); border-color:#f7a844;">✨ Clear Paint Canvas</button>
         </div>
 
+        <!-- Engine Archetype Selector -->
         <div class="sub-heading">Engine Archetype</div>
         <div style="margin-top: 4px;">
           <select id="engineSelect" style="width: 100%;">
+            <option value="8" selected>💎 9. Sacred Chamber (Faceted Diamonds & Filigree)</option>
             <option value="0">1. Laminar Silk (Domain Warped fBm)</option>
             <option value="1">2. Agate Geode (Cellular Voronoi)</option>
             <option value="2">3. Curl Nebula (Vortex Filament)</option>
@@ -458,10 +463,11 @@
             <option value="4">⬡ 5. Hexagonal Hive (Honeycomb Mesh)</option>
             <option value="5">⊞ 6. Hypercube Matrix (Square Lattice)</option>
             <option value="6">◎ 7. Concentric Orbits (Target Rings & Moiré)</option>
-            <option value="7" selected>⚡ 8. Retrowave Synthgrid (80s Neon Vector)</option>
+            <option value="7">⚡ 8. Retrowave Synthgrid (80s Neon Vector)</option>
           </select>
         </div>
 
+        <!-- Inception Space Warping & Perspective -->
         <div class="sub-heading">Inception Space-Fold & 3D Flight</div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
@@ -621,9 +627,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Petals</span>
-            <span id="k-segs-num" class="val">4 Petals</span>
+            <span id="k-segs-num" class="val">6 Petals</span>
           </div>
-          <input type="range" id="sl-k-segs" min="1" max="24" step="1" value="4">
+          <input type="range" id="sl-k-segs" min="1" max="24" step="1" value="6">
         </div>
 
         <div class="slider-row">
@@ -644,9 +650,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Chamber Orientation</span>
-            <span id="k-angle-num" class="val">45°</span>
+            <span id="k-angle-num" class="val">30°</span>
           </div>
-          <input type="range" id="sl-k-angle" min="0" max="360" step="1" value="45">
+          <input type="range" id="sl-k-angle" min="0" max="360" step="1" value="30">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-kAngle"> X</label>
@@ -690,9 +696,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Contour Frequency</span>
-            <span id="density-num" class="val">18.0</span>
+            <span id="density-num" class="val">22.0</span>
           </div>
-          <input type="range" id="sl-density" min="4.0" max="72.0" step="1.0" value="18.0">
+          <input type="range" id="sl-density" min="4.0" max="72.0" step="1.0" value="22.0">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-density"> X</label>
@@ -720,9 +726,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Ridge Brightness</span>
-            <span id="ridge-num" class="val">0.32</span>
+            <span id="ridge-num" class="val">0.38</span>
           </div>
-          <input type="range" id="sl-ridge" min="0.0" max="1.0" step="0.02" value="0.32">
+          <input type="range" id="sl-ridge" min="0.0" max="1.0" step="0.02" value="0.38">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-ridge" checked> X</label>
@@ -736,9 +742,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Iridescence (Prism)</span>
-            <span id="chroma-num" class="val">0.35</span>
+            <span id="chroma-num" class="val">0.45</span>
           </div>
-          <input type="range" id="sl-chroma" min="0.0" max="1.5" step="0.02" value="0.35">
+          <input type="range" id="sl-chroma" min="0.0" max="1.5" step="0.02" value="0.45">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-chroma"> X</label>
@@ -751,9 +757,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>3D Specular Shimmer</span>
-            <span id="shimmer-num" class="val">0.45</span>
+            <span id="shimmer-num" class="val">0.85</span>
           </div>
-          <input type="range" id="sl-shimmer" min="0.0" max="1.5" step="0.05" value="0.45">
+          <input type="range" id="sl-shimmer" min="0.0" max="2.0" step="0.05" value="0.85">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-shimmer"> X</label>
@@ -766,9 +772,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Backlight / Rim Glow</span>
-            <span id="rim-num" class="val">0.30</span>
+            <span id="rim-num" class="val">0.40</span>
           </div>
-          <input type="range" id="sl-rim" min="0.0" max="1.0" step="0.02" value="0.30">
+          <input type="range" id="sl-rim" min="0.0" max="1.0" step="0.02" value="0.40">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-rim"> X</label>
@@ -781,9 +787,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Mineral Grain</span>
-            <span id="grain-num" class="val">0.04</span>
+            <span id="grain-num" class="val">0.03</span>
           </div>
-          <input type="range" id="sl-grain" min="0.0" max="0.25" step="0.01" value="0.04">
+          <input type="range" id="sl-grain" min="0.0" max="0.25" step="0.01" value="0.03">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-grain"> X</label>
@@ -797,9 +803,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Depth Contrast</span>
-            <span id="contrast-num" class="val">1.00</span>
+            <span id="contrast-num" class="val">1.10</span>
           </div>
-          <input type="range" id="sl-contrast" min="0.5" max="2.0" step="0.05" value="1.00">
+          <input type="range" id="sl-contrast" min="0.5" max="2.0" step="0.05" value="1.10">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-contrast"> X</label>
@@ -811,12 +817,12 @@
 
         <div class="sub-heading">Palette Swatches</div>
         <div class="swatch-row">
-          <input type="color" id="colShadow" value="#0c021a" title="Shadow Base">
-          <input type="color" id="colCoolA"  value="#00f0ff" title="Cool Stream A">
-          <input type="color" id="colCoolB"  value="#bd00ff" title="Cool Stream B">
-          <input type="color" id="colWarmA"  value="#ff007f" title="Warm Filament">
-          <input type="color" id="colWarmB"  value="#ff8800" title="Deep Warmth">
-          <input type="color" id="colCrest"  value="#fff68f" title="Contour Crests">
+          <input type="color" id="colShadow" value="#030a0d" title="Shadow Base">
+          <input type="color" id="colCoolA"  value="#246b7a" title="Cool Stream A">
+          <input type="color" id="colCoolB"  value="#68c4d8" title="Cool Stream B">
+          <input type="color" id="colWarmA"  value="#c8ad58" title="Warm Filament">
+          <input type="color" id="colWarmB"  value="#3d7a5a" title="Deep Warmth">
+          <input type="color" id="colCrest"  value="#f4fbfa" title="Contour Crests">
         </div>
       </div>
     </div>
@@ -835,7 +841,7 @@
     <div style="background:#181920; border:1px solid rgba(255,255,255,0.18); border-radius:14px; padding:18px; width:290px; box-shadow:0 12px 40px rgba(0,0,0,0.6); pointer-events:auto;">
       <div style="font-size:13px; font-weight:700; color:#fff; margin-bottom:6px;">Save Preset</div>
       <div style="font-size:11px; color:rgba(255,255,255,0.6); margin-bottom:12px;">Name your current setup:</div>
-      <input type="text" id="presetNameInput" placeholder="e.g. Neon Horizon" style="width:100%; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25); border-radius:8px; color:#fff; padding:10px 12px; font-size:13px; outline:none; margin-bottom:14px;">
+      <input type="text" id="presetNameInput" placeholder="e.g. Celestial Mirror" style="width:100%; background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.25); border-radius:8px; color:#fff; padding:10px 12px; font-size:13px; outline:none; margin-bottom:14px;">
       <div style="display:flex; justify-content:flex-end; gap:8px;">
         <button id="cancelPresetBtn" style="background:rgba(255,255,255,0.1); color:#fff; border:1px solid rgba(255,255,255,0.2); padding:7px 14px; border-radius:7px; font-size:12px;">Cancel</button>
         <button id="confirmPresetBtn" style="background:#f7a844; color:#050508; font-weight:700; border:none; padding:7px 16px; border-radius:7px; font-size:12px;">Save</button>
@@ -868,7 +874,6 @@
       alert('WebGL not supported.');
     }
 
-    // Color Space Helpers (RGB <-> HSL)
     function rgbToHsl(r, g, b) {
       r /= 255; g /= 255; b /= 255;
       const max = Math.max(r, g, b), min = Math.min(r, g, b);
@@ -923,13 +928,11 @@
       return rgbToHex(r, g, b);
     }
 
-    // Synthesize Harmonized 6-Color Palette from Sampled Shirt Color
     function generatePaletteFromShirt(r, g, b) {
       const [h, s, l] = rgbToHsl(r, g, b);
       let pal = {};
 
       if (s < 0.14) {
-        // Neutral/monochrome shirt: Obsidian, Platinum, Liquid Chrome, and Gold filament
         pal.shadow = hslToHex(h, 0.05, 0.03);
         pal.coolA  = hslToHex(210, 0.22, 0.25);
         pal.coolB  = hslToHex(205, 0.18, 0.72);
@@ -937,7 +940,6 @@
         pal.warmB  = hslToHex(18, 0.65, 0.30);
         pal.crest  = hslToHex(0, 0.00, 0.98);
       } else {
-        // Saturated colorful shirt: Dynamic chromatic split-complementary harmony
         pal.warmA  = hslToHex(h, Math.max(s, 0.75), Math.min(Math.max(l, 0.45), 0.62));
         pal.warmB  = hslToHex((h - 22 + 360) % 360, Math.min(s + 0.15, 1.0), 0.32);
         pal.coolA  = hslToHex((h + 180) % 360, Math.max(s * 0.75, 0.45), 0.30);
@@ -1116,7 +1118,7 @@
       }
     `;
 
-    // 3D Inception Ray-Plane & Geometric Display Shader
+    // 3D Inception Ray-Plane & Sacred Geometry Display Shader
     const displayFS = `
       precision highp float;
       varying vec2 v_uv;
@@ -1243,6 +1245,43 @@
         vec4 hC = floor(vec4(uv, uv - vec2(0.5, 1.0)) / vec4(s, s)) + 0.5;
         vec4 h = vec4(uv - hC.xy * s, uv - (hC.zw + 0.5) * s);
         return dot(h.xy, h.xy) < dot(h.zw, h.zw) ? vec4(h.xy, hC.xy) : vec4(h.zw, hC.zw + 9.73);
+      }
+
+      // Procedural Flower of Life Sacred Geometry Function
+      float flowerOfLife(vec2 p) {
+        vec2 s = vec2(1.0, 1.7320508);
+        vec4 h = hexCoords(p * 2.2);
+        vec2 pCell = h.xy;
+
+        float circleR = 1.0;
+        float d1 = abs(length(pCell) - circleR);
+        float d2 = abs(length(pCell - vec2(1.0, 0.0)) - circleR);
+        float d3 = abs(length(pCell + vec2(1.0, 0.0)) - circleR);
+        float d4 = abs(length(pCell - vec2(0.5, 0.866025)) - circleR);
+        float d5 = abs(length(pCell + vec2(0.5, 0.866025)) - circleR);
+        float d6 = abs(length(pCell - vec2(-0.5, 0.866025)) - circleR);
+        float d7 = abs(length(pCell + vec2(-0.5, 0.866025)) - circleR);
+
+        float minD = min(min(min(d1, d2), min(d3, d4)), min(min(d5, d6), d7));
+        return 1.0 - smoothstep(0.04, 0.12, minD);
+      }
+
+      // Procedural 3D Rhombille Tiling (Faceted Tumbling Blocks)
+      vec3 rhombilleDiamonds(vec2 p) {
+        vec2 s = vec2(1.7320508, 1.0);
+        vec2 a = mod(p, s) - s * 0.5;
+        vec2 b = mod(p - s * 0.5, s) - s * 0.5;
+        vec2 g = dot(a, a) < dot(b, b) ? a : b;
+
+        float angle = atan(g.y, g.x) + 3.14159265;
+        float sector = floor(mod(angle / 1.04719755, 6.0));
+        float facetID = mod(sector, 3.0); // 3-tone diamond shading
+
+        vec2 diamondUV = abs(g);
+        float dEdge = max(diamondUV.x * 0.5 + diamondUV.y * 0.866025, diamondUV.x);
+        float wire = 1.0 - smoothstep(0.44, 0.49, dEdge);
+
+        return vec3(facetID, wire, dEdge);
       }
 
       vec2 getCoverUV(vec2 uv, vec2 screenRes, vec2 imgRes) {
@@ -1380,6 +1419,7 @@
         vec2 q = vec2(0.0);
         vec2 r = vec2(0.0);
         float f = 0.0;
+        vec3 normalPerturb = vec3(0.0);
 
         // 1. Laminar Silk (fBm)
         if (u_shader_type < 0.5) {
@@ -1450,7 +1490,7 @@
           f = rings * 0.65 + spokes * 0.35 + 0.15 * fbm(p * 3.0);
         }
         // 8. Retrowave Synthgrid (80s Neon Vector)
-        else {
+        else if (u_shader_type < 7.5) {
           vec2 retroP = p * 4.5;
           retroP.y += t * 3.5;
           vec2 grid = abs(fract(retroP) - 0.5);
@@ -1462,6 +1502,38 @@
           q = rWarp;
           r = grid;
           f = wire * 0.85 + 0.15 * fbm(p * 1.5);
+        }
+        // 💎 9. Sacred Kaleidochamber (Geodesic Faceted Diamonds & Sacred Geometry)
+        else {
+          float radDist = length(p);
+          float polarAngle = atan(p.y, p.x);
+          vec2 kDistort = vec2(fbm(p * 1.8 + t * 0.15), fbm(p * 1.8 - t * 0.12)) * (u_warp_scale * 0.22);
+          vec2 kp = p + kDistort;
+
+          // 1. Central Diamond Geodesic Dome (Rhombille tumbling blocks)
+          vec3 rBlocks = rhombilleDiamonds(kp * 4.2);
+          float centerMask = 1.0 - smoothstep(0.45, 0.85, radDist);
+          
+          // Facet shading variation for realistic glass / brass reflection
+          float facetShade = (rBlocks.x == 0.0) ? 0.95 : (rBlocks.x == 1.0 ? 0.65 : 0.40);
+          
+          // 2. Flower of Life (Sacred geometry circular rosettes)
+          float fol = flowerOfLife(kp * 1.8);
+          
+          // 3. Concentric Laser-Cut Fretwork Rings & Chevrons
+          float ringWaves = abs(sin(radDist * 24.0 - t * 1.2 + sin(polarAngle * 12.0) * 0.4));
+          float chevrons = abs(sin(polarAngle * 24.0 + radDist * 16.0));
+          float beads = 1.0 - smoothstep(0.12, 0.28, length(fract(vec2(polarAngle * 3.82, radDist * 6.0)) - 0.5));
+          
+          float filigreeLace = max(fol * 0.8, chevrons * 0.5) + ringWaves * 0.4 + beads * 0.5;
+
+          // Seamless transition between geodesic center and surrounding sacred lace
+          f = mix(filigreeLace, facetShade * 1.2 + rBlocks.y * 0.6, centerMask);
+          q = kDistort;
+          r = vec2(cos(polarAngle), sin(polarAngle)) * f;
+
+          // Normal perturbation for faceted 3D specular diamond reflections
+          normalPerturb = vec3(sin(rBlocks.z * 18.0), cos(rBlocks.z * 18.0), 0.0) * centerMask * 0.85;
         }
 
         float basePattern = f;
@@ -1488,13 +1560,13 @@
         float bands = smoothstep(0.15, 0.85, fold);
 
         vec3 nBase = normalize(vec3(0.0, sin(u_plane_tilt), cos(u_plane_tilt)));
-        vec3 normal = normalize(nBase + vec3(-r.x * 1.8, -r.y * 1.8 * cos(u_plane_tilt), r.y * 1.8 * sin(u_plane_tilt)));
+        vec3 normal = normalize(nBase + vec3(-r.x * 1.8, -r.y * 1.8 * cos(u_plane_tilt), r.y * 1.8 * sin(u_plane_tilt)) + normalPerturb);
         
         vec3 lightDir = normalize(vec3(0.35, 0.85, 0.45));
         vec3 viewDir = normalize(vec3(-st.x * 0.2, -st.y * 0.2, 1.0));
         vec3 halfVec = normalize(lightDir + viewDir);
 
-        float spec = pow(max(dot(normal, halfVec), 0.0), 18.0) * u_specular_shimmer;
+        float spec = pow(max(dot(normal, halfVec), 0.0), 22.0) * u_specular_shimmer;
         float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0) * u_rim_glow;
 
         vec3 finalColor;
@@ -1528,17 +1600,21 @@
           finalColor *= (0.8 + 0.35 * f * u_contrast);
         } else {
           vec3 col = mix(u_col_shadow, u_col_cool_a, clamp((f * f) * (3.2 * u_contrast), 0.0, 1.0));
-          col = mix(col, u_col_cool_b, clamp(length(q) * 0.9, 0.0, 1.0));
+          col = mix(col, u_col_cool_b, clamp(length(q) * 0.9 + (u_shader_type >= 7.5 ? 0.35 : 0.0), 0.0, 1.0));
           col = mix(col, u_col_warm_b, clamp(r.x * r.x * (2.2 * u_contrast), 0.0, 1.0));
           col = mix(col, u_col_warm_a, clamp(r.y * 1.4, 0.0, 1.0));
 
           col += (u_col_crest * bands * 0.18) + (ridges * u_col_crest * u_ridge_weight);
-          col += u_col_crest * spec * 0.65;
+          col += u_col_crest * spec * 0.75;
           col += mix(u_col_cool_b, u_col_crest, 0.65) * fresnel;
 
-          if (u_shader_type >= 6.5) {
+          if (u_shader_type >= 6.5 && u_shader_type < 7.5) {
             col += u_col_cool_b * f * 1.4;
             col += u_col_warm_a * spec * 1.5;
+          } else if (u_shader_type >= 7.5) {
+            // Sacred Chamber Specular Diamond Shimmer & Brass Highlights
+            col += u_col_crest * spec * 1.4;
+            col += u_col_warm_a * bands * 0.35;
           }
 
           col *= (0.75 + 0.45 * f * u_contrast);
@@ -1921,9 +1997,9 @@
       rotSpeed:     document.getElementById('sl-rot-speed'),
       kSegs:        document.getElementById('sl-k-segs'),
       kBlur:        document.getElementById('sl-k-blur'),
-      kAngle:       document.getElementById('sl-k-angle'),
+      kAngle:      document.getElementById('sl-k-angle'),
       kZoom:        document.getElementById('sl-k-zoom'),
-      kPinch:      document.getElementById('sl-k-pinch'),
+      kPinch:       document.getElementById('sl-k-pinch'),
       speed:        document.getElementById('sl-speed'),
       warp:         document.getElementById('sl-warp'),
       stretch:      document.getElementById('sl-stretch'),
@@ -1951,9 +2027,9 @@
       rotSpeed:     document.getElementById('rot-speed-num'),
       kSegs:        document.getElementById('k-segs-num'),
       kBlur:        document.getElementById('k-blur-num'),
-      kAngle:       document.getElementById('k-angle-num'),
+      kAngle:      document.getElementById('k-angle-num'),
       kZoom:        document.getElementById('k-zoom-num'),
-      kPinch:      document.getElementById('k-pinch-num'),
+      kPinch:       document.getElementById('k-pinch-num'),
       speed:        document.getElementById('speed-num'),
       warp:         document.getElementById('warp-num'),
       stretch:      document.getElementById('stretch-num'),
@@ -1972,26 +2048,26 @@
       centerDepth:  { chkX: document.getElementById('mod-x-centerDepth'),  scaleX: document.getElementById('scale-x-centerDepth'),  chkY: document.getElementById('mod-y-centerDepth'),  scaleY: document.getElementById('scale-y-centerDepth') },
       foldStrength: { chkX: document.getElementById('mod-x-foldStrength'), scaleX: document.getElementById('scale-x-foldStrength'), chkY: document.getElementById('mod-y-foldStrength'), scaleY: document.getElementById('scale-y-foldStrength') },
       persistence:  { chkX: document.getElementById('mod-x-persistence'),  scaleX: document.getElementById('scale-x-persistence'),  chkY: document.getElementById('mod-y-persistence'),  scaleY: document.getElementById('scale-y-persistence') },
-      rippleFreq:   { chkX: document.getElementById('mod-x-rippleFreq'),   scaleX: document.getElementById('scale-x-rippleFreq'),   chkY: document.getElementById('mod-y-rippleFreq'),  scaleY: document.getElementById('scale-y-rippleFreq') },
+      rippleFreq:   { chkX: document.getElementById('mod-x-rippleFreq'),   scaleX: document.getElementById('scale-x-rippleFreq'),   chkY: document.getElementById('mod-y-rippleFreq'),   scaleY: document.getElementById('scale-y-rippleFreq') },
       headForce:    { chkX: document.getElementById('mod-x-headForce'),    scaleX: document.getElementById('scale-x-headForce'),    chkY: document.getElementById('mod-y-headForce'),    scaleY: document.getElementById('scale-y-headForce') },
       handForce:    { chkX: document.getElementById('mod-x-handForce'),    scaleX: document.getElementById('scale-x-handForce'),    chkY: document.getElementById('mod-y-handForce'),    scaleY: document.getElementById('scale-y-handForce') },
       angle:        { chkX: document.getElementById('mod-x-angle'),        scaleX: document.getElementById('scale-x-angle'),        chkY: document.getElementById('mod-y-angle'),        scaleY: document.getElementById('scale-y-angle') },
       rotSpeed:     { chkX: document.getElementById('mod-x-rotSpeed'),     scaleX: document.getElementById('scale-x-rotSpeed'),     chkY: document.getElementById('mod-y-rotSpeed'),     scaleY: document.getElementById('scale-y-rotSpeed') },
       speed:        { chkX: document.getElementById('mod-x-speed'),        scaleX: document.getElementById('scale-x-speed'),        chkY: document.getElementById('mod-y-speed'),        scaleY: document.getElementById('scale-y-speed') },
-      warp:         { chkX: document.getElementById('mod-x-warp'),         scaleX: document.getElementById('scale-x-warp'),        chkY: document.getElementById('mod-y-warp'),        scaleY: document.getElementById('scale-y-warp') },
+      warp:         { chkX: document.getElementById('mod-x-warp'),         scaleX: document.getElementById('scale-x-warp'),         chkY: document.getElementById('mod-y-warp'),        scaleY: document.getElementById('scale-y-warp') },
       stretch:      { chkX: document.getElementById('mod-x-stretch'),      scaleX: document.getElementById('scale-x-stretch'),      chkY: document.getElementById('mod-y-stretch'),      scaleY: document.getElementById('scale-y-stretch') },
-      kBlur:       { chkX: document.getElementById('mod-x-kBlur'),       scaleX: document.getElementById('scale-x-kBlur'),       chkY: document.getElementById('mod-y-kBlur'),       scaleY: document.getElementById('scale-y-kBlur') },
-      kAngle:      { chkX: document.getElementById('mod-x-kAngle'),      scaleX: document.getElementById('scale-x-kAngle'),      chkY: document.getElementById('mod-y-kAngle'),      scaleY: document.getElementById('scale-y-kAngle') },
-      kZoom:       { chkX: document.getElementById('mod-x-kZoom'),       scaleX: document.getElementById('scale-x-kZoom'),       chkY: document.getElementById('mod-y-kZoom'),       scaleY: document.getElementById('scale-y-kZoom') },
-      kPinch:      { chkX: document.getElementById('mod-x-kPinch'),      scaleX: document.getElementById('scale-x-kPinch'),      chkY: document.getElementById('mod-y-kPinch'),      scaleY: document.getElementById('scale-y-kPinch') },
-      density:     { chkX: document.getElementById('mod-x-density'),     scaleX: document.getElementById('scale-x-density'),     chkY: document.getElementById('mod-y-density'),     scaleY: document.getElementById('scale-y-density') },
-      step:        { chkX: document.getElementById('mod-x-step'),        scaleX: document.getElementById('scale-x-step'),        chkY: document.getElementById('mod-y-step'),        scaleY: document.getElementById('scale-y-step') },
-      ridge:       { chkX: document.getElementById('mod-x-ridge'),       scaleX: document.getElementById('scale-x-ridge'),       chkY: document.getElementById('mod-y-ridge'),       scaleY: document.getElementById('scale-y-ridge') },
-      chroma:      { chkX: document.getElementById('mod-x-chroma'),      scaleX: document.getElementById('scale-x-chroma'),      chkY: document.getElementById('mod-y-chroma'),      scaleY: document.getElementById('scale-y-chroma') },
-      shimmer:     { chkX: document.getElementById('mod-x-shimmer'),     scaleX: document.getElementById('scale-x-shimmer'),     chkY: document.getElementById('mod-y-shimmer'),     scaleY: document.getElementById('scale-y-shimmer') },
-      rim:         { chkX: document.getElementById('mod-x-rim'),         scaleX: document.getElementById('scale-x-rim'),         chkY: document.getElementById('mod-y-rim'),         scaleY: document.getElementById('scale-y-rim') },
-      grain:       { chkX: document.getElementById('mod-x-grain'),       scaleX: document.getElementById('scale-x-grain'),       chkY: document.getElementById('mod-y-grain'),       scaleY: document.getElementById('scale-y-grain') },
-      contrast:    { chkX: document.getElementById('mod-x-contrast'),    scaleX: document.getElementById('scale-x-contrast'),    chkY: document.getElementById('mod-y-contrast'),    scaleY: document.getElementById('scale-y-contrast') }
+      kBlur:        { chkX: document.getElementById('mod-x-kBlur'),        scaleX: document.getElementById('scale-x-kBlur'),        chkY: document.getElementById('mod-y-kBlur'),        scaleY: document.getElementById('scale-y-kBlur') },
+      kAngle:       { chkX: document.getElementById('mod-x-kAngle'),       scaleX: document.getElementById('scale-x-kAngle'),       chkY: document.getElementById('mod-y-kAngle'),       scaleY: document.getElementById('scale-y-kAngle') },
+      kZoom:        { chkX: document.getElementById('mod-x-kZoom'),        scaleX: document.getElementById('scale-x-kZoom'),        chkY: document.getElementById('mod-y-kZoom'),        scaleY: document.getElementById('scale-y-kZoom') },
+      kPinch:       { chkX: document.getElementById('mod-x-kPinch'),      scaleX: document.getElementById('scale-x-kPinch'),      chkY: document.getElementById('mod-y-kPinch'),       scaleY: document.getElementById('scale-y-kPinch') },
+      density:      { chkX: document.getElementById('mod-x-density'),     scaleX: document.getElementById('scale-x-density'),     chkY: document.getElementById('mod-y-density'),      scaleY: document.getElementById('scale-y-density') },
+      step:         { chkX: document.getElementById('mod-x-step'),         scaleX: document.getElementById('scale-x-step'),         chkY: document.getElementById('mod-y-step'),         scaleY: document.getElementById('scale-y-step') },
+      ridge:        { chkX: document.getElementById('mod-x-ridge'),        scaleX: document.getElementById('scale-x-ridge'),        chkY: document.getElementById('mod-y-ridge'),        scaleY: document.getElementById('scale-y-ridge') },
+      chroma:       { chkX: document.getElementById('mod-x-chroma'),       scaleX: document.getElementById('scale-x-chroma'),       chkY: document.getElementById('mod-y-chroma'),       scaleY: document.getElementById('scale-y-chroma') },
+      shimmer:      { chkX: document.getElementById('mod-x-shimmer'),      scaleX: document.getElementById('scale-x-shimmer'),      chkY: document.getElementById('mod-y-shimmer'),      scaleY: document.getElementById('scale-y-shimmer') },
+      rim:          { chkX: document.getElementById('mod-x-rim'),          scaleX: document.getElementById('scale-x-rim'),          chkY: document.getElementById('mod-y-rim'),          scaleY: document.getElementById('scale-y-rim') },
+      grain:        { chkX: document.getElementById('mod-x-grain'),        scaleX: document.getElementById('scale-x-grain'),        chkY: document.getElementById('mod-y-grain'),        scaleY: document.getElementById('scale-y-grain') },
+      contrast:     { chkX: document.getElementById('mod-x-contrast'),    scaleX: document.getElementById('scale-x-contrast'),    chkY: document.getElementById('mod-y-contrast'),    scaleY: document.getElementById('scale-y-contrast') }
     };
 
     const manualBaseVals = {};
@@ -2029,11 +2105,11 @@
       influenceModeHUD.textContent = modeNames[parseInt(e.target.value, 10)];
     });
 
-    let currentEngine = 7.0;
+    let currentEngine = 8.0; // Default to Sacred Chamber
     const engineSelect = document.getElementById('engineSelect');
     const engineNames = [
       'Laminar Silk', 'Agate Geode', 'Curl Nebula', 'Gyroid Cymatics',
-      'Hex Hive', 'Hypercube Matrix', 'Concentric Orbits', 'Synthgrid'
+      'Hex Hive', 'Hypercube Matrix', 'Concentric Orbits', 'Synthgrid', 'Sacred Chamber'
     ];
 
     engineSelect.addEventListener('pointerdown', (e) => e.stopPropagation());
@@ -2122,15 +2198,16 @@
     }
 
     const stockPresets = {
-      synthwave80s: { shadow: '#0c021a', coolA: '#00f0ff', coolB: '#bd00ff', warmA: '#ff007f', warmB: '#ff8800', crest: '#fff68f', engine: 7, spaceFold: 1 },
-      cyberpunk88:  { shadow: '#02080a', coolA: '#052f38', coolB: '#00ffcc', warmA: '#ffe600', warmB: '#ff0055', crest: '#ffffff', engine: 4, spaceFold: 3 },
-      retroArcade:  { shadow: '#000000', coolA: '#001133', coolB: '#00ffff', warmA: '#ff3300', warmB: '#cc00ff', crest: '#ffff00', engine: 5, spaceFold: 4 },
-      amberSlate:   { shadow: '#0d0a12', coolA: '#2e5c70', coolB: '#8cb0ba', warmA: '#f59e3d', warmB: '#e04717', crest: '#fff0e0', engine: 0, spaceFold: 0 },
-      emeraldGold:  { shadow: '#050d0a', coolA: '#0f3d32', coolB: '#3da688', warmA: '#e6b543', warmB: '#b37517', crest: '#fbf5db', engine: 0, spaceFold: 0 },
-      velvetOrchid: { shadow: '#0c0514', coolA: '#39154a', coolB: '#8739a8', warmA: '#f28e2b', warmB: '#c7385a', crest: '#ffe8f6', engine: 1, spaceFold: 0 },
-      pearlOpal:    { shadow: '#0c1014', coolA: '#384852', coolB: '#7fa1b3', warmA: '#d6b0a1', warmB: '#997369', crest: '#ffffff', engine: 3, spaceFold: 2 },
-      crimsonDusk:  { shadow: '#0d0305', coolA: '#3b1118', coolB: '#6b2230', warmA: '#f75c40', warmB: '#ab1326', crest: '#ffede6', engine: 2, spaceFold: 1 },
-      deepAbyss:    { shadow: '#02060d', coolA: '#08203e', coolB: '#197278', warmA: '#28e8a6', warmB: '#044343', crest: '#d6fff6', engine: 2, spaceFold: 4 }
+      sacredChamber: { shadow: '#030a0d', coolA: '#246b7a', coolB: '#68c4d8', warmA: '#c8ad58', warmB: '#3d7a5a', crest: '#f4fbfa', engine: 8, spaceFold: 1 },
+      synthwave80s:  { shadow: '#0c021a', coolA: '#00f0ff', coolB: '#bd00ff', warmA: '#ff007f', warmB: '#ff8800', crest: '#fff68f', engine: 7, spaceFold: 1 },
+      cyberpunk88:   { shadow: '#02080a', coolA: '#052f38', coolB: '#00ffcc', warmA: '#ffe600', warmB: '#ff0055', crest: '#ffffff', engine: 4, spaceFold: 3 },
+      retroArcade:   { shadow: '#000000', coolA: '#001133', coolB: '#00ffff', warmA: '#ff3300', warmB: '#cc00ff', crest: '#ffff00', engine: 5, spaceFold: 4 },
+      amberSlate:    { shadow: '#0d0a12', coolA: '#2e5c70', coolB: '#8cb0ba', warmA: '#f59e3d', warmB: '#e04717', crest: '#fff0e0', engine: 0, spaceFold: 0 },
+      emeraldGold:   { shadow: '#050d0a', coolA: '#0f3d32', coolB: '#3da688', warmA: '#e6b543', warmB: '#b37517', crest: '#fbf5db', engine: 0, spaceFold: 0 },
+      velvetOrchid:  { shadow: '#0c0514', coolA: '#39154a', coolB: '#8739a8', warmA: '#f28e2b', warmB: '#c7385a', crest: '#ffe8f6', engine: 1, spaceFold: 0 },
+      pearlOpal:     { shadow: '#0c1014', coolA: '#384852', coolB: '#7fa1b3', warmA: '#d6b0a1', warmB: '#997369', crest: '#ffffff', engine: 3, spaceFold: 2 },
+      crimsonDusk:   { shadow: '#0d0305', coolA: '#3b1118', coolB: '#6b2230', warmA: '#f75c40', warmB: '#ab1326', crest: '#ffede6', engine: 2, spaceFold: 1 },
+      deepAbyss:     { shadow: '#02060d', coolA: '#08203e', coolB: '#197278', warmA: '#28e8a6', warmB: '#044343', crest: '#d6fff6', engine: 2, spaceFold: 4 }
     };
 
     const presetSelect = document.getElementById('presetSelect');
@@ -2277,8 +2354,8 @@
       delete saved[key];
       commitPresets(saved);
       refreshUserPresetsMenu();
-      presetSelect.value = 'synthwave80s';
-      applyFullPreset(stockPresets.synthwave80s);
+      presetSelect.value = 'sacredChamber';
+      applyFullPreset(stockPresets.sacredChamber);
       delPresetBtn.style.display = 'none';
     });
 
@@ -2312,11 +2389,11 @@
       e.stopPropagation();
       canvas.toBlob(async (blob) => {
         if (!blob) return;
-        const fileName = `inception-retrowave-${Date.now()}.png`;
+        const fileName = `sacred-kaleido-${Date.now()}.png`;
         const file = new File([blob], fileName, { type: 'image/png' });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try { await navigator.share({ files: [file], title: 'Inception Artwork' }); return; } catch (err) { if (err.name === 'AbortError') return; }
+          try { await navigator.share({ files: [file], title: 'Sacred Kaleidoscope Artwork' }); return; } catch (err) { if (err.name === 'AbortError') return; }
         }
         mediaContainer.innerHTML = `<img src="${URL.createObjectURL(blob)}" alt="Snapshot">`;
         modalMsg.innerHTML = 'Touch and hold image to tap <b>"Save to Photos"</b>';
@@ -2353,11 +2430,11 @@
 
         const ext = mimeType.includes('mp4') ? 'mp4' : 'webm';
         const blob = new Blob(recordedChunks, { type: mimeType });
-        const fileName = `inception-contour-60fps-${Date.now()}.${ext}`;
+        const fileName = `sacred-kaleido-60fps-${Date.now()}.${ext}`;
         const file = new File([blob], fileName, { type: mimeType });
 
         if (navigator.canShare && navigator.canShare({ files: [file] })) {
-          try { await navigator.share({ files: [file], title: 'Inception Video' }); return; } catch (err) { if (err.name === 'AbortError') return; }
+          try { await navigator.share({ files: [file], title: 'Sacred Kaleidoscope Video' }); return; } catch (err) { if (err.name === 'AbortError') return; }
         }
         const videoUrl = URL.createObjectURL(blob);
         mediaContainer.innerHTML = `<video src="${videoUrl}" controls autoplay loop playsinline></video>`;
@@ -2512,7 +2589,6 @@
         const chestX = Math.min(Math.max(msX, 0.08), 0.92);
         chestY = Math.min(Math.max(chestY, 0.08), 0.92);
 
-        // Draw targeted sampling reticle on PIP preview
         pipCtx.strokeStyle = '#00f0ff';
         pipCtx.lineWidth = 2;
         pipCtx.strokeRect(chestX * 160 - 8, chestY * 120 - 8, 16, 16);
@@ -2520,7 +2596,6 @@
         pipCtx.font = '8px sans-serif';
         pipCtx.fillText('SHIRT', chestX * 160 - 12, chestY * 120 - 10);
 
-        // Sample RGB pixels from capture canvas
         const capX = Math.floor(chestX * captureCanvas.width);
         const capY = Math.floor(chestY * captureCanvas.height);
         const rHalf = 5;
@@ -2543,7 +2618,6 @@
             shirtFound = true;
             shirtColorPreview.style.background = `rgb(${Math.round(detectedShirtRGB[0])}, ${Math.round(detectedShirtRGB[1])}, ${Math.round(detectedShirtRGB[2])})`;
 
-            // Live Auto-Track Palette Mode
             if (chkAutoShirt.checked) {
               smoothedShirtRGB[0] += (detectedShirtRGB[0] - smoothedShirtRGB[0]) * 0.08;
               smoothedShirtRGB[1] += (detectedShirtRGB[1] - smoothedShirtRGB[1]) * 0.08;
