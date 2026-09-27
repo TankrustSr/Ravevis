@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Volumetric Contours - Sacred Kaleidochamber Edition</title>
+  <title>Volumetric Contours - K1 Sacred Chamber Edition</title>
   
   <!-- MediaPipe Pose Core Library -->
   <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
@@ -306,7 +306,7 @@
     <div id="hud" class="panel">
       Input: <span id="input-type">Apple Pencil / Touch</span><br>
       Body: <span id="pose-status-val">Waiting...</span><br>
-      Engine: <span id="engine-hud">Sacred Chamber</span> | Space: <span id="space-fold-hud">Inception Overhang</span>
+      Engine: <span id="engine-hud">Sacred Chamber</span> | Space: <span id="space-fold-hud">Standard 3D</span>
     </div>
 
     <div class="panel">
@@ -319,8 +319,11 @@
         <div class="sub-heading" style="margin-top:4px;">Preset Manager</div>
         <div style="display:flex; gap:6px; margin-top:4px;">
           <select id="presetSelect" style="flex:1;">
+            <optgroup label="Saved Favorites">
+              <option value="k1" selected>★ K1</option>
+            </optgroup>
             <optgroup label="Sacred Geometry & Mirrors">
-              <option value="sacredChamber" selected>💎 Sacred Chamber (Celadon, Azure & Brass)</option>
+              <option value="sacredChamber">💎 Sacred Chamber (Celadon, Azure & Brass)</option>
             </optgroup>
             <optgroup label="Retrowave & Cyberpunk">
               <option value="synthwave80s">🌆 Synthwave '84 (Neon Grid & Overhang)</option>
@@ -341,7 +344,6 @@
           <button id="delPresetBtn" title="Delete custom preset" style="display:none; color:#ff6b6b;">✕</button>
         </div>
 
-        <!-- Camera Shirt Color Sampler Section -->
         <div class="sub-heading">Shirt Color Harmonizer</div>
         <div style="display:flex; align-items:center; justify-content:space-between; margin-top:4px; gap:8px;">
           <button id="sampleShirtBtn" style="flex:1; background:rgba(0, 240, 255, 0.2); border-color:#00f0ff; color:#fff;">
@@ -405,9 +407,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Paint Persistence</span>
-            <span id="persist-num" class="val">0.992</span>
+            <span id="persist-num" class="val">0.996</span>
           </div>
-          <input type="range" id="sl-persistence" min="0.85" max="1.00" step="0.002" value="0.992">
+          <input type="range" id="sl-persistence" min="0.85" max="1.00" step="0.002" value="0.996">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-persistence"> X</label>
@@ -420,9 +422,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Head Wave Influence</span>
-            <span id="head-force-num" class="val">1.60</span>
+            <span id="head-force-num" class="val">0.00</span>
           </div>
-          <input type="range" id="sl-head-force" min="0.0" max="3.5" step="0.05" value="1.60">
+          <input type="range" id="sl-head-force" min="0.0" max="3.5" step="0.05" value="0.00">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-headForce"> X</label>
@@ -451,7 +453,6 @@
           <button id="clearPaintBtn" style="width:100%; background:rgba(247,168,68,0.2); border-color:#f7a844;">✨ Clear Paint Canvas</button>
         </div>
 
-        <!-- Engine Archetype Selector -->
         <div class="sub-heading">Engine Archetype</div>
         <div style="margin-top: 4px;">
           <select id="engineSelect" style="width: 100%;">
@@ -467,14 +468,13 @@
           </select>
         </div>
 
-        <!-- Inception Space Warping & Perspective -->
         <div class="sub-heading">Inception Space-Fold & 3D Flight</div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
           <span class="slider-header" style="margin:0;">Space Distortion</span>
           <select id="sl-space-fold">
-            <option value="0">0. Standard 3D Ground Plane</option>
-            <option value="1" selected>1. Inception Overhang (Folded City)</option>
+            <option value="0" selected>0. Standard 3D Ground Plane</option>
+            <option value="1">1. Inception Overhang (Folded City)</option>
             <option value="2">2. O'Neill Cylinder (Rolling World)</option>
             <option value="3">3. Möbius Spacetime Twist</option>
             <option value="4">4. Gravitational Lens (Wormhole)</option>
@@ -500,9 +500,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>3D Ground Plane Tilt</span>
-            <span id="plane-tilt-num" class="val">38°</span>
+            <span id="plane-tilt-num" class="val">0°</span>
           </div>
-          <input type="range" id="sl-plane-tilt" min="0" max="62" step="1" value="38">
+          <input type="range" id="sl-plane-tilt" min="0" max="62" step="1" value="0">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-planeTilt"> X</label>
@@ -515,9 +515,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Center Point Depth</span>
-            <span id="center-depth-num" class="val">0.85</span>
+            <span id="center-depth-num" class="val">-0.05</span>
           </div>
-          <input type="range" id="sl-center-depth" min="-1.00" max="4.00" step="0.05" value="0.85">
+          <input type="range" id="sl-center-depth" min="-1.00" max="4.00" step="0.05" value="-0.05">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-centerDepth"> X</label>
@@ -530,22 +530,22 @@
         <div style="display:flex; justify-content:space-between; align-items:center; margin-top: 4px;">
           <span class="slider-header" style="margin:0;">Rotation Mode</span>
           <select id="sl-angle-anim">
-            <option value="body_kaleido" selected>🚀 Warp Tunnel (Body Matrix Active)</option>
+            <option value="pingpong" selected>Smooth Reversal (0° ⇄ 360°)</option>
+            <option value="body_kaleido">🚀 Warp Tunnel (Body Matrix Active)</option>
             <option value="manual">Manual (Slider)</option>
             <option value="body_arms">Track Arm Angle (Pose)</option>
             <option value="pour_hands">💧 Pour Between Hands (Gravity Cascade)</option>
             <option value="continuous_cw">Continuous (Clockwise)</option>
             <option value="continuous_ccw">Continuous (Counter-CW)</option>
-            <option value="pingpong">Smooth Reversal (0° ⇄ 360°)</option>
           </select>
         </div>
         
         <div class="slider-row">
           <div class="slider-header">
             <span>Flow Direction</span>
-            <span id="angle-num" class="val">0°</span>
+            <span id="angle-num" class="val">74°</span>
           </div>
-          <input type="range" id="sl-angle" min="-180" max="180" step="1" value="0">
+          <input type="range" id="sl-angle" min="-180" max="180" step="1" value="74">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-angle"> X</label>
@@ -558,14 +558,14 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Warp Throttle</span>
-            <span id="rot-speed-num" class="val">0.50x</span>
+            <span id="rot-speed-num" class="val">0.12x</span>
           </div>
-          <input type="range" id="sl-rot-speed" min="0.00" max="2.00" step="0.02" value="0.50">
+          <input type="range" id="sl-rot-speed" min="0.00" max="2.00" step="0.02" value="0.12">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-rotSpeed"> X</label>
             <input type="number" id="scale-x-rotSpeed" value="1.0" step="0.1" class="scale-input">
-            <label class="mod-label"><input type="checkbox" id="mod-y-rotSpeed" checked> Y</label>
+            <label class="mod-label"><input type="checkbox" id="mod-y-rotSpeed"> Y</label>
             <input type="number" id="scale-y-rotSpeed" value="1.0" step="0.1" class="scale-input">
           </div>
         </div>
@@ -573,9 +573,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Ambient Drift</span>
-            <span id="speed-num" class="val">0.1</span>
+            <span id="speed-num" class="val">1.00</span>
           </div>
-          <input type="range" id="sl-speed" min="0.0" max="2.00" step="0.05" value="0.1">
+          <input type="range" id="sl-speed" min="0.0" max="2.00" step="0.05" value="1.00">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-speed"> X</label>
@@ -588,9 +588,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Turbulence (Warp)</span>
-            <span id="warp-num" class="val">1.85</span>
+            <span id="warp-num" class="val">0.90</span>
           </div>
-          <input type="range" id="sl-warp" min="0.1" max="4.0" step="0.05" value="1.85">
+          <input type="range" id="sl-warp" min="0.1" max="4.0" step="0.05" value="0.90">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-warp"> X</label>
@@ -603,9 +603,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Ribbon Stretch</span>
-            <span id="stretch-num" class="val">1.40</span>
+            <span id="stretch-num" class="val">0.35</span>
           </div>
-          <input type="range" id="sl-stretch" min="0.3" max="4.0" step="0.05" value="1.40">
+          <input type="range" id="sl-stretch" min="0.3" max="4.0" step="0.05" value="0.35">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-stretch"> X</label>
@@ -635,9 +635,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Corner Seam Blur</span>
-            <span id="k-blur-num" class="val">0.08</span>
+            <span id="k-blur-num" class="val">0.00</span>
           </div>
-          <input type="range" id="sl-k-blur" min="0.0" max="1.0" step="0.01" value="0.08">
+          <input type="range" id="sl-k-blur" min="0.0" max="1.0" step="0.01" value="0.00">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-kBlur"> X</label>
@@ -731,7 +731,7 @@
           <input type="range" id="sl-ridge" min="0.0" max="1.0" step="0.02" value="0.38">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
-            <label class="mod-label"><input type="checkbox" id="mod-x-ridge" checked> X</label>
+            <label class="mod-label"><input type="checkbox" id="mod-x-ridge"> X</label>
             <input type="number" id="scale-x-ridge" value="1.0" step="0.1" class="scale-input">
             <label class="mod-label"><input type="checkbox" id="mod-y-ridge"> Y</label>
             <input type="number" id="scale-y-ridge" value="1.0" step="0.1" class="scale-input">
@@ -742,9 +742,9 @@
         <div class="slider-row">
           <div class="slider-header">
             <span>Iridescence (Prism)</span>
-            <span id="chroma-num" class="val">0.45</span>
+            <span id="chroma-num" class="val">0.46</span>
           </div>
-          <input type="range" id="sl-chroma" min="0.0" max="1.5" step="0.02" value="0.45">
+          <input type="range" id="sl-chroma" min="0.0" max="1.5" step="0.02" value="0.46">
           <div class="mod-bar">
             <span class="mod-tag">Track</span>
             <label class="mod-label"><input type="checkbox" id="mod-x-chroma"> X</label>
@@ -817,12 +817,12 @@
 
         <div class="sub-heading">Palette Swatches</div>
         <div class="swatch-row">
-          <input type="color" id="colShadow" value="#030a0d" title="Shadow Base">
-          <input type="color" id="colCoolA"  value="#246b7a" title="Cool Stream A">
-          <input type="color" id="colCoolB"  value="#68c4d8" title="Cool Stream B">
-          <input type="color" id="colWarmA"  value="#c8ad58" title="Warm Filament">
-          <input type="color" id="colWarmB"  value="#3d7a5a" title="Deep Warmth">
-          <input type="color" id="colCrest"  value="#f4fbfa" title="Contour Crests">
+          <input type="color" id="colShadow" value="#1c1412" title="Shadow Base">
+          <input type="color" id="colCoolA"  value="#7e5234" title="Cool Stream A">
+          <input type="color" id="colCoolB"  value="#df7b6c" title="Cool Stream B">
+          <input type="color" id="colWarmA"  value="#2b7cd4" title="Warm Filament">
+          <input type="color" id="colWarmB"  value="#4e999b" title="Deep Warmth">
+          <input type="color" id="colCrest"  value="#ffffff" title="Contour Crests">
         </div>
       </div>
     </div>
@@ -1118,7 +1118,6 @@
       }
     `;
 
-    // 3D Inception Ray-Plane & Sacred Geometry Display Shader
     const displayFS = `
       precision highp float;
       varying vec2 v_uv;
@@ -1247,7 +1246,6 @@
         return dot(h.xy, h.xy) < dot(h.zw, h.zw) ? vec4(h.xy, hC.xy) : vec4(h.zw, hC.zw + 9.73);
       }
 
-      // Procedural Flower of Life Sacred Geometry Function
       float flowerOfLife(vec2 p) {
         vec2 s = vec2(1.0, 1.7320508);
         vec4 h = hexCoords(p * 2.2);
@@ -1266,7 +1264,6 @@
         return 1.0 - smoothstep(0.04, 0.12, minD);
       }
 
-      // Procedural 3D Rhombille Tiling (Faceted Tumbling Blocks)
       vec3 rhombilleDiamonds(vec2 p) {
         vec2 s = vec2(1.7320508, 1.0);
         vec2 a = mod(p, s) - s * 0.5;
@@ -1275,7 +1272,7 @@
 
         float angle = atan(g.y, g.x) + 3.14159265;
         float sector = floor(mod(angle / 1.04719755, 6.0));
-        float facetID = mod(sector, 3.0); // 3-tone diamond shading
+        float facetID = mod(sector, 3.0);
 
         vec2 diamondUV = abs(g);
         float dEdge = max(diamondUV.x * 0.5 + diamondUV.y * 0.866025, diamondUV.x);
@@ -1421,7 +1418,6 @@
         float f = 0.0;
         vec3 normalPerturb = vec3(0.0);
 
-        // 1. Laminar Silk (fBm)
         if (u_shader_type < 0.5) {
           q = vec2(fbm(p + vec2(0.0, t * 0.2)), fbm(p + vec2(4.3, -t * 0.18)));
           r = vec2(
@@ -1430,7 +1426,6 @@
           );
           f = fbm(p + (u_warp_scale * 1.15) * r);
         }
-        // 2. Agate Geode (Cellular Voronoi)
         else if (u_shader_type < 1.5) {
           vec2 warpCoord = vec2(fbm(p * 0.8 + t * 0.1), fbm(p * 0.8 - t * 0.08)) * u_warp_scale * 1.5;
           vec2 v = voronoi(p * 2.2 + warpCoord);
@@ -1438,7 +1433,6 @@
           r = vec2(v.y - v.x, v.x);
           f = v.x + 0.35 * fbm(p * 3.0 + r);
         }
-        // 3. Curl Nebula (Vortex Filament)
         else if (u_shader_type < 2.5) {
           vec2 c1 = curl(p * 1.2 + vec2(0.0, t * 0.15));
           vec2 c2 = curl(p * 1.6 + u_warp_scale * c1 - vec2(t * 0.1, 0.0));
@@ -1446,7 +1440,6 @@
           r = c2;
           f = fbm(p + (u_warp_scale * 1.3) * c2 + vec2(0.0, t * 0.05));
         }
-        // 4. Gyroid Cymatics (Resonance Wave)
         else if (u_shader_type < 3.5) {
           vec2 drift = vec2(t * 0.15, -t * 0.12);
           vec2 gp = p * 3.0 + drift;
@@ -1457,7 +1450,6 @@
           r = vec2(sin(gp.x + gVal), cos(gp.y - gVal));
           f = 0.5 + 0.5 * gVal + 0.25 * fbm(p * 2.0 + r);
         }
-        // 5. Hexagonal Hive (Honeycomb Mesh)
         else if (u_shader_type < 4.5) {
           vec2 hWarp = vec2(fbm(p * 1.5 + t * 0.2), fbm(p * 1.5 - t * 0.15)) * (u_warp_scale * 0.45);
           vec2 hp = p * 4.0 + hWarp;
@@ -1467,7 +1459,6 @@
           r = hc.xy;
           f = clamp(dEdge * 2.8, 0.0, 1.0) + 0.3 * fbm(p * 2.5 + hc.zw);
         }
-        // 6. Hypercube Matrix (Square Lattice)
         else if (u_shader_type < 5.5) {
           vec2 sWarp = vec2(sin(p.y * 2.5 + t), cos(p.x * 2.5 - t)) * (u_warp_scale * 0.35);
           vec2 sp = p * 3.8 + sWarp;
@@ -1478,7 +1469,6 @@
           r = grid;
           f = boxEdge * 1.2 + fract(isoStep * 0.16) * 0.4 + 0.25 * fbm(p * 2.0);
         }
-        // 7. Concentric Orbits (Target Rings & Moiré)
         else if (u_shader_type < 6.5) {
           float radDist = length(p);
           float polarAngle = atan(p.y, p.x);
@@ -1489,7 +1479,6 @@
           r = vec2(cos(polarAngle), sin(polarAngle)) * rings;
           f = rings * 0.65 + spokes * 0.35 + 0.15 * fbm(p * 3.0);
         }
-        // 8. Retrowave Synthgrid (80s Neon Vector)
         else if (u_shader_type < 7.5) {
           vec2 retroP = p * 4.5;
           retroP.y += t * 3.5;
@@ -1503,36 +1492,28 @@
           r = grid;
           f = wire * 0.85 + 0.15 * fbm(p * 1.5);
         }
-        // 💎 9. Sacred Kaleidochamber (Geodesic Faceted Diamonds & Sacred Geometry)
         else {
           float radDist = length(p);
           float polarAngle = atan(p.y, p.x);
           vec2 kDistort = vec2(fbm(p * 1.8 + t * 0.15), fbm(p * 1.8 - t * 0.12)) * (u_warp_scale * 0.22);
           vec2 kp = p + kDistort;
 
-          // 1. Central Diamond Geodesic Dome (Rhombille tumbling blocks)
           vec3 rBlocks = rhombilleDiamonds(kp * 4.2);
           float centerMask = 1.0 - smoothstep(0.45, 0.85, radDist);
           
-          // Facet shading variation for realistic glass / brass reflection
           float facetShade = (rBlocks.x == 0.0) ? 0.95 : (rBlocks.x == 1.0 ? 0.65 : 0.40);
-          
-          // 2. Flower of Life (Sacred geometry circular rosettes)
           float fol = flowerOfLife(kp * 1.8);
           
-          // 3. Concentric Laser-Cut Fretwork Rings & Chevrons
           float ringWaves = abs(sin(radDist * 24.0 - t * 1.2 + sin(polarAngle * 12.0) * 0.4));
           float chevrons = abs(sin(polarAngle * 24.0 + radDist * 16.0));
           float beads = 1.0 - smoothstep(0.12, 0.28, length(fract(vec2(polarAngle * 3.82, radDist * 6.0)) - 0.5));
           
           float filigreeLace = max(fol * 0.8, chevrons * 0.5) + ringWaves * 0.4 + beads * 0.5;
 
-          // Seamless transition between geodesic center and surrounding sacred lace
           f = mix(filigreeLace, facetShade * 1.2 + rBlocks.y * 0.6, centerMask);
           q = kDistort;
           r = vec2(cos(polarAngle), sin(polarAngle)) * f;
 
-          // Normal perturbation for faceted 3D specular diamond reflections
           normalPerturb = vec3(sin(rBlocks.z * 18.0), cos(rBlocks.z * 18.0), 0.0) * centerMask * 0.85;
         }
 
@@ -1612,7 +1593,6 @@
             col += u_col_cool_b * f * 1.4;
             col += u_col_warm_a * spec * 1.5;
           } else if (u_shader_type >= 7.5) {
-            // Sacred Chamber Specular Diamond Shimmer & Brass Highlights
             col += u_col_crest * spec * 1.4;
             col += u_col_warm_a * bands * 0.35;
           }
@@ -1997,7 +1977,7 @@
       rotSpeed:     document.getElementById('sl-rot-speed'),
       kSegs:        document.getElementById('sl-k-segs'),
       kBlur:        document.getElementById('sl-k-blur'),
-      kAngle:      document.getElementById('sl-k-angle'),
+      kAngle:       document.getElementById('sl-k-angle'),
       kZoom:        document.getElementById('sl-k-zoom'),
       kPinch:       document.getElementById('sl-k-pinch'),
       speed:        document.getElementById('sl-speed'),
@@ -2027,7 +2007,7 @@
       rotSpeed:     document.getElementById('rot-speed-num'),
       kSegs:        document.getElementById('k-segs-num'),
       kBlur:        document.getElementById('k-blur-num'),
-      kAngle:      document.getElementById('k-angle-num'),
+      kAngle:       document.getElementById('k-angle-num'),
       kZoom:        document.getElementById('k-zoom-num'),
       kPinch:       document.getElementById('k-pinch-num'),
       speed:        document.getElementById('speed-num'),
@@ -2048,22 +2028,22 @@
       centerDepth:  { chkX: document.getElementById('mod-x-centerDepth'),  scaleX: document.getElementById('scale-x-centerDepth'),  chkY: document.getElementById('mod-y-centerDepth'),  scaleY: document.getElementById('scale-y-centerDepth') },
       foldStrength: { chkX: document.getElementById('mod-x-foldStrength'), scaleX: document.getElementById('scale-x-foldStrength'), chkY: document.getElementById('mod-y-foldStrength'), scaleY: document.getElementById('scale-y-foldStrength') },
       persistence:  { chkX: document.getElementById('mod-x-persistence'),  scaleX: document.getElementById('scale-x-persistence'),  chkY: document.getElementById('mod-y-persistence'),  scaleY: document.getElementById('scale-y-persistence') },
-      rippleFreq:   { chkX: document.getElementById('mod-x-rippleFreq'),   scaleX: document.getElementById('scale-x-rippleFreq'),   chkY: document.getElementById('mod-y-rippleFreq'),   scaleY: document.getElementById('scale-y-rippleFreq') },
+      rippleFreq:   { chkX: document.getElementById('mod-x-rippleFreq'),   scaleX: document.getElementById('scale-x-rippleFreq'),   chkY: document.getElementById('mod-y-rippleFreq'),  scaleY: document.getElementById('scale-y-rippleFreq') },
       headForce:    { chkX: document.getElementById('mod-x-headForce'),    scaleX: document.getElementById('scale-x-headForce'),    chkY: document.getElementById('mod-y-headForce'),    scaleY: document.getElementById('scale-y-headForce') },
       handForce:    { chkX: document.getElementById('mod-x-handForce'),    scaleX: document.getElementById('scale-x-handForce'),    chkY: document.getElementById('mod-y-handForce'),    scaleY: document.getElementById('scale-y-handForce') },
       angle:        { chkX: document.getElementById('mod-x-angle'),        scaleX: document.getElementById('scale-x-angle'),        chkY: document.getElementById('mod-y-angle'),        scaleY: document.getElementById('scale-y-angle') },
       rotSpeed:     { chkX: document.getElementById('mod-x-rotSpeed'),     scaleX: document.getElementById('scale-x-rotSpeed'),     chkY: document.getElementById('mod-y-rotSpeed'),     scaleY: document.getElementById('scale-y-rotSpeed') },
       speed:        { chkX: document.getElementById('mod-x-speed'),        scaleX: document.getElementById('scale-x-speed'),        chkY: document.getElementById('mod-y-speed'),        scaleY: document.getElementById('scale-y-speed') },
-      warp:         { chkX: document.getElementById('mod-x-warp'),         scaleX: document.getElementById('scale-x-warp'),         chkY: document.getElementById('mod-y-warp'),        scaleY: document.getElementById('scale-y-warp') },
+      warp:         { chkX: document.getElementById('mod-x-warp'),         scaleX: document.getElementById('scale-x-warp'),        chkY: document.getElementById('mod-y-warp'),        scaleY: document.getElementById('scale-y-warp') },
       stretch:      { chkX: document.getElementById('mod-x-stretch'),      scaleX: document.getElementById('scale-x-stretch'),      chkY: document.getElementById('mod-y-stretch'),      scaleY: document.getElementById('scale-y-stretch') },
       kBlur:        { chkX: document.getElementById('mod-x-kBlur'),        scaleX: document.getElementById('scale-x-kBlur'),        chkY: document.getElementById('mod-y-kBlur'),        scaleY: document.getElementById('scale-y-kBlur') },
       kAngle:       { chkX: document.getElementById('mod-x-kAngle'),       scaleX: document.getElementById('scale-x-kAngle'),       chkY: document.getElementById('mod-y-kAngle'),       scaleY: document.getElementById('scale-y-kAngle') },
       kZoom:        { chkX: document.getElementById('mod-x-kZoom'),        scaleX: document.getElementById('scale-x-kZoom'),        chkY: document.getElementById('mod-y-kZoom'),        scaleY: document.getElementById('scale-y-kZoom') },
-      kPinch:       { chkX: document.getElementById('mod-x-kPinch'),      scaleX: document.getElementById('scale-x-kPinch'),      chkY: document.getElementById('mod-y-kPinch'),       scaleY: document.getElementById('scale-y-kPinch') },
+      kPinch:       { chkX: document.getElementById('mod-x-kPinch'),      scaleX: document.getElementById('scale-x-kPinch'),      chkY: document.getElementById('mod-y-kPinch'),      scaleY: document.getElementById('scale-y-kPinch') },
       density:      { chkX: document.getElementById('mod-x-density'),     scaleX: document.getElementById('scale-x-density'),     chkY: document.getElementById('mod-y-density'),      scaleY: document.getElementById('scale-y-density') },
-      step:         { chkX: document.getElementById('mod-x-step'),         scaleX: document.getElementById('scale-x-step'),         chkY: document.getElementById('mod-y-step'),         scaleY: document.getElementById('scale-y-step') },
-      ridge:        { chkX: document.getElementById('mod-x-ridge'),        scaleX: document.getElementById('scale-x-ridge'),        chkY: document.getElementById('mod-y-ridge'),        scaleY: document.getElementById('scale-y-ridge') },
-      chroma:       { chkX: document.getElementById('mod-x-chroma'),       scaleX: document.getElementById('scale-x-chroma'),       chkY: document.getElementById('mod-y-chroma'),       scaleY: document.getElementById('scale-y-chroma') },
+      step:         { chkX: document.getElementById('mod-x-step'),         scaleX: document.getElementById('scale-x-step'),        chkY: document.getElementById('mod-y-step'),        scaleY: document.getElementById('scale-y-step') },
+      ridge:        { chkX: document.getElementById('mod-x-ridge'),        scaleX: document.getElementById('scale-x-ridge'),        chkY: document.getElementById('mod-y-ridge'),       scaleY: document.getElementById('scale-y-ridge') },
+      chroma:       { chkX: document.getElementById('mod-x-chroma'),       scaleX: document.getElementById('scale-x-chroma'),       chkY: document.getElementById('mod-y-chroma'),      scaleY: document.getElementById('scale-y-chroma') },
       shimmer:      { chkX: document.getElementById('mod-x-shimmer'),      scaleX: document.getElementById('scale-x-shimmer'),      chkY: document.getElementById('mod-y-shimmer'),      scaleY: document.getElementById('scale-y-shimmer') },
       rim:          { chkX: document.getElementById('mod-x-rim'),          scaleX: document.getElementById('scale-x-rim'),          chkY: document.getElementById('mod-y-rim'),          scaleY: document.getElementById('scale-y-rim') },
       grain:        { chkX: document.getElementById('mod-x-grain'),        scaleX: document.getElementById('scale-x-grain'),        chkY: document.getElementById('mod-y-grain'),        scaleY: document.getElementById('scale-y-grain') },
@@ -2081,6 +2061,7 @@
       if (key === 'decayX' || key === 'decayY') return val.toFixed(2) + 's';
       if (key === 'angle' || key === 'kAngle') return Math.round(val) + '°';
       if (key === 'rotSpeed') return val.toFixed(2) + 'x';
+      if (key === 'speed') return val.toFixed(2);
       if (key === 'kSegs') return Math.round(val) === 1 ? 'Off' : `${Math.round(val)} Petals`;
       const stepStr = sliders[key].step;
       const decimals = stepStr.includes('.') ? stepStr.split('.')[1].length : 1;
@@ -2105,7 +2086,7 @@
       influenceModeHUD.textContent = modeNames[parseInt(e.target.value, 10)];
     });
 
-    let currentEngine = 8.0; // Default to Sacred Chamber
+    let currentEngine = 8.0;
     const engineSelect = document.getElementById('engineSelect');
     const engineNames = [
       'Laminar Silk', 'Agate Geode', 'Curl Nebula', 'Gyroid Cymatics',
@@ -2128,9 +2109,9 @@
       spaceFoldHUD.textContent = spaceFoldNames[parseInt(e.target.value, 10)];
     });
 
-    let currentAngleDeg = 0.0;
+    let currentAngleDeg = 74.0;
     let travelDist = 0.0;
-    let pingPongPhase = 0.0;
+    let pingPongPhase = Math.asin(Math.min(Math.max(74.0 / 180.0, -1.0), 1.0));
     let lastAnimTime = performance.now();
     let lastValidHandTime = 0.0;
 
@@ -2140,8 +2121,7 @@
     animModeSelect.addEventListener('change', () => {
       const mode = animModeSelect.value;
       if (mode === 'pingpong') {
-        const normalized = Math.min(Math.max(1.0 - (currentAngleDeg / 180.0), -1.0), 1.0);
-        pingPongPhase = Math.acos(normalized);
+        pingPongPhase = Math.asin(Math.min(Math.max(currentAngleDeg / 180.0, -1.0), 1.0));
       }
     });
 
@@ -2198,6 +2178,18 @@
     }
 
     const stockPresets = {
+      k1: {
+        shadow: '#1c1412', coolA: '#7e5234', coolB: '#df7b6c', warmA: '#2b7cd4', warmB: '#4e999b', crest: '#ffffff',
+        engine: 8, spaceFold: 0, animMode: 'pingpong',
+        sliders: {
+          planeTilt: 0, centerDepth: -0.05, foldStrength: 1.00,
+          decayX: 1.50, decayY: 1.50, persistence: 0.996, rippleFreq: 28.0,
+          headForce: 0.00, handForce: 1.30, angle: 74, rotSpeed: 0.12,
+          speed: 1.00, warp: 0.90, stretch: 0.35, kSegs: 6, kBlur: 0.00,
+          kAngle: 30, kZoom: 1.00, kPinch: 1.00, density: 22.0, step: 0.00,
+          ridge: 0.38, chroma: 0.46, shimmer: 0.85, rim: 0.40, grain: 0.03, contrast: 1.10
+        }
+      },
       sacredChamber: { shadow: '#030a0d', coolA: '#246b7a', coolB: '#68c4d8', warmA: '#c8ad58', warmB: '#3d7a5a', crest: '#f4fbfa', engine: 8, spaceFold: 1 },
       synthwave80s:  { shadow: '#0c021a', coolA: '#00f0ff', coolB: '#bd00ff', warmA: '#ff007f', warmB: '#ff8800', crest: '#fff68f', engine: 7, spaceFold: 1 },
       cyberpunk88:   { shadow: '#02080a', coolA: '#052f38', coolB: '#00ffcc', warmA: '#ffe600', warmB: '#ff0055', crest: '#ffffff', engine: 4, spaceFold: 3 },
@@ -2354,8 +2346,8 @@
       delete saved[key];
       commitPresets(saved);
       refreshUserPresetsMenu();
-      presetSelect.value = 'sacredChamber';
-      applyFullPreset(stockPresets.sacredChamber);
+      presetSelect.value = 'k1';
+      applyFullPreset(stockPresets.k1);
       delPresetBtn.style.display = 'none';
     });
 
@@ -2558,7 +2550,6 @@
       const allowHands = chkHandTracking.checked;
       let handsFound = 0;
 
-      // 1. Head Tracking
       if (isJointVisible(lm[0], 0.35)) {
         headTarget.x = (1.0 - lm[0].x) * window.innerWidth;
         headTarget.y = (1.0 - lm[0].y) * window.innerHeight;
@@ -2572,7 +2563,6 @@
         headTarget.active = 0.0;
       }
 
-      // 2. Torso / Shirt Color Region Sampling
       if (lm[11] && lm[12] && (lm[11].visibility > 0.4 || lm[12].visibility > 0.4)) {
         const msX = (lm[11].x + lm[12].x) * 0.5;
         const msY = (lm[11].y + lm[12].y) * 0.5;
@@ -2630,7 +2620,6 @@
         shirtFound = false;
       }
 
-      // 3. Hands Tracking
       if (allowHands) {
         if (isJointVisible(lm[15], 0.65) && isJointVisible(lm[13], 0.45)) {
           leftTarget.x = (1.0 - lm[15].x) * window.innerWidth;
@@ -2889,7 +2878,6 @@
         }
       }
 
-      // Compute modulated values for all parameters
       for (const k in modMatrix) {
         const slider = sliders[k];
         const minVal = parseFloat(slider.min);
@@ -3023,7 +3011,6 @@
       const spaceFoldVal = parseFloat(slSpaceFold.value);
       const foldStrengthVal = activeVals.foldStrength;
 
-      // 1. Physical Simulation Pass
       gl.bindFramebuffer(gl.FRAMEBUFFER, writeFBO.fbo);
       gl.viewport(0, 0, simWidth, simHeight);
       gl.useProgram(simProgram);
@@ -3070,7 +3057,6 @@
 
       swapFBOs();
 
-      // 2. Display Shader Pass
       gl.bindFramebuffer(gl.FRAMEBUFFER, null);
       gl.viewport(0, 0, canvas.width, canvas.height);
       gl.useProgram(displayProgram);
