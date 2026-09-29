@@ -829,7 +829,7 @@
 
     <div class="btn-group">
       <label class="btn" for="imageLoader">📷 Load Image</label>
-      <input type="file" id="imageLoader" accept="image/*">
+      <input type="file" id="imageLoader" accept="image/*,.svg">
       <button id="resetBtn" style="display:none;">Reset Texture</button>
       <button id="poseToggleBtn">👤 Body Tracking</button>
       <button id="saveBtn">💾 Photo</button>
@@ -1193,8 +1193,8 @@
       float fbm(vec2 p) {
         float f = 0.0;
         float amp = 0.52;
-        mat2 rot = mat2(cos(0.26), sin(0.26), -sin(0.26), cos(0.26));
-        for (int i = 0; i < 5; i++) {
+        const mat2 rot = mat2(0.9664, 0.2571, -0.2571, 0.9664);
+        for (int i = 0; i < 4; i++) {
           f += amp * noise(p);
           p = rot * p * 1.82;
           amp *= 0.52;
@@ -1247,7 +1247,6 @@
       }
 
       float flowerOfLife(vec2 p) {
-        vec2 s = vec2(1.0, 1.7320508);
         vec4 h = hexCoords(p * 2.2);
         vec2 pCell = h.xy;
 
@@ -1270,7 +1269,7 @@
         vec2 b = mod(p - s * 0.5, s) - s * 0.5;
         vec2 g = dot(a, a) < dot(b, b) ? a : b;
 
-        float angle = atan(g.y, g.x) + 3.14159265;
+        float angle = atan(g.y, g.x + 1e-5) + 3.14159265;
         float sector = floor(mod(angle / 1.04719755, 6.0));
         float facetID = mod(sector, 3.0);
 
@@ -1339,7 +1338,7 @@
           float t = radius / max(rCross, 0.05);
           
           depthFactor = clamp(1.0 / (t * 0.45), 0.08, 2.0);
-          float angle = atan(ray.y, ray.x);
+          float angle = atan(ray.y, ray.x + 1e-5);
           float zDist = t * ray.z;
           
           vec2 coords = vec2(angle * radius * 1.6, zDist * 0.7);
@@ -1471,7 +1470,7 @@
         }
         else if (u_shader_type < 6.5) {
           float radDist = length(p);
-          float polarAngle = atan(p.y, p.x);
+          float polarAngle = atan(p.y, p.x + 1e-5);
           vec2 oWarp = vec2(fbm(p * 2.0 + t * 0.1), fbm(p * 2.0 - t * 0.12)) * (u_warp_scale * 0.5);
           float rings = abs(sin((radDist + length(oWarp)) * 14.0 - t * 1.5));
           float spokes = abs(sin(polarAngle * 10.0 + radDist * 3.0));
@@ -1494,14 +1493,14 @@
         }
         else {
           float radDist = length(p);
-          float polarAngle = atan(p.y, p.x);
+          float polarAngle = atan(p.y, p.x + 1e-5);
           vec2 kDistort = vec2(fbm(p * 1.8 + t * 0.15), fbm(p * 1.8 - t * 0.12)) * (u_warp_scale * 0.22);
           vec2 kp = p + kDistort;
 
           vec3 rBlocks = rhombilleDiamonds(kp * 4.2);
           float centerMask = 1.0 - smoothstep(0.45, 0.85, radDist);
           
-          float facetShade = (rBlocks.x == 0.0) ? 0.95 : (rBlocks.x == 1.0 ? 0.65 : 0.40);
+          float facetShade = (rBlocks.x < 0.5) ? 0.95 : (rBlocks.x < 1.5 ? 0.65 : 0.40);
           float fol = flowerOfLife(kp * 1.8);
           
           float ringWaves = abs(sin(radDist * 24.0 - t * 1.2 + sin(polarAngle * 12.0) * 0.4));
@@ -1547,8 +1546,8 @@
         vec3 viewDir = normalize(vec3(-st.x * 0.2, -st.y * 0.2, 1.0));
         vec3 halfVec = normalize(lightDir + viewDir);
 
-        float spec = pow(max(dot(normal, halfVec), 0.0), 22.0) * u_specular_shimmer;
-        float fresnel = pow(1.0 - max(dot(normal, viewDir), 0.0), 3.0) * u_rim_glow;
+        float spec = pow(max(dot(normal, halfVec), 0.0001), 22.0) * u_specular_shimmer;
+        float fresnel = pow(clamp(1.0 - max(dot(normal, viewDir), 0.0), 0.0, 1.0), 3.0) * u_rim_glow;
 
         vec3 finalColor;
 
@@ -1564,20 +1563,15 @@
             baseUV = getCoverUV(screenUV, u_resolution, u_image_resolution);
           }
 
-          vec2 warpDelta = (r * (0.07 * u_warp_scale)) + (paintDisplacement * 0.1);
-          vec2 uvR = abs(mod(baseUV + warpDelta * (1.0 + chromaOffset * 0.4) - 1.0, 2.0) - 1.0);
-          vec2 uvG = abs(mod(baseUV + warpDelta - 1.0, 2.0) - 1.0);
-          vec2 uvB = abs(mod(baseUV + warpDelta * (1.0 - chromaOffset * 0.4) - 1.0, 2.0) - 1.0);
+          // Gentle displacement that preserves thin vector line integrity
+          vec2 cleanWarp = (r * (0.03 * u_warp_scale)) + (paintDisplacement * 0.08);
+          vec2 sampleUV = abs(mod(baseUV + cleanWarp - 1.0, 2.0) - 1.0);
 
-          vec3 imgColor = vec3(
-            texture2D(u_imageTexture, uvR).r,
-            texture2D(u_imageTexture, uvG).g,
-            texture2D(u_imageTexture, uvB).b
-          );
-
+          vec3 imgColor = texture2D(u_imageTexture, sampleUV).rgb;
           float luma = dot(imgColor, vec3(0.299, 0.587, 0.114));
-          vec3 crestLight = u_col_crest * (bands * 0.22 + ridges * u_ridge_weight) * (0.4 + 0.6 * luma);
-          finalColor = imgColor + crestLight + (u_col_crest * (spec + fresnel) * luma);
+
+          vec3 crestLight = u_col_crest * (bands * 0.18 + ridges * (u_ridge_weight * 0.5)) * (0.3 + 0.7 * luma);
+          finalColor = imgColor + crestLight + (u_col_crest * (spec + fresnel) * luma * 0.5);
           finalColor *= (0.8 + 0.35 * f * u_contrast);
         } else {
           vec3 col = mix(u_col_shadow, u_col_cool_a, clamp((f * f) * (3.2 * u_contrast), 0.0, 1.0));
@@ -1613,117 +1607,89 @@
         vec2 st = getFoldedSpaceCoords(raw_st, u_plane_tilt, u_space_fold, u_fold_strength, u_center_depth, depthFactor, fog);
         vec2 centerOffset = vec2(0.0, u_center_depth);
 
+        vec2 evalST = st - centerOffset;
+        vec2 evalUV = v_uv;
+        vec2 evalST2 = evalST;
+        vec2 evalUV2 = evalUV;
+        float blendFactor = 1.0;
+        bool doBlend = false;
+
         if (u_kaleido_segs > 1.5) {
           vec2 p = st - centerOffset;
           float r = length(p);
-          float a = atan(p.y, p.x) + u_kaleido_angle;
+          float a = atan(p.y, p.x + 1e-5) + u_kaleido_angle;
           float tau = 6.28318530718;
           float segAngle = tau / u_kaleido_segs;
           float modA = mod(a, segAngle);
           if (modA < 0.0) modA += segAngle;
 
+          float H = segAngle * 0.5;
+          bool isMirror = (u_kaleido_mirror > 0.5);
+          float foldA = isMirror ? abs(modA - H) : modA;
+          float d = isMirror ? min(foldA, H - foldA) : min(foldA, segAngle - foldA);
+          float maxBlendDist = isMirror ? (H * 0.5) : (segAngle * 0.5);
+          float blendWidth = u_kaleido_blur * maxBlendDist;
+
+          float altA = 0.0;
+          if (u_kaleido_blur > 0.005 && blendWidth > 0.0001) {
+            doBlend = true;
+            if (isMirror) {
+              altA = (foldA < H * 0.5) ? -foldA : (2.0 * H - foldA);
+            } else {
+              altA = (foldA < segAngle * 0.5) ? (foldA + segAngle) : (foldA - segAngle);
+            }
+            blendFactor = smoothstep(0.0, blendWidth, d);
+          }
+
           if (u_is_warp_mode > 0.5) {
             float tunnelScale = 1.9 * u_kaleido_zoom;
             float V = (log(max(r, 0.003)) - (-1.1394)) * tunnelScale - u_travel_dist;
+            evalST = vec2(foldA * tunnelScale, V);
 
-            float H = segAngle * 0.5;
-            float foldA = (u_kaleido_mirror > 0.5) ? abs(modA - H) : modA;
-            float d = (u_kaleido_mirror > 0.5) ? min(foldA, H - foldA) : min(foldA, segAngle - foldA);
-            float maxBlendDist = (u_kaleido_mirror > 0.5) ? (H * 0.5) : (segAngle * 0.5);
-            float blendWidth = u_kaleido_blur * maxBlendDist;
+            vec2 fg1 = centerOffset + vec2(cos(foldA), sin(foldA)) * r;
+            vec2 fst1 = groundToScreenST(fg1, u_plane_tilt);
+            evalUV = (fst1 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
 
-            float U1 = foldA * tunnelScale;
-            vec2 st1 = vec2(U1, V);
-            
-            vec2 foldedGround1 = centerOffset + vec2(cos(foldA), sin(foldA)) * r;
-            vec2 foldedScreenST1 = groundToScreenST(foldedGround1, u_plane_tilt);
-            vec2 screenUV1 = (foldedScreenST1 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
-
-            if (u_kaleido_blur > 0.005 && blendWidth > 0.0001) {
-              float altA;
-              if (u_kaleido_mirror > 0.5) {
-                altA = (foldA < H * 0.5) ? -foldA : (2.0 * H - foldA);
-              } else {
-                altA = (foldA < segAngle * 0.5) ? (foldA + segAngle) : (foldA - segAngle);
-              }
-              float U2 = altA * tunnelScale;
-              vec2 st2 = vec2(U2, V);
-              
-              vec2 foldedGround2 = centerOffset + vec2(cos(altA), sin(altA)) * r;
-              vec2 foldedScreenST2 = groundToScreenST(foldedGround2, u_plane_tilt);
-              vec2 screenUV2 = (foldedScreenST2 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
-
-              vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0), depthFactor);
-              vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0), depthFactor);
-              float blendFactor = smoothstep(0.0, blendWidth, d);
-              finalColor = mix(mix(col1, col2, 0.5), col1, blendFactor);
-            } else {
-              finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0), depthFactor);
+            if (doBlend) {
+              evalST2 = vec2(altA * tunnelScale, V);
+              vec2 fg2 = centerOffset + vec2(cos(altA), sin(altA)) * r;
+              vec2 fst2 = groundToScreenST(fg2, u_plane_tilt);
+              evalUV2 = (fst2 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
             }
-
-            float coreGlow = exp(-r * 9.0) * 0.42;
-            finalColor += u_col_crest * coreGlow;
-
           } else {
             float rP = pow(max(r, 0.0001), u_kaleido_pinch) * u_kaleido_zoom;
+            evalST = vec2(cos(foldA), sin(foldA)) * rP;
 
-            if (u_kaleido_mirror > 0.5) {
-              float H = segAngle * 0.5;
-              float foldA = abs(modA - H);
-              float d = min(foldA, H - foldA);
-              float blendWidth = u_kaleido_blur * (H * 0.5);
+            vec2 fg1 = centerOffset + vec2(cos(foldA), sin(foldA)) * r;
+            vec2 fst1 = groundToScreenST(fg1, u_plane_tilt);
+            evalUV = (fst1 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
 
-              vec2 st1 = vec2(cos(foldA), sin(foldA)) * rP;
-              vec2 foldedGround1 = centerOffset + vec2(cos(foldA), sin(foldA)) * r;
-              vec2 foldedScreenST1 = groundToScreenST(foldedGround1, u_plane_tilt);
-              vec2 screenUV1 = (foldedScreenST1 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
-
-              if (u_kaleido_blur > 0.005 && blendWidth > 0.0001) {
-                float altA = (foldA < H * 0.5) ? -foldA : (2.0 * H - foldA);
-                vec2 st2 = vec2(cos(altA), sin(altA)) * rP;
-                vec2 foldedGround2 = centerOffset + vec2(cos(altA), sin(altA)) * r;
-                vec2 foldedScreenST2 = groundToScreenST(foldedGround2, u_plane_tilt);
-                vec2 screenUV2 = (foldedScreenST2 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
-
-                vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0), depthFactor);
-                vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0), depthFactor);
-                float blendFactor = smoothstep(0.0, blendWidth, d);
-                finalColor = mix(mix(col1, col2, 0.5), col1, blendFactor);
-              } else {
-                finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0), depthFactor);
-              }
-            } else {
-              float foldA = modA;
-              float d = min(foldA, segAngle - foldA);
-              float blendWidth = u_kaleido_blur * (segAngle * 0.5);
-
-              vec2 st1 = vec2(cos(foldA), sin(foldA)) * rP;
-              vec2 foldedGround1 = centerOffset + vec2(cos(foldA), sin(foldA)) * r;
-              vec2 foldedScreenST1 = groundToScreenST(foldedGround1, u_plane_tilt);
-              vec2 screenUV1 = (foldedScreenST1 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
-
-              if (u_kaleido_blur > 0.005 && blendWidth > 0.0001) {
-                float altA = (foldA < segAngle * 0.5) ? (foldA + segAngle) : (foldA - segAngle);
-                vec2 st2 = vec2(cos(altA), sin(altA)) * rP;
-                vec2 foldedGround2 = centerOffset + vec2(cos(altA), sin(altA)) * r;
-                vec2 foldedScreenST2 = groundToScreenST(foldedGround2, u_plane_tilt);
-                vec2 screenUV2 = (foldedScreenST2 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
-
-                vec3 col1 = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0), depthFactor);
-                vec3 col2 = evaluateScene(st2, clamp(screenUV2, 0.0, 1.0), depthFactor);
-                float blendFactor = smoothstep(0.0, blendWidth, d);
-                finalColor = mix(mix(col1, col2, 0.5), col1, blendFactor);
-              } else {
-                finalColor = evaluateScene(st1, clamp(screenUV1, 0.0, 1.0), depthFactor);
-              }
+            if (doBlend) {
+              evalST2 = vec2(cos(altA), sin(altA)) * rP;
+              vec2 fg2 = centerOffset + vec2(cos(altA), sin(altA)) * r;
+              vec2 fst2 = groundToScreenST(fg2, u_plane_tilt);
+              evalUV2 = (fst2 * min(u_resolution.x, u_resolution.y) + u_resolution) / (2.0 * u_resolution);
             }
           }
+        }
+
+        vec3 col1 = evaluateScene(evalST, clamp(evalUV, 0.0, 1.0), depthFactor);
+        if (doBlend) {
+          vec3 col2 = evaluateScene(evalST2, clamp(evalUV2, 0.0, 1.0), depthFactor);
+          finalColor = mix(mix(col1, col2, 0.5), col1, blendFactor);
         } else {
-          finalColor = evaluateScene(st - centerOffset, v_uv, depthFactor);
+          finalColor = col1;
+        }
+
+        if (u_kaleido_segs > 1.5 && u_is_warp_mode > 0.5) {
+          vec2 p = st - centerOffset;
+          float r = length(p);
+          float coreGlow = exp(-r * 9.0) * 0.42;
+          finalColor += u_col_crest * coreGlow;
         }
 
         if (fog > 0.0) {
-          vec3 horizonCol = mix(u_col_shadow, u_col_cool_a * 0.75, 0.6) + u_col_crest * 0.2 * pow(max(raw_st.y, 0.0), 2.0);
+          vec3 horizonCol = mix(u_col_shadow, u_col_cool_a * 0.75, 0.6) + u_col_crest * 0.2 * pow(max(raw_st.y, 0.0001), 2.0);
           finalColor = mix(finalColor, horizonCol, fog);
         }
 
@@ -1733,7 +1699,6 @@
         }
 
         gl_FragColor = vec4(clamp(finalColor, 0.0, 1.0), 1.0);
-        
       }
     `;
 
@@ -1938,23 +1903,89 @@
     const fileInput = document.getElementById('imageLoader');
     const resetBtn = document.getElementById('resetBtn');
 
+    function uploadImageToGPU(imgElement) {
+      imageWidth = imgElement.width;
+      imageHeight = imgElement.height;
+      gl.bindTexture(gl.TEXTURE_2D, customImgTexture);
+      gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, false);
+      gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, imgElement);
+
+      // Generate mipmaps to keep fine vector lines sharp and anti-aliased
+      gl.generateMipmap(gl.TEXTURE_2D);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+
+      useImage = true;
+      resetBtn.style.display = 'inline-flex';
+    }
+
     fileInput.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const img = new Image();
-        img.onload = () => {
-          imageWidth = img.width;
-          imageHeight = img.height;
-          gl.bindTexture(gl.TEXTURE_2D, customImgTexture);
-          gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
-          useImage = true;
-          resetBtn.style.display = 'inline-flex';
+
+      const isSvg = file.type === 'image/svg+xml' || file.name.toLowerCase().endsWith('.svg');
+
+      if (isSvg) {
+        // High-density vector rasterizer: forces 2560px rendering matching Retina displays
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const parser = new DOMParser();
+          const doc = parser.parseFromString(event.target.result, 'image/svg+xml');
+          const svgEl = doc.documentElement;
+
+          let vb = svgEl.getAttribute('viewBox');
+          let baseW = 1000, baseH = 1000;
+
+          if (vb) {
+            const parts = vb.trim().split(/[\s,]+/).map(Number);
+            if (parts.length === 4 && parts[2] > 0 && parts[3] > 0) {
+              baseW = parts[2];
+              baseH = parts[3];
+            }
+          } else {
+            baseW = parseFloat(svgEl.getAttribute('width')) || 1000;
+            baseH = parseFloat(svgEl.getAttribute('height')) || 1000;
+            svgEl.setAttribute('viewBox', `0 0 ${baseW} ${baseH}`);
+          }
+
+          const TARGET_RES = 2560;
+          const aspect = baseW / baseH;
+          let renderW, renderH;
+
+          if (aspect >= 1.0) {
+            renderW = TARGET_RES;
+            renderH = Math.round(TARGET_RES / aspect);
+          } else {
+            renderH = TARGET_RES;
+            renderW = Math.round(TARGET_RES * aspect);
+          }
+
+          svgEl.setAttribute('width', renderW);
+          svgEl.setAttribute('height', renderH);
+
+          const serialized = new XMLSerializer().serializeToString(doc);
+          const svgBlob = new Blob([serialized], { type: 'image/svg+xml;charset=utf-8' });
+          const blobUrl = URL.createObjectURL(svgBlob);
+
+          const img = new Image();
+          img.onload = () => {
+            uploadImageToGPU(img);
+            URL.revokeObjectURL(blobUrl);
+          };
+          img.src = blobUrl;
         };
-        img.src = event.target.result;
-      };
-      reader.readAsDataURL(file);
+        reader.readAsText(file);
+      } else {
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const img = new Image();
+          img.onload = () => uploadImageToGPU(img);
+          img.src = event.target.result;
+        };
+        reader.readAsDataURL(file);
+      }
     });
 
     resetBtn.addEventListener('click', (e) => {
@@ -2077,15 +2108,11 @@
     });
 
     const slInfluenceMode = document.getElementById('sl-influence-mode');
-    const influenceModeHUD = document.getElementById('influence-mode-hud');
     const engineHUD = document.getElementById('engine-hud');
     const spaceFoldHUD = document.getElementById('space-fold-hud');
     const modeNames = ['Viscous Drag', 'Water Ripples', 'Whirlpools', 'Shockwave'];
 
     slInfluenceMode.addEventListener('pointerdown', (e) => e.stopPropagation());
-    slInfluenceMode.addEventListener('change', (e) => {
-      influenceModeHUD.textContent = modeNames[parseInt(e.target.value, 10)];
-    });
 
     let currentEngine = 8.0;
     const engineSelect = document.getElementById('engineSelect');
@@ -2288,7 +2315,6 @@
       if (data.kMode) slKMode.value = data.kMode;
       if (data.influenceMode) {
         slInfluenceMode.value = data.influenceMode;
-        slInfluenceMode.dispatchEvent(new Event('change'));
       }
       if (data.sliders) {
         for (const k in data.sliders) {
@@ -2797,9 +2823,17 @@
     function resize() {
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
       const dpr = isMobile ? Math.min(window.devicePixelRatio || 1, 1.5) : 1.0;
+      const maxDimension = 1920;
 
-      const w = Math.floor(window.innerWidth * dpr);
-      const h = Math.floor(window.innerHeight * dpr);
+      let w = Math.floor(window.innerWidth * dpr);
+      let h = Math.floor(window.innerHeight * dpr);
+
+      // Desktop safety cap: prevents 4K high-DPI displays from stalling the GPU
+      if (w > maxDimension) {
+        h = Math.round(h * (maxDimension / w));
+        w = maxDimension;
+      }
+
       canvas.width = w;
       canvas.height = h;
 
